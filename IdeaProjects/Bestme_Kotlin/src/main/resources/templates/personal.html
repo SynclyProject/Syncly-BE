@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BestMe</title>
+  <link rel="stylesheet" type="text/css" th:href="@{/styles/header.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/styles/personal.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/styles/modal.css}">
+  <script src="https://kit.fontawesome.com/5fcc17a7cc.js" crossorigin="anonymous"></script>
+  <script defer type="text/javascript" th:src="@{/scripts/common.js}"></script>
+  <script defer type="text/javascript" th:src="@{/scripts/personal.js}"></script>
+</head>
+<body>
+<header id="header">
+  <div class="header-box">
+    <a href="/">
+      <i class="fa-solid fa-droplet"></i>
+      <span>Best Me</span>
+    </a>
+  </div>
+  <div class="header-box">
+    <ul>
+      <li>
+        <a href="/">홈</a>
+      </li>
+      <li class="sel">
+        <a href="/personal">퍼스널컬러 테스트</a>
+      </li>
+      <li>
+        <a href="/style/guide">스타일링 추천</a>
+      </li>
+      <li>
+        <a href="/community">커뮤니티</a>
+      </li>
+      <li>
+        <a href="/member">마이 페이지</a>
+      </li>
+    </ul>
+  </div>
+  <div class="header-box login">
+  </div>
+</header>
+<main id="test">
+
+  <div class="section-container">
+    <section class="test-header">
+      <div class="d1">AI 기반 퍼스널 컬러 테스트</div>
+      <div class="d2">아래 가이드에 맞게 자신의 색상 코드 값을 입력해주세요. 보다 정확한 값을 위해 여러번 테스트 하는 것을 추천드립니다.</div>
+      <hr>
+    </section>
+
+
+    <section class="test-input">
+      <form>
+        <div class="form-group">
+          <label for="lightestSkinColor">Lightest Skin Color(가장 밝은 부분의 피부색):</label>
+          <input type="text" id="lightestSkinColor" name="lightestSkinColor"
+                 required maxlength="7" pattern="^#[A-Fa-f0-9]{6}$"
+                 title="6자리 16진수 색상 코드 입력 (예: #A1B2C3)"
+                 placeholder="#RRGGBB" />
+        </div>
+
+        <div class="form-group">
+          <label for="darkestSkinColor">Darkest Skin Color(가장 어두운 부분의 피부색):</label>
+          <input type="text" id="darkestSkinColor" name="darkestSkinColor"
+                 required maxlength="7" pattern="^#[A-Fa-f0-9]{6}$"
+                 title="6자리 16진수 색상 코드 입력 (예: #A1B2C3)"
+                 placeholder="#RRGGBB" />
+        </div>
+
+        <div class="form-group">
+          <label for="lipColor">Lip Color(입술 색상):</label>
+          <input type="text" id="lipColor" name="lipColor"
+                 required maxlength="7" pattern="^#[A-Fa-f0-9]{6}$"
+                 title="6자리 16진수 색상 코드 입력 (예: #A1B2C3)"
+                 placeholder="#RRGGBB" />
+        </div>
+
+        <div class="form-group">
+          <label for="hairColor">Hair Color(머리 색상):</label>
+          <input type="text" id="hairColor" name="hairColor"
+                 required maxlength="7" pattern="^#[A-Fa-f0-9]{6}$"
+                 title="6자리 16진수 색상 코드 입력 (예: #A1B2C3)"
+                 placeholder="#RRGGBB" />
+        </div>
+
+        <div class="form-group">
+          <label for="pupilColor">Pupil Color(동공 색상):</label>
+          <input type="text" id="pupilColor" name="pupilColor"
+                 required maxlength="7" pattern="^#[A-Fa-f0-9]{6}$"
+                 title="6자리 16진수 색상 코드 입력 (예: #A1B2C3)"
+                 placeholder="#RRGGBB" />
+        </div>
+
+        <div class="form-group">
+          <label for="irisColor">Iris Color(홍채 색상):</label>
+          <input type="text" id="irisColor" name="irisColor"
+                 required maxlength="7" pattern="^#[A-Fa-f0-9]{6}$"
+                 title="6자리 16진수 색상 코드 입력 (예: #A1B2C3)"
+                 placeholder="#RRGGBB" />
+        </div>
+
+        <button id="test-btn" type="submit">퍼스널 컬러 진단</button>
+      </form>
+
+
+    </section>
+  </div>
+</main>
+</body>
+</html>

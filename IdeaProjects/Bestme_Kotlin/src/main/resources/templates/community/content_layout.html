@@ -1,0 +1,18 @@
+<!-- content_layout.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{community/community_base :: head(~{::title},~{::link}, ~{::script})}">
+    <title>BestMe - Community</title>
+    <!--css, js 추가 시 사용-->
+    <!--<link>-->
+    <!--<script></script>-->
+</head>
+<body th:replace="~{community/community_base :: body}">
+    <!-- 실제 페이지 내용 -->
+    <div th:fragment="content">
+        <main id="main">
+            <!-- 페이지 내용 추가 -->
+        </main>
+    </div>
+</body>
+</html>

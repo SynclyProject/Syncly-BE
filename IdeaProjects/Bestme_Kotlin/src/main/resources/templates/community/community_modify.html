@@ -1,0 +1,85 @@
+<!-- community_modify.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BestMe - Community</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/header.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/modal.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/community/index.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/community/modify.css}">
+    <script src="https://kit.fontawesome.com/5fcc17a7cc.js" crossorigin="anonymous"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/common.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/modal.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/community/modify.js}"></script>
+</head>
+<body th:replace="~{community/community_base :: body}">
+    <!-- 실제 페이지 내용 -->
+    <div th:fragment="content">
+        <main id="main" th:data-board-id="${boardId}">
+            <!-- 페이지 내용 추가 -->
+            <!-- 상단 디자인 -->
+            <div class="com_head">
+                <h1>Community</h1>
+            </div>
+            <div class="con_title">
+                <h3>게시글 수정</h3>
+            </div>
+            <div class="con_txt">
+                <form id="modify-form" method="post" enctype="multipart/form-data">
+                    <div class="contents_sub">
+                        <!--게시판-->
+                        <div class="board_write">
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th>제목</th>
+                                    <td>
+                                        <label class="text_label focus">
+                                            <input type="text" id="subject" name="subject" value="" class="board_view_input"/>
+                                        </label>
+                                    </td>
+                                    <th>첨부파일</th>
+                                    <td>
+                                        <div class="file_div">
+                                            <label class="text_label disabled">
+                                                <input readonly type="text" name="upload_text" id="upload_text">
+                                            </label>
+                                            <label class="file_label">
+                                                <input type="file" id="file" name="upload" value=""/>
+                                                <span class="button_common">파일 선택</span>
+                                            </label>
+                                        </div>
+                                        <br/>
+                                        <!--기존 이미지-->
+                                        <div id="file-name"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>내용</th>
+                                    <td colspan="3" class="none">
+                                        <label class="text_label focus">
+                                            <textarea id="content" name="content" class="board_editor_area" rows="20"></textarea>
+                                        </label>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="btn_area">
+                            <button type="button" class="green"
+                                    onclick="location.href='/community'">목록</button>
+                            <button type="button" class="common" th:data-board-id="${boardId}"
+                                    onclick="location.href='/community/detail/' + this.dataset.boardId">보기</button>
+                            <span class="spring"></span>
+                            <button type="button" onclick="modifySubmit()" id="mbtn" class="green">수정하기</button>
+                        </div>
+                        <!--//게시판-->
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

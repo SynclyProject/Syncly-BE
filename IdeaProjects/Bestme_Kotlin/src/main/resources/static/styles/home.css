@@ -1,0 +1,126 @@
+#main {
+    top: 4rem;
+    width: 100%;
+    position: relative;
+    padding: 2rem;
+}
+
+#main > .section-container {
+    width: 65rem;
+    margin: 0 auto;
+
+
+    display: flex;
+    flex-direction: column;
+}
+
+#main > .section-container > .main-img{
+    width: 100%;
+    height: 40rem;
+
+    border-radius: 2rem;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+#main > .section-container > .main-img > .img-box {
+    width: 100%;
+    height: 100%;
+
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    filter: brightness(50%);
+}
+
+#main > .section-container > .main-img >  .text-box {
+    width: 80%;
+    margin: 0 auto;
+
+    top: 50%;
+    left: 50%;
+    position: absolute;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+
+}
+
+#main > .section-container > .main-img >  .text-box > span {
+    width: 100%;
+
+    color: white;
+    text-align: center;
+}
+
+#main > .section-container > .main-img > .text-box > .big {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+#main > .section-container > .main-img > .text-box > .small {
+    font-weight: 200;
+}
+
+#main > .section-container > .featured-post {
+    margin-top: 2rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#main > .section-container > .featured-post > .title{
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+
+#main > .section-container > .featured-post > .post-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 0.5rem;
+}
+
+#main > .section-container > .featured-post > .post-container > .post{
+    width: 100%;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+#main > .section-container > .featured-post > .post-container > .post > .post-img-box{
+    width: 100%;
+    height: 10rem;
+
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+}
+
+#main > .section-container > .featured-post > .post-container > .post > .post-img-box > img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+#main > .section-container > .featured-post > .post-container > .post > .subject {
+    font-weight: 300;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+#main > .section-container > .featured-post > .post-container > .post > .writer,.views {
+    font-weight: 300;
+    font-size: 0.9rem;
+    color: #A1824A;
+}

@@ -1,0 +1,55 @@
+<!-- community_delete.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{community/community_base :: head(~{::title},~{::link}, ~{::script})}">
+    <title>BestMe - Community</title>
+    <script defer type="text/javascript" th:src="@{/scripts/community/delete.js}"></script>
+</head>
+<body th:replace="~{community/community_base :: body}">
+    <!-- 실제 페이지 내용 -->
+    <div th:fragment="content">
+        <main id="main" th:data-board-id="${boardId}">
+            <!-- 페이지 내용 추가 -->
+            <!-- 상단 디자인 -->
+            <div class="con_title">
+                <h3>게시물 삭제</h3>
+            </div>
+            <div class="con_txt">
+                <form id="delete-form" method="post">
+                    <div class="contents_sub">
+                        <!--게시판-->
+                        <div class="board_write">
+                            <table>
+                                <tr>
+                                    <th class="top">작성자</th>
+                                    <td class="top"><input type="text" id="nickname" name="writer" value="" class="board_view_input_mail" maxlength="5" readonly/></td>
+                                </tr>
+                                <tr>
+                                    <th>제목</th>
+                                    <td><input type="text" id="subject" name="subject" value="" class="board_view_input" readonly/></td>
+                                </tr>
+                                <tr>
+                                    <th>비밀번호</th>
+                                    <td><input type="password" id="password" name="password" value="" class="board_view_input_mail"/></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="btn_area">
+                            <!--모달로 구현이 해당 버튼 미사용-->
+<!--                            <div class="align_left">-->
+<!--                                <input type="button" value="목록" class="btn_list btn_txt02" style="cursor: pointer;" onclick="location.href=''" />-->
+<!--                                <input type="button" value="보기" class="btn_list btn_txt02" style="cursor: pointer;" onclick="location.href='view.do'" />-->
+<!--                            </div>-->
+                            <div class="align_right">
+                                <input type="button" value="삭제" onclick="deleteSubmit()" class="btn_write btn_txt01" style="cursor: pointer;" />
+                            </div>
+                        </div>
+                        <!--//게시판-->
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

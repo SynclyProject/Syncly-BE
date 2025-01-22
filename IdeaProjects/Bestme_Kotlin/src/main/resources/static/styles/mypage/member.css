@@ -1,0 +1,62 @@
+
+.content-personal-history {
+    background-color: #b6e6f8;
+    border-radius: 15px;
+    margin-top: 10px;
+    padding: 12px 20px;
+    flex: 1;
+    height: 100%;
+    text-align: center;
+}
+
+.content-personal-history text{
+    margin-top: 10px;
+    font-size: 20px;
+    text-align: center;
+}
+
+ul, li {
+    list-style: none;
+}
+
+.result-one {
+    border: gray 1px dashed;
+    padding: 10px;
+    margin-top: 8px;
+}
+
+.result-one-1 {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.result-one-2 {
+    font-size: 14px;
+    font-weight: normal;
+    color: dimgray;
+}
+
+.custom-list-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.custom-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.custom-subtitle {
+    font-size: 1.2rem;
+    color: #555;
+    margin-top: 0;
+}
+
+#personal-nickname {
+    font-weight: bold;
+}

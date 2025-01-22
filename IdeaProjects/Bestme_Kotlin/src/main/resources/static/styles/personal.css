@@ -1,0 +1,108 @@
+#test {
+    top: 4rem;
+    width: 100%;
+    position: relative;
+    padding: 2rem;
+}
+
+#test > .section-container {
+    width: 65rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#test > .section-container > .test-header{
+    width: 100%;
+    height: fit-content;
+    position: relative;
+    overflow: hidden;
+}
+
+#test > .section-container > .test-header > .d1{
+    margin-top: 20px;
+    color: black;
+    font-weight: bolder;
+    font-size: 50px;
+}
+
+#test > .section-container > .test-header > .d2{
+    margin-top: 15px;
+    color: black;
+    font-size: 20px;
+}
+
+#test > .section-container > .test-header > hr{
+    margin-top: 40px;
+    border: #bdbdbd solid 1px;
+}
+
+#test > .section-container > .test-input{
+    margin-top: 50px;
+    width: 100%;
+    height: fit-content;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 기본 스타일 */
+form {
+    display: flex;
+    flex-wrap: wrap; /* 자동으로 줄바꿈 처리 */
+    gap: 20px; /* 각 입력 박스 간 20px 간격 */
+    margin: 0 auto;
+}
+
+/* 각 입력 박스를 두 개씩 가로로 배치 */
+.form-group {
+    width: 48%; /* 두 개씩 배치할 때 각 항목이 48% 넓이 */
+}
+
+.form-group label{
+    color: #A1824A
+}
+
+/* 입력 박스 디자인 */
+input[type="text"] {
+    width: 90%;
+    padding: 12px 15px;
+    margin: 20px 0;
+    border-radius: 8px; /* 둥근 모서리 */
+    border: 1px solid #ccc; /* 연한 회색 테두리 */
+    background-color: #f9f9f9; /* 배경색 */
+    font-size: 16px; /* 폰트 크기 */
+    transition: border 0.3s ease, box-shadow 0.3s ease; /* 테두리, 그림자 애니메이션 */
+}
+
+/* 입력 박스에 포커스 했을 때 스타일 */
+input[type="text"]:focus {
+    border-color: #007BFF; /* 파란색 테두리 */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* 파란색 그림자 */
+    outline: none; /* 기본 파란색 outline 제거 */
+}
+
+/* 레이블 스타일 */
+label {
+    font-size: 18px; /* 레이블 폰트 크기 */
+    font-weight: bold; /* 두꺼운 글씨 */
+    margin-bottom: 8px; /* 레이블과 입력 박스 사이 간격 */
+}
+
+/* 제출 버튼 스타일 */
+button[type="submit"] {
+    width: 500px;
+    margin: 20px auto;
+    display: block;
+    padding: 12px 20px;
+    background-color: #009963;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #048357; /* 버튼 hover 시 색상 변경 */
+}

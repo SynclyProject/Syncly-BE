@@ -1,0 +1,164 @@
+textarea {
+    resize: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table > tbody tr {
+    border-top: 1px solid #bdbdbd;
+    border-bottom: 1px solid #bdbdbd;
+}
+
+tbody tr:first-child {
+    border-top: 2px solid black;
+}
+
+table tbody th {
+    width: 10%;
+    background-color: #dfdfdf;
+    padding: 1rem;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+table tbody td {
+    padding: 0.5rem;
+}
+
+table tbody td.none {
+    padding-right: 0;
+}
+
+table .text_label {
+    border: 1px solid #bdbdbd;
+    border-radius: 5px;
+    padding: 0.5rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+table .text_label > input,
+table .text_label > textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 0.8rem;
+}
+
+table .text_label.disabled {
+    background-color: #dfdfdf;
+    border: 1px solid #dfdfdf;
+}
+
+table .text_label.disabled > input{
+    background-color: #dfdfdf;
+}
+
+table .text_label.focus:focus-within {
+    border: 1px solid #009963;
+}
+
+table .file_div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
+}
+
+table .file_label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+table .file_label > input{
+    display: none;
+}
+
+table tfoot .desc_div {
+    border: 1px solid #424242;
+    border-radius: 5px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+tfoot .desc_div > .text{
+    font-size: 0.8rem;
+}
+
+tfoot .desc_div > .desc {
+    width: 100%;
+    background-color: #dfdfdf;
+    border: 1px solid #dfdfdf;
+    border-radius: 5px;
+    padding: 0.5rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+tfoot .desc_div > .desc > span {
+    font-size: 0.8rem;
+}
+
+tfoot .desc_div > label {
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+}
+
+tfoot .desc_div > label > input {
+    display: none;
+}
+
+tfoot .desc_div > label span {
+    font-size: 0.8rem;
+}
+
+tfoot .desc_div > label i{
+    color: white;
+    padding-top: 0.1rem;
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+    font-size: 0.8rem;
+}
+
+tfoot .desc_div > label > input + span{
+    border: 1px solid #bdbdbd;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+tfoot .desc_div > label > input:checked + span {
+    background-color: #007BFF;
+}
+
+.btn_area {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}

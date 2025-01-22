@@ -1,0 +1,87 @@
+<!-- community_detail.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BestMe - Community</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/header.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/modal.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/community/index.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/community/detail.css}">
+    <script src="https://kit.fontawesome.com/5fcc17a7cc.js" crossorigin="anonymous"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/common.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/modal.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/community/detail.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/community/delete.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/community/file.js}"></script>
+</head>
+<body th:replace="~{community/community_base :: body}">
+    <!-- 실제 페이지 내용 -->
+    <div th:fragment="content">
+        <main id="main" th:data-board-id="${boardId}">
+            <!-- 페이지 내용 추가 -->
+            <!-- 상단 디자인 -->
+            <div class="com_head">
+                <h1>Community</h1>
+            </div>
+            <div class="con_txt">
+                <form action="write_ok.do" method="post" name="mfrm" enctype="multipart/form-data">
+                    <div class="contents_sub">
+                        <!--게시판-->
+                        <div class="board_write">
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th>제목</th>
+                                    <td>
+                                        <span id="subject">여긴 제목칸</span>
+                                    </td>
+                                    <th>등록일</th>
+                                    <td>
+                                        <span id="createdAt">2024.12.25</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>작성자</th>
+                                    <td>
+                                        <span id="nickname">여긴 닉네임</span>
+                                    </td>
+                                    <th>조회수</th>
+                                    <td>
+                                        <span id="view">15</span>
+                                    </td>
+                                </tr>
+<!--                                <tr>-->
+<!--                                    <th>카테고리</th>-->
+<!--                                    <td>-->
+<!--                                        <span id="category">여긴 카테고리</span>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+                                <tr>
+                                    <th>내용</th>
+                                    <td colspan="3" class="content">
+                                        <div class="content-box">
+                                            <!-- 여기에 첨부파일의 그림, 글 모두 다 넣으시면 될 것 같아요 -->
+                                            <span id="image-fIle"></span>
+                                            <span id="content"></span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="btn_area">
+                            <button type="button" class="green"
+                                    onclick="location.href='/community'">목록</button>
+                            <span class="spring"></span>
+                            <div id="buttons"></div>
+                        </div>
+                        <!--//게시판-->
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

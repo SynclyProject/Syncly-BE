@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/header.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/modal.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/mypage/index.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/mypage/modify_profile.css}">
+    <script src="https://kit.fontawesome.com/5fcc17a7cc.js" crossorigin="anonymous"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/common.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/modal.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/mypage/modify_profile.js}"></script>
+</head>
+<body>
+<header id="header">
+    <div class="header-box">
+        <a href="/">
+            <i class="fa-solid fa-droplet"></i>
+            <span>Best Me</span>
+        </a>
+    </div>
+    <div class="header-box">
+        <ul>
+            <li>
+                <a href="/">홈</a>
+            </li>
+            <li>
+                <a href="/personal">퍼스널컬러 테스트</a>
+            </li>
+            <li>
+                <a href="/style/guide">스타일링 추천</a>
+            </li>
+            <li>
+                <a href="/community">커뮤니티</a>
+            </li>
+            <li class="sel">
+                <a href="/member">마이 페이지</a>
+            </li>
+        </ul>
+    </div>
+    <div class="header-box login">
+    </div>
+</header>
+<div class="parent">
+    <div class="sidebar">
+        <span class="highlight">마이페이지 메뉴</span>
+        <ul class="sidebar_list">
+            <li>
+                <a href="/member">진단 결과 히스토리</a>
+            </li>
+            <li>
+                <a href="/member/my_posting">내가 작성한 게시물</a>
+            </li>
+            <li>
+                <a href="/member/modify_profile">내 정보 변경</a>
+            </li>
+            <li>
+                <a href="/member/delete_profile">회원 탈퇴</a>
+            </li>
+        </ul>
+    </div>
+    <div class="content">
+        <h3 class="title">내 정보 변경</h3>
+        <form id="modify_form" th:with="userRegex=${T(com.example.bestme.regex.UserRegex)}">
+            <div class="origin-password valid-check">
+                <span class="desc-text">기존 비밀번호</span>
+                <label class="text-label">
+                    <input class="input-en" type="password" name="origin_password" minlength="8" maxlength="20"
+                           placeholder="로그인 시 필요한 비밀번호를 입력해주세요."
+                           th:attrappend="data-regex=${userRegex.password.expression}">
+                    <button type="button"><i class="fa-solid fa-eye-slash"></i></button>
+                </label>
+                <span class="warning"></span>
+            </div>
+            <div class="nickname valid-check">
+                <span class="desc-text">닉네임</span>
+                <label class="text-label">
+                    <input autocomplete="off" type="text" name="nickname" minlength="2" maxlength="8"
+                           placeholder="BestMe에서 활동하실 닉네임을 입력해주세요 (숫자, 영소문자, 영대문자, 한글, -, _ 로 이루어진 2자 이상)"
+                           th:attrappend="data-regex=${userRegex.nickname.expression}">
+                </label>
+                <span class="warning"></span>
+            </div>
+            <div class="identification">
+                <div class="valid-check birth">
+                    <span class="desc-text">생년월일</span>
+                    <label class="text-label">
+                        <input autocomplete="off" type="text" name="birth" minlength="1" maxlength="6"
+                               placeholder="주민등록번호 앞 6자리" th:attrappend="data-regex=${userRegex.birth.expression}">
+                    </label>
+                    <span class="warning"></span>
+                </div>
+                <div class="valid-check gender">
+                    <span class="desc-text">성별</span>
+                    <div class="gender-div">
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="M">
+                            <span>남성</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="F">
+                            <span>여성</span>
+                        </label>
+                    </div>
+                    <span class="warning"></span>
+                </div>
+            </div>
+            <div class="new-password valid-check">
+                <span class="desc-text">새 비밀번호</span>
+                <label class="text-label">
+                    <input class="input-en" type="password" name="new_password" minlength="0" maxlength="20"
+                           placeholder="비밀번호는 8 ~ 20자리 이상의 영어, 숫자, 특수문자의 조합입니다."
+                           th:attrappend="data-regex=${userRegex.password.expression}">
+                    <button type="button"><i class="fa-solid fa-eye-slash"></i></button>
+                </label>
+                <span class="warning"></span>
+            </div>
+            <div class="new-password-check valid-check">
+                <span class="desc-text">새 비밀번호 확인</span>
+                <label class="text-label">
+                    <input class="input-en" type="password" name="new_password-check" minlength="0" maxlength="20"
+                           placeholder="한 번 더 입력해주세요">
+                    <button type="button"><i class="fa-solid fa-eye-slash"></i></button>
+                </label>
+                <span class="warning"></span>
+            </div>
+            <button type="submit" class="green">정보 수정하기</button>
+        </form>
+        <ul class="describe">
+            <li>기존 비밀번호가 일치하지 않는 경우 정보 수정이 불가능합니다.</li>
+            <li>내 정보 변경이 필요한 항목에 대해서 내용을 변경하신 후 수정하기 버튼을 클릭해주세요.</li>
+            <li>내 정보 변경이 필요하지 않은 항목은 공백으로 두시면 됩니다.</li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

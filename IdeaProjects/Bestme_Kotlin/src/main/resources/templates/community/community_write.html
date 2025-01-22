@@ -1,0 +1,99 @@
+<!-- community_write.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BestMe - Community</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/header.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/modal.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/community/index.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/community/write.css}">
+    <script src="https://kit.fontawesome.com/5fcc17a7cc.js" crossorigin="anonymous"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/common.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/modal.js}"></script>
+    <script defer type="text/javascript" th:src="@{/scripts/community/write.js}"></script>
+</head>
+<body th:replace="~{community/community_base :: body}">
+<!-- 실제 페이지 내용 -->
+<div th:fragment="content">
+    <main id="main">
+        <!-- 페이지 내용 추가 -->
+        <!-- 상단 디자인 -->
+        <div class="com_head">
+            <h1>Community</h1>
+        </div>
+        <div class="con_title">
+            <h3>게시글 작성</h3>
+        </div>
+        <div class="con_txt">
+            <form id="write-form" method="post" enctype="multipart/form-data">
+                <div class="contents_sub">
+                    <!--게시판-->
+                    <div class="board_write">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <th>제목</th>
+                                <td>
+                                    <label class="text_label focus">
+                                        <input type="text" id="subject" name="subject" value="" class="board_view_input"/>
+                                    </label>
+                                </td>
+                                <th>첨부파일</th>
+                                <td>
+                                    <div class="file_div">
+                                        <label class="text_label disabled">
+                                            <input readonly type="text" name="upload_text" id="upload_text">
+                                        </label>
+                                        <label class="file_label">
+                                            <input type="file" id="file" name="upload" value=""/>
+                                            <span class="button_common">파일 선택</span>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>내용</th>
+                                <td colspan="3" class="none">
+                                    <label class="text_label focus">
+                                        <textarea id="content" name="content" class="board_editor_area" rows="20"></textarea>
+                                    </label>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="4">
+                                    <div class="desc_div">
+                                        <span class="text">※ 개인정보 수집 및 이용에 관한 안내</span>
+                                        <div class="desc">
+                                            <span>1. 수집 개인정보 항목 : 회사명, 담당자명, 메일 주소, 전화번호, 홈페이지 주소, 팩스번호, 주소</span>
+                                            <span>2. 개인정보의 수집 및 이용목적 : 제휴신청에 따른 본인확인 및 원활한 의사소통 경로 확보</span>
+                                            <span>3. 개인정보의 이용기간 : 모든 검토가 완료된 후 3개월간 이용자의 조회를 위하여 보관하며, 이후 해당정보를 지체 없이 파기합니다.</span>
+                                            <span>4. 그 밖의 사항은 개인정보취급방침을 준수합니다.</span>
+                                        </div>
+                                        <label>
+                                            <input checked type="checkbox" id="info" name="info" value="1">
+                                            <span><i class="fa-solid fa-check"></i></span>
+                                            <span>개인정보 수집 및 이용에 대해 동의합니다.</span>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="btn_area">
+                        <button type="button" class="green"
+                                onclick="location.href='/community'">목록</button>
+                        <button type="button" onclick="writeSubmit()" id="wbtn" class="green">작성하기</button>
+                    </div>
+                    <!--//게시판-->
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

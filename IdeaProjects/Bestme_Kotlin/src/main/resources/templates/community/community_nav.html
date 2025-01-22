@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<header id="header" th:fragment="navigation">
+    <div class="header-box">
+        <a href="/">
+            <i class="fa-solid fa-droplet"></i>
+            <span>Best Me</span>
+        </a>
+    </div>
+    <div class="header-box">
+        <ul>
+            <li>
+                <a href="/">홈</a>
+            </li>
+            <li>
+                <a href="/personal">퍼스널컬러 테스트</a>
+            </li>
+            <li>
+                <a href="/style/guide">스타일링 추천</a>
+            </li>
+            <li class="sel">
+                <a href="/community">커뮤니티</a>
+            </li>
+            <li>
+                <a href="/member">마이 페이지</a>
+            </li>
+        </ul>
+    </div>
+    <div class="header-box login">
+    </div>
+</header>
+</body>
+</html>

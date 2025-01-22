@@ -1,0 +1,16 @@
+INSERT INTO category(name, parent_category_id, created_at, updated_at)
+VALUES ('헤어', null, NOW(), NOW()),
+       ('패션', null, NOW(), NOW()),
+       ('메이크업', null, NOW(), NOW()),
+       ('염색약', 1, NOW(), NOW()),
+       ('남성패션', 2, NOW(), NOW()),
+       ('아우터', 5, NOW(), NOW()),
+       ('상의', 5, NOW(), NOW()),
+       ('하의', 5, NOW(), NOW()),
+       ('여성패션', 2, NOW(), NOW()),
+       ('아우터', 9, NOW(), NOW()),
+       ('상의', 9, NOW(), NOW()),
+       ('하의', 9, NOW(), NOW()),
+       ('립', 3, NOW(), NOW()),
+       ('베이스', 3, NOW(), NOW()),
+       ('아이', 3, NOW(), NOW());

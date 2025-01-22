@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BestMe</title>
+  <link rel="stylesheet" type="text/css" th:href="@{/styles/guide.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/styles/modal.css}">
+  <script src="https://kit.fontawesome.com/5fcc17a7cc.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" th:href="@{/styles/header.css}">
+  <script defer type="text/javascript" th:src="@{/scripts/common.js}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</head>
+<body>
+<header id="header">
+  <div class="header-box">
+    <a href="/">
+      <i class="fa-solid fa-droplet"></i>
+      <span>Best Me</span>
+    </a>
+  </div>
+  <div class="header-box">
+    <ul>
+      <li>
+        <a href="/">홈</a>
+      </li>
+      <li>
+        <a href="/personal">퍼스널컬러 테스트</a>
+      </li>
+      <li class="sel">
+        <a href="/style/guide">스타일링 추천</a>
+      </li>
+      <li>
+        <a href="/community">커뮤니티</a>
+      </li>
+      <li>
+        <a href="/member">마이 페이지</a>
+      </li>
+    </ul>
+  </div>
+  <div class="header-box login">
+  </div>
+</header>
+<main id="guide">
+  <div class="tab-container">
+    <a class="tab" href="/style/guide">개인 맞춤 가이드</a>
+    <a class="tab" href="/style/items/guide">맞춤 아이템 추천</a>
+  </div>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">추천 아이템</h1>
+        <div id="recommendation-container"></div>
+        <div class="d-flex justify-content-end mt-4">
+            <a href="/items" class="btn btn-light">
+                더 많은 아이템 보러 가기
+            </a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemModalLabel">상품 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="itemId">
+                    <fieldset disabled>
+                        <form>
+                            <div class="mb-3 d-flex justify-content-center align-items-center">
+                                <img src="" id="itemImage" alt="이미지" class="img-fluid">
+                            </div>
+                            <div class="mb-3">
+                                <label for="brandName" class="form-label">브랜드</label>
+                                <input class="form-control" id="brandName" name="itemName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="itemName" class="form-label">이름</label>
+                                <input type="text" class="form-control" id="itemName" name="itemName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="colorName" class="form-label">퍼스널컬러</label>
+                                <input class="form-control" id="colorName" name="colorName">
+                            </div>
+                        </form>
+                    </fieldset>
+                </div>
+                <div class="modal-footer d-flex align-items-center">
+                    <div class="d-flex flex-column align-items-center">
+                        <i class="bi bi-heart" id="heart-icon" style="font-size: 20px; cursor: pointer; color: gray;"></i>
+                        <div id="like-count" style="font-size: 10px; color: gray;">0</div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-light d-flex align-items-center justify-content-center" id="purchase">구매하러 가기</button>
+                    <button type="button" class="btn btn-secondary ms-2 d-flex align-items-center justify-content-center" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    $(document).ready(function () {
+        const accessToken = localStorage.getItem('Authorization');
+        $.ajax({
+            url: '/api/items/recommend', // API 엔드포인트
+            method: 'GET',
+            headers: {
+                'Authorization': accessToken // Authorization 헤더 추가
+            },
+            success: function (response) {
+                if (response.success) {
+                    const responseData = response.data;
+                    const container = $('#recommendation-container');
+
+                    // 카테고리별 데이터 처리
+                    responseData.category.forEach(category => {
+                        // 카테고리 제목 추가
+                        const categoryTitle = `<h3 class="mt-5">${category}</h3>`;
+                        container.append(categoryTitle);
+
+                        // 행(row) 생성
+                        const row = $('<div>').addClass('row mt-3');
+
+                        // 해당 카테고리의 아이템들 추가
+                        const items = responseData.items[category] || [];
+                        items.forEach(item => {
+                            const itemHtml = `
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100" data-id="${item.id}" onclick="openModal(${item.id})">
+                                    <img src="/images/items/${item.id}" class="card-img-top" alt="${item.itemName}">
+                                    <div class="card-body">
+                                        <p class="card-text">${item.brandName}</p>
+                                        <p class="card-text">${item.itemName}</p>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <i class="bi bi-heart-fill text-danger"></i>
+                                            <p class="card-text">${item.likeCount || 0}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                            row.append(itemHtml);
+                        });
+
+                        // 카테고리별 행 추가
+                        container.append(row);
+                    });
+                } else {
+                    console.error('데이터를 불러오지 못했습니다.');
+                }
+            },
+            error: function (error) {
+                console.error('AJAX 요청 실패:', error);
+            }
+        });
+    });
+
+    function openModal(itemId) {
+        document.getElementById("itemId").value = itemId;
+        const imageUrl = `/images/items/${itemId}`;
+
+        $.ajax({
+            url: `/api/items/${itemId}`,
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                const data = response.data;
+                document.getElementById('itemImage').src = imageUrl;
+                document.getElementById('brandName').value = data.brandName;
+                document.getElementById('itemName').value = data.name;
+                document.getElementById('colorName').value = data.colorName;
+
+                const likeCountElement = document.getElementById('like-count')
+                likeCountElement.textContent = data.likeCount;
+
+                const purchaseButton = document.getElementById('purchase');
+                purchaseButton.onclick = () => {
+                    window.location.href = data.purchaseUrl;
+                };
+
+                const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+                modal.show();
+            }
+        });
+    }
+
+    document.getElementById("heart-icon").addEventListener("click", function () {
+        const itemId = document.getElementById("itemId").value;
+        const heartIcon = document.getElementById("heart-icon");
+        const likeCountElement = document.getElementById("like-count");
+
+        fetch(`/api/items/${itemId}/like`, { method: "PUT" })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.code === 200) {
+                    const likeCount = data.data.likeCount;
+                    const isLiked = data.data.isLiked;
+
+                    likeCountElement.textContent = likeCount;
+                    if (isLiked) {
+                        heartIcon.classList.remove("bi-heart");
+                        heartIcon.classList.add("bi-heart-fill");
+                        heartIcon.style.color = "red";
+                    } else {
+                        heartIcon.classList.remove("bi-heart-fill");
+                        heartIcon.classList.add("bi-heart");
+                        heartIcon.style.color = "gray";
+                    }
+                } else {
+                    console.error("서버 응답 오류:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("요청 실패:", error);
+            });
+    });
+</script>
+</body>
+</html>
