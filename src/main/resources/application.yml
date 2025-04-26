@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: syncly
+  profiles:
+    default: local
+
+
+
+
+
+
+
+
+
+
