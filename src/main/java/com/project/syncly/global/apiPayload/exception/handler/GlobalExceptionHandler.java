@@ -4,7 +4,9 @@ import com.project.syncly.global.apiPayload.CustomResponse;
 import com.project.syncly.global.apiPayload.code.BaseErrorCode;
 import com.project.syncly.global.apiPayload.code.GeneralErrorCode;
 import com.project.syncly.global.apiPayload.exception.CustomException;
+import com.project.syncly.global.jwt.exception.JwtException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,6 +36,14 @@ public class GlobalExceptionHandler {
         );
         // 에러 코드, 메시지와 함께 errors를 반환
         return ResponseEntity.status(validationErrorCode.getStatus()).body(errorResponse);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<?> handleJwtException(JwtException e) {
+        BaseErrorCode code = e.getCode();
+        HttpStatus status = e.getCode().getStatus();
+        log.warn("JwtException 발생: {}", e.getCode().getMessage());
+        return new ResponseEntity<>(code.getErrorResponse(), status);
     }
 
     //애플리케이션에서 발생하는 커스텀 예외를 처리

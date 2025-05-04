@@ -16,3 +16,35 @@ spring:
       ddl-auto: create
     show-sql: true
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+            scope:
+              - profile     #이름, 프로필 이미지
+              - email       #이메일
+        provider:
+          google:
+            user-name-attribute: sub
+
+Jwt:
+  secret: ${JWT_SECRET_KEY}
+  token:
+    access-expiration-time: 1800000 # 30분
+    refresh-expiration-time: 259200000 # 3일
+
+
+#localhost:8080/하면 swagger실행
+springdoc:
+  swagger-ui:
+    path: /

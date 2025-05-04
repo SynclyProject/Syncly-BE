@@ -37,7 +37,5 @@ public class Member extends BaseTimeDeletedEntity {
     @Column(nullable = false)
     private SocialLoginProvider socialLoginProvider;
 
-    public enum SocialLoginProvider {
-        LOCAL, GOOGLE
-    }
+
 }
