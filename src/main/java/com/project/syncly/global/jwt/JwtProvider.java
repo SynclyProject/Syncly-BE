@@ -1,11 +1,14 @@
 package com.project.syncly.global.jwt;
 
 
+import com.project.syncly.domain.auth.blacklist.TokenBlacklistService;
 import com.project.syncly.domain.member.entity.Member;
+import com.project.syncly.global.jwt.enums.TokenType;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -24,14 +27,24 @@ public class JwtProvider {
     private final SecretKey secret;
     private final long accessExpiration;
     private final long refreshExpiration;
+    private final TokenBlacklistService tokenBlacklistService;
 
     // @Value: yml에서 해당 값을 가져오기 (아래의 YML의 값을 가져올 수 있음)
     public JwtProvider(@Value("${Jwt.secret}") String secret,
                        @Value("${Jwt.token.access-expiration-time}") long accessExpiration,
-                       @Value("${Jwt.token.refresh-expiration-time}") long refreshExpiration) {
+                       @Value("${Jwt.token.refresh-expiration-time}") long refreshExpiration,
+                       TokenBlacklistService tokenBlacklistService) {
         this.secret = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); // 가져온 문자열로 SecretKey 생성
         this.accessExpiration = accessExpiration;
         this.refreshExpiration = refreshExpiration;
+        this.tokenBlacklistService = tokenBlacklistService;
+    }
+    public String resolveAccessToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7); // "Bearer " 이후의 토큰 문자열만 추출
+        }
+        return null;
     }
 
     // 일반 로그인용 AccessToken 생성
@@ -73,15 +86,7 @@ public class JwtProvider {
         return builder.compact(); // 최종 JWT 토큰 생성
     }
 
-    // 토큰 유효성 검증
-    public boolean isValid(String token) {
-        try {
-            return getClaims(token).getBody().getExpiration().after(Date.from(Instant.now())); // 만료일이 지났는지 확인
-        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
-            log.error("Token invalid: {}", e.getMessage());
-            return false;
-        }
-    }
+
 
     // Claim 추출
     public Jws<Claims> getClaims(String token) {
@@ -103,13 +108,20 @@ public class JwtProvider {
     }
 
     // memberId claim 추출
+    public Long getMemberIdWithBlacklistCheck(String token) {
+        if (tokenBlacklistService.isAccessTokenBlacklisted(token)) {
+            throw new JwtException(JwtErrorCode.BLACKLISTED_ACCESS_TOKEN);
+        }
+        return getMemberId(token); // 내부는 순수 파싱
+    }
     public Long getMemberId(String token) {
         return getClaims(token).getBody().get("id", Long.class);
     }
 
     // 만료까지 남은 시간
     public long getRemainTime(String token) {
-        return getClaims(token).getBody().getExpiration().getTime() - new Date().getTime();
+        Date expiration = getClaims(token).getBody().getExpiration();
+        return Math.max(expiration.getTime() - new Date().getTime(), 0);
     }
 
     // HttpOnly Secure 쿠키 생성
@@ -132,4 +144,10 @@ public class JwtProvider {
                 .maxAge(0) // 초 단위
                 .build();
     }
+
+    public TokenType getTokenType(String token) {
+        String type = getClaims(token).getBody().get("type", String.class);
+        return TokenType.from(type);
+    }
+
 }
