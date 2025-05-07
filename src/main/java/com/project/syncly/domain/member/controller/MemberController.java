@@ -7,27 +7,44 @@ import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.domain.member.service.MemberCommandService;
 
 import com.project.syncly.global.apiPayload.CustomResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
+@Validated
 public class MemberController {
 
     private final MemberQueryService memberQueryService;
     private final MemberCommandService memberCommandService;
 
-    @PostMapping("/register")
-    public CustomResponse<?> register(@RequestParam MemberRequestDTO.signUp signUpDTO) {
-        Member member = memberCommandService.registerMember(signUpDTO);
+
+    // 1. 이메일 전송
+    @PostMapping("/email/send")
+    public CustomResponse<?> sendEmailAuthCode(@RequestParam @Email @NotBlank String email) {
+        memberQueryService.sendAuthCode(email);
+
         return CustomResponse.success(HttpStatus.OK);
     }
 
-    @GetMapping("/check-email")
-    public CustomResponse<?> checkEmail(@RequestParam String email) {
-        boolean exists = memberQueryService.isEmailExist(email);
+    // 2. 인증 코드 검증
+    @PostMapping("/email/verify")
+    public CustomResponse<Boolean> verifyAuthCode(@RequestParam String email, @RequestParam String code) {
+        boolean isVerified = memberQueryService.verifyCode(email, code);
+        return CustomResponse.success(HttpStatus.OK,isVerified);
+    }
+
+    @PostMapping("/register")
+    public CustomResponse<?> register(@RequestBody @Valid MemberRequestDTO.SignUp signUpDTO) {
+        memberCommandService.registerMember(signUpDTO);
         return CustomResponse.success(HttpStatus.OK);
     }
+
 }
