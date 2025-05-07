@@ -1,6 +1,6 @@
 package com.project.syncly.domain.workspace.controller;
 
-import com.project.syncly.domain.workspace.service.WorkspaceService;
+import com.project.syncly.domain.workspace.service.WorkspaceServiceImpl;
 import com.project.syncly.domain.workspace.dto.WorkspaceRequestDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.global.apiPayload.CustomResponse;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/workspaces")
 public class WorkspaceController {
 
-    private final WorkspaceService workspaceService;
+    private final WorkspaceServiceImpl workspaceService;
 
     // 개인 워크스페이스 생성 API
     @PostMapping("/personal")
