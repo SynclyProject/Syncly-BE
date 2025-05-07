@@ -1,8 +1,8 @@
-package com.project.syncly.global.oauth.attribute;
+package com.project.syncly.domain.auth.oauth.attribute;
 
 import com.project.syncly.domain.member.entity.SocialLoginProvider;
-import com.project.syncly.global.oauth.exception.AuthErrorCode;
-import com.project.syncly.global.oauth.exception.AuthException;
+import com.project.syncly.domain.auth.oauth.exception.AuthErrorCode;
+import com.project.syncly.domain.auth.oauth.exception.AuthException;
 import lombok.Getter;
 
 import java.util.Map;

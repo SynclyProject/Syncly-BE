@@ -1,4 +1,4 @@
-package com.project.syncly.global.oauth.dto;
+package com.project.syncly.domain.auth.oauth.dto;
 
 import com.project.syncly.domain.member.entity.Member;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,4 +1,4 @@
-package com.project.syncly.global.oauth.exception;
+package com.project.syncly.domain.auth.oauth.exception;
 
 import com.project.syncly.global.apiPayload.exception.CustomException;
 

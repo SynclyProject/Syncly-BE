@@ -1,4 +1,4 @@
-package com.project.syncly.global.oauth.dto;
+package com.project.syncly.domain.auth.oauth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

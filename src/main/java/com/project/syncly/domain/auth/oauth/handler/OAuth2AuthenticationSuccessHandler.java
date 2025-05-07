@@ -1,9 +1,9 @@
-package com.project.syncly.global.oauth.handler;
+package com.project.syncly.domain.auth.oauth.handler;
 
 
 import com.project.syncly.global.jwt.JwtProvider;
-import com.project.syncly.global.oauth.dto.CustomOAuth2User;
-import com.project.syncly.global.oauth.dto.TokenResponse;
+import com.project.syncly.domain.auth.oauth.dto.CustomOAuth2User;
+import com.project.syncly.domain.auth.oauth.dto.TokenResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

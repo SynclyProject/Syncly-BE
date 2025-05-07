@@ -1,7 +1,7 @@
 package com.project.syncly.domain.member.entity;
 
-import com.project.syncly.global.oauth.exception.AuthErrorCode;
-import com.project.syncly.global.oauth.exception.AuthException;
+import com.project.syncly.domain.auth.oauth.exception.AuthErrorCode;
+import com.project.syncly.domain.auth.oauth.exception.AuthException;
 
 public enum SocialLoginProvider {
     LOCAL,

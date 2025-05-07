@@ -1,8 +1,8 @@
-package com.project.syncly.global.oauth.handler;
+package com.project.syncly.domain.auth.oauth.handler;
 
 
-import com.project.syncly.global.oauth.exception.AuthErrorCode;
-import com.project.syncly.global.oauth.exception.AuthException;
+import com.project.syncly.domain.auth.oauth.exception.AuthErrorCode;
+import com.project.syncly.domain.auth.oauth.exception.AuthException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

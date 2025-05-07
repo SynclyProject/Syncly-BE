@@ -1,10 +1,10 @@
-package com.project.syncly.global.oauth.service;
+package com.project.syncly.domain.auth.oauth.service;
 
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.entity.SocialLoginProvider;
 import com.project.syncly.domain.member.service.MemberCommandService;
-import com.project.syncly.global.oauth.attribute.OAuthAttributes;
-import com.project.syncly.global.oauth.dto.CustomOAuth2User;
+import com.project.syncly.domain.auth.oauth.attribute.OAuthAttributes;
+import com.project.syncly.domain.auth.oauth.dto.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
