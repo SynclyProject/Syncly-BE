@@ -2,10 +2,11 @@ package com.project.syncly.global.config;
 
 import com.project.syncly.global.jwt.*;
 import com.project.syncly.global.jwt.service.TokenService;
-import com.project.syncly.global.oauth.handler.OAuth2AuthenticationFailureHandler;
-import com.project.syncly.global.oauth.handler.OAuth2AuthenticationSuccessHandler;
-import com.project.syncly.global.oauth.service.CustomOAuth2UserService;
+import com.project.syncly.domain.auth.oauth.handler.OAuth2AuthenticationFailureHandler;
+import com.project.syncly.domain.auth.oauth.handler.OAuth2AuthenticationSuccessHandler;
+import com.project.syncly.domain.auth.oauth.service.CustomOAuth2UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.syncly.domain.auth.blacklist.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
     private final OAuth2AuthenticationFailureHandler oauth2FailureHandler;
+    private final TokenBlacklistService tokenBlacklistService;
 
     // 허용할 URL을 배열의 형태로 관리
     private final String[] allowedUrls = {
@@ -40,14 +42,16 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/v3/api-docs/**",
             "/api/auth/login",
-            "/api/auth/signup",
+            "/api/member/email/send",
+            "/api/member/email/verify",
+            "/api/member/register",
             "/api/auth/social/**",
             "/login/oauth2/**"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        JwtFilter jwtFilter = new JwtFilter(jwtProvider, principalDetailsService, tokenService);
+        JwtFilter jwtFilter = new JwtFilter(jwtProvider, principalDetailsService, tokenService, tokenBlacklistService);
 
         http
                 .csrf(AbstractHttpConfigurer::disable)//jwt는 stateless 로 관리하기 때문에 csrf공격 방어 안해도 됨
