@@ -5,17 +5,35 @@ import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.member.service.MemberQueryService;
+import com.project.syncly.domain.auth.cache.LoginCacheService;
+import com.project.syncly.domain.auth.email.EmailAuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MemberQueryServiceImpl implements MemberQueryService {
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final LoginCacheService loginCacheService;
+    private final EmailAuthService emailAuthService;
+
+    @Override
+    public void sendAuthCode(String email) {
+        if(!isEmailExist(email)) {
+            emailAuthService.sendAuthCode(email);
+        }else{
+            log.warn("이미 가입된 이메일입니다: {}", email);
+            throw new MemberException(MemberErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    @Override
+    public boolean verifyCode(String email, String inputCode) {
+        return emailAuthService.verifyCodeAndMarkVerified(email,inputCode);
+    }
 
     @Override
     public boolean isEmailExist(String email) {
@@ -23,9 +41,16 @@ public class MemberQueryServiceImpl implements MemberQueryService {
     }
 
     @Override
+    public Member getMemberById(Long memberId) {
+        return loginCacheService.getCachedMember(memberId);
+    }
+
+    @Override
     public Member getMemberByEmail(String email) {
-        return memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND_BY_EMAIL));
+        loginCacheService.cacheMember(member);
+        return member;
     }
 
 
