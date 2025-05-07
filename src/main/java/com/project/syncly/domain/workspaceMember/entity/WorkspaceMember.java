@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspaceMember.entity;
 
+import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspaceMember.entity.enums.Role;
 import com.project.syncly.global.entity.BaseTimeDeletedEntity;
@@ -19,9 +20,9 @@ public class WorkspaceMember extends BaseTimeDeletedEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //추후 멤버 완성시 연결해주기
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)

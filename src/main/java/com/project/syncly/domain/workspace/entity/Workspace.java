@@ -4,10 +4,7 @@ import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 import com.project.syncly.global.entity.BaseCreatedEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
+@Getter
 public class Workspace extends BaseCreatedEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
