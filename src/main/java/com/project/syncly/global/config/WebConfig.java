@@ -1,10 +1,9 @@
 package com.project.syncly.global.config;
 
-import com.project.syncly.global.oauth.resolver.MemberArgumentResolver;
-import com.project.syncly.global.oauth.resolver.MemberIdArgumentResolver;
+import com.project.syncly.global.anotations.resolver.MemberArgumentResolver;
+import com.project.syncly.global.anotations.resolver.MemberIdArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.format.FormatterRegistry;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
