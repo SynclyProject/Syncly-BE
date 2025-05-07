@@ -18,7 +18,11 @@ public enum MemberErrorCode implements BaseErrorCode {
     OAUTH_USER_INFO_FAIL(HttpStatus.UNAUTHORIZED, "AUTH401", "OAuth에서 사용자 정보를 가져오지 못했습니다."),
     OAUTH_TOKEN_FAIL(HttpStatus.UNAUTHORIZED, "MEMBER401", "토큰 DTO로 변경 실패했습니다."),
     MEMBER_NOT_FOUND_BY_EMAIL(HttpStatus.NOT_FOUND, "MEMBER40405", "해당 이메일로 가입된 회원이 존재하지 않습니다."),
-    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER40902", "이미 가입된 이메일입니다.");
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER40902", "이미 가입된 이메일입니다."),
+    INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "MEMBER_001", "인증 코드가 올바르지 않습니다."),
+    EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "MEMBER_002", "이메일 인증이 완료되지 않았습니다."),
+    PASSWORD_NOT_MATCHED(HttpStatus.BAD_REQUEST, "MEMBER_003", "비밀번호가 틀렸습니다."),
+    ;
 
     private final HttpStatus status;
     private final String code;
