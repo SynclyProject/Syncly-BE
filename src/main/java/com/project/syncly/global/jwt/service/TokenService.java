@@ -1,15 +1,23 @@
 package com.project.syncly.global.jwt.service;
 
 import com.project.syncly.domain.member.entity.Member;
+import com.project.syncly.domain.member.exception.MemberErrorCode;
+import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.global.jwt.JwtProvider;
+import com.project.syncly.global.jwt.exception.JwtErrorCode;
+import com.project.syncly.global.jwt.exception.JwtException;
+import com.project.syncly.domain.auth.cache.LoginCacheService;
+import com.project.syncly.domain.auth.blacklist.TokenBlacklistService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,69 +25,76 @@ public class TokenService {
 
     private final JwtProvider jwtProvider;
     private final MemberRepository memberRepository;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final LoginCacheService loginCacheService;
 
     @Value("${Jwt.token.refresh-expiration-time}")
     private long refreshTokenExpirationTime;
-    
-    private final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
 
-    /**
-     * 로그인 성공 시 Access Token과 Refresh Token을 생성하고,
-     * Refresh Token은 쿠키에 저장, Access Token은 응답 헤더에 담아 반환
-     */
-    public String generateTokens(Member member, HttpServletResponse response) {
-        // Access Token 생성
+    private static final String REFRESH_COOKIE_NAME = "refreshToken";
+
+    // 로그인 시 토큰 발급
+    public String issueTokens(Member member, HttpServletResponse response) {
         String accessToken = jwtProvider.createAccessToken(member);
-        
-        // Refresh Token 생성
         String refreshToken = jwtProvider.createRefreshToken(member);
-        
-        // HTTP-Only, Secure 쿠키에 Refresh Token 저장
+
+        // 1. Access Token → Authorization 헤더에 추가
+        response.setHeader("Authorization", "Bearer " + accessToken);
+
+        // 2. Refresh Token → HttpOnly Secure 쿠키에 저장
         addRefreshTokenToCookie(response, refreshToken);
-        
-        return accessToken;
+
+        return accessToken; // 바디에도 포함할 수 있지만, 보통 헤더로 충분함
     }
-    
-    /**
-     * Access Token 만료 시 새로운 Access Token 발급
-     */
-    public String generateNewAccessToken(Long memberId, String email) {
+
+    // [JWT Filter] Access Token 재발급
+    public String reissueAccessToken(Long memberId, String email, HttpServletResponse response) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + memberId));
-                
-        if (!Objects.equals(member.getEmail(), email)) {
-            throw new IllegalArgumentException("Token does not match member");
-        }
-        
-        return jwtProvider.createAccessToken(member);
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        String newAccessToken = jwtProvider.createAccessToken(member);
+        response.setHeader("Authorization", "Bearer " + newAccessToken);
+        return newAccessToken;
     }
-    
-    /**
-     * HTTP-Only, Secure 쿠키에 Refresh Token 저장
-     */
+
+    // Refresh Token 쿠키에서 추출
+    public String extractRefreshToken(HttpServletRequest request) {
+        return Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(c -> REFRESH_COOKIE_NAME.equals(c.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElseThrow(() -> new JwtException(JwtErrorCode.EMPTY_TOKEN));
+    }
+
+    // 로그아웃 처리
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String accessToken = jwtProvider.resolveAccessToken(request);
+        String refreshToken = extractRefreshToken(request);
+
+        Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(accessToken);
+        loginCacheService.removeLoginStatus(memberId);  //로그인캐시 삭제
+        tokenBlacklistService.blacklistAccessToken(accessToken); //블랙리스트 올리기
+        tokenBlacklistService.blacklistRefreshToken(refreshToken);
+        removeRefreshTokenCookie(response);
+    }
+
+    // 쿠키에 리프레시 토큰 저장
     private void addRefreshTokenToCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
+        Cookie cookie = new Cookie(REFRESH_COOKIE_NAME, refreshToken);
         cookie.setHttpOnly(true);          // JavaScript로 접근 불가능
         cookie.setSecure(true);            // HTTPS로만 전송
         cookie.setPath("/");               // 모든 경로에서 쿠키 사용 가능
-        
-        // 쿠키 유효 시간 설정 (밀리초를 초로 변환)
-        int maxAge = (int) (refreshTokenExpirationTime / 1000);
-        cookie.setMaxAge(maxAge);
-        
+        cookie.setMaxAge((int) (refreshTokenExpirationTime / 1000));
         response.addCookie(cookie);
     }
-    
-    /**
-     * Refresh Token 쿠키 삭제 (로그아웃 시)
-     */
+
+    // 쿠키 삭제
     public void removeRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
+        Cookie cookie = new Cookie(REFRESH_COOKIE_NAME, null);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(0);  // 즉시 만료
-        
+        cookie.setMaxAge(0);
         response.addCookie(cookie);
     }
-} 
+}
