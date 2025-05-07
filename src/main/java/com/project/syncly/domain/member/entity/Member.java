@@ -34,7 +34,7 @@ public class Member extends BaseTimeDeletedEntity {
     private String socialLoginUuid;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private SocialLoginProvider socialLoginProvider;
 
 
