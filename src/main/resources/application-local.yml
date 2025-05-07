@@ -21,6 +21,18 @@ spring:
       host: localhost
       port: 6379
 
+  mail:
+    host: smtp.gmail.com
+    port: 587 #STARTTLS 보안전송 포트
+    username: ${MAIL_USER_NAME}
+    password: ${MAIL_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   security:
     oauth2:
       client:
@@ -43,6 +55,14 @@ Jwt:
     access-expiration-time: 1800000 # 30분
     refresh-expiration-time: 259200000 # 3일
 
+redis:
+  cache:
+    login-ttl-seconds: 1800     # 30분 == access token TTL
+    member-ttl-seconds: 259200   # 3일
+
+email-auth:
+  code-ttl-seconds: 180       # 인증코드 유효 시간 3분
+  verified-ttl-seconds: 600   # 인증 완료 상태 유지 시간 10분
 
 #localhost:8080/하면 swagger실행
 springdoc:
