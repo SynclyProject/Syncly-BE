@@ -85,5 +85,10 @@ public class EmailAuthServiceImpl implements EmailAuthService {
         return "true".equals(redisStorage.get(key));
     }
 
+    @Override
+    public void clearVerified(String email) {
+        String key = RedisKeyPrefix.EMAIL_AUTH_VERIFIED.get(email);
+        redisStorage.delete(key);
+    }
 
 }

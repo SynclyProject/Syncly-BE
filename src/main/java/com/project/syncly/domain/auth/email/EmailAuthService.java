@@ -9,4 +9,5 @@ public interface EmailAuthService {
     void deleteCode(String email);
     void markVerified(String email);
     boolean isVerified(String email);
+    void clearVerified(String email);
 }

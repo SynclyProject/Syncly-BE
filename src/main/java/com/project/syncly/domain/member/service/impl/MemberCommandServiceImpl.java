@@ -28,7 +28,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
 
 
     @Override
-    public Member registerMember(MemberRequestDTO.SignUp dto) {
+    public void registerMember(MemberRequestDTO.SignUp dto) {
         if (!emailAuthService.isVerified(dto.email())) {
             throw new MemberException(MemberErrorCode.EMAIL_NOT_VERIFIED);
         }
@@ -38,8 +38,8 @@ public class MemberCommandServiceImpl implements MemberCommandService {
                 .password(passwordEncoder.encode(dto.password()))
                 .name(dto.name())
                 .build();
-
-        return memberRepository.save(member);
+        memberRepository.save(member);
+        emailAuthService.clearVerified(dto.email());
     }
 
 
