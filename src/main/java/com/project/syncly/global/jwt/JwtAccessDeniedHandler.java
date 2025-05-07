@@ -14,7 +14,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
+//role 없어서 필요없음
 @Slf4j
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
