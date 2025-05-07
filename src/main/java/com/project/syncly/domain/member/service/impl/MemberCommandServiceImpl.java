@@ -8,6 +8,8 @@ import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.member.service.MemberCommandService;
 import com.project.syncly.domain.member.service.MemberQueryService;
+import com.project.syncly.domain.auth.cache.LoginCacheService;
+import com.project.syncly.domain.auth.email.EmailAuthService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,12 +22,17 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final MemberQueryService memberQueryService;
+    private final LoginCacheService loginCacheService;
+    private final EmailAuthService emailAuthService;
+
+
 
     @Override
-    public Member registerMember(MemberRequestDTO.signUp dto) {
-        if (memberQueryService.isEmailExist(dto.email())) {
-            throw new MemberException(MemberErrorCode.EMAIL_ALREADY_EXISTS);
+    public Member registerMember(MemberRequestDTO.SignUp dto) {
+        if (!emailAuthService.isVerified(dto.email())) {
+            throw new MemberException(MemberErrorCode.EMAIL_NOT_VERIFIED);
         }
+
         Member member = Member.builder()
                 .email(dto.email())
                 .password(passwordEncoder.encode(dto.password()))
@@ -38,7 +45,8 @@ public class MemberCommandServiceImpl implements MemberCommandService {
 
     @Override
     public Member findOrCreateSocialMember(String email, String name, SocialLoginProvider provider) {
-        return memberRepository.findByEmail(email)
+
+        Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> memberRepository.save(
                         Member.builder()
                                 .email(email)
@@ -46,5 +54,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
                                 .socialLoginProvider(provider)
                                 .build()
                 ));
+        loginCacheService.cacheMember(member);
+        return member;
     }
 }
