@@ -12,9 +12,11 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.crypto.SecretKey;
 import java.time.Duration;
 import java.util.Date;
 
@@ -23,6 +25,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class TokenBlacklistService {
 
+    private final SecretKey secret;
     private final RedisStorage redisStorage;
 
     public void blacklistAccessToken(String token) {
@@ -64,6 +67,7 @@ public class TokenBlacklistService {
     private long extractRemainingMillis(String token) {
         try {
             Jws<Claims> claims = Jwts.parser()
+                    .verifyWith(secret)
                     .build()
                     .parseSignedClaims(token);
             Date expiration = claims.getPayload().getExpiration();

@@ -3,12 +3,14 @@ package com.project.syncly.global.jwt;
 
 import com.project.syncly.domain.auth.blacklist.TokenBlacklistService;
 import com.project.syncly.domain.member.entity.Member;
+import com.project.syncly.global.config.JwtConfig;
 import com.project.syncly.global.jwt.enums.TokenType;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -22,15 +24,15 @@ import java.util.Map;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
     private final SecretKey secret;
-    private final long accessExpiration;
-    private final long refreshExpiration;
+    private final JwtConfig jwtConfig;
     private final TokenBlacklistService tokenBlacklistService;
 
     // @Value: yml에서 해당 값을 가져오기 (아래의 YML의 값을 가져올 수 있음)
-    public JwtProvider(@Value("${Jwt.secret}") String secret,
+    /*public JwtProvider(@Value("${Jwt.secret}") String secret,
                        @Value("${Jwt.token.access-expiration-time}") long accessExpiration,
                        @Value("${Jwt.token.refresh-expiration-time}") long refreshExpiration,
                        TokenBlacklistService tokenBlacklistService) {
@@ -38,7 +40,7 @@ public class JwtProvider {
         this.accessExpiration = accessExpiration;
         this.refreshExpiration = refreshExpiration;
         this.tokenBlacklistService = tokenBlacklistService;
-    }
+    }*/
     public String resolveAccessToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
@@ -49,22 +51,22 @@ public class JwtProvider {
 
     // 일반 로그인용 AccessToken 생성
     public String createAccessToken(Member member) {
-        return createToken(member.getEmail(), member.getId(), this.accessExpiration);
+        return createToken(member.getEmail(), member.getId(), this.jwtConfig.getAccessExpiration());
     }
 
     // 일반 로그인용 RefreshToken 생성
     public String createRefreshToken(Member member) {
-        return createToken(member.getEmail(), member.getId(), this.refreshExpiration);
+        return createToken(member.getEmail(), member.getId(), this.jwtConfig.getRefreshExpiration());
     }
 
     // 소셜 로그인용 AccessToken 생성 (id 없음)
     public String createAccessToken(String email) {
-        return createToken(email, null, this.accessExpiration);
+        return createToken(email, null, this.jwtConfig.getAccessExpiration());
     }
 
     // 소셜 로그인용 RefreshToken 생성 (id 없음)
     public String createRefreshToken(String email) {
-        return createToken(email, null, this.refreshExpiration);
+        return createToken(email, null, this.jwtConfig.getRefreshExpiration());
     }
 
     // JWT 토큰 생성 로직
@@ -131,7 +133,7 @@ public class JwtProvider {
                 .secure(true) // https 환경에서만 쿠키 전송
                 .sameSite("None") // 크로스 도메인 허용
                 .path("/")
-                .maxAge(refreshExpiration / 1000) // 초 단위
+                .maxAge(this.jwtConfig.getRefreshExpiration() / 1000) // 초 단위
                 .build();
     }
 
