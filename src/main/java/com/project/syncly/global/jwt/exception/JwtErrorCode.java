@@ -15,6 +15,8 @@ public enum JwtErrorCode implements BaseErrorCode {
     EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "J004", "토큰이 비어있습니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "J005", "접근 권한이 없습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "J006", "인증이 필요합니다."), // fallback 용도
+    BLACKLISTED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "J007", "블랙리스트 처리된 access token입니다."),
+    BLACKLISTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "J008", "블랙리스트 처리된 refresh token입니다."),
     ;
     private final HttpStatus status;
     private final String code;
