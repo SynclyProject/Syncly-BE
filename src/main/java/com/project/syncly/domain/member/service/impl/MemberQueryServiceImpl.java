@@ -42,7 +42,13 @@ public class MemberQueryServiceImpl implements MemberQueryService {
 
     @Override
     public Member getMemberById(Long memberId) {
-        return loginCacheService.getCachedMember(memberId);
+        Member member = loginCacheService.getCachedMember(memberId);
+        if(member == null) {
+            member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+            loginCacheService.cacheMember(member);
+        }
+        return member;
     }
 
     @Override
