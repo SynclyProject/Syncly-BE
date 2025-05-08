@@ -1,5 +1,7 @@
 package com.project.syncly.global.redis.core;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -7,11 +9,16 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 
 @Component
-@Profile("dev")
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "redis.mode", havingValue = "on")//env에서 바로 읽어옴
 public class RedisStorageImpl implements RedisStorage {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @PostConstruct
+    public void check() {
+        System.out.println("Redis 사용중");
+    }
 
     @Override
     public void set(String key, String value, Duration ttl) {

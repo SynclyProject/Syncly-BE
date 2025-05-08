@@ -1,17 +1,23 @@
 package com.project.syncly.global.redis.core;
 
-import org.springframework.context.annotation.Profile;
+
+import jakarta.annotation.PostConstruct;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-@Profile("local")
 @Component
+@ConditionalOnProperty(name = "redis.mode", havingValue = "off", matchIfMissing = true)//.env에 값 없으면 인메모리
 public class InMemoryRedisStorageImpl implements RedisStorage {
 
     private final Map<String, Object> storage = new HashMap<>();
+    @PostConstruct
+    public void check() {
+        System.out.println("인메모리 캐시 사용중");
+    }
 
     @Override
     public void set(String key, String value, Duration ttl) {
