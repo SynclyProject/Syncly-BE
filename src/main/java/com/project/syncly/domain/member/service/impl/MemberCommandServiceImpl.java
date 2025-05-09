@@ -1,5 +1,6 @@
 package com.project.syncly.domain.member.service.impl;
 
+import com.project.syncly.domain.member.converter.MemberConverter;
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.entity.SocialLoginProvider;
@@ -21,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class MemberCommandServiceImpl implements MemberCommandService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MemberQueryService memberQueryService;
     private final LoginCacheService loginCacheService;
     private final EmailAuthService emailAuthService;
 
@@ -32,12 +32,10 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         if (!emailAuthService.isVerified(dto.email())) {
             throw new MemberException(MemberErrorCode.EMAIL_NOT_VERIFIED);
         }
+        String encodedPassword = passwordEncoder.encode(dto.password());
 
-        Member member = Member.builder()
-                .email(dto.email())
-                .password(passwordEncoder.encode(dto.password()))
-                .name(dto.name())
-                .build();
+        Member member = MemberConverter.toMember(dto.email(), encodedPassword, dto.name());
+
         memberRepository.save(member);
         emailAuthService.clearVerified(dto.email());
     }
@@ -48,11 +46,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
 
         Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> memberRepository.save(
-                        Member.builder()
-                                .email(email)
-                                .name(name)
-                                .socialLoginProvider(provider)
-                                .build()
+                        MemberConverter.toSocialMember(email, name, provider)
                 ));
         loginCacheService.cacheMember(member);
         return member;

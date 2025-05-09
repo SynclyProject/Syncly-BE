@@ -6,6 +6,7 @@ import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.domain.member.service.MemberCommandService;
 
+import com.project.syncly.global.anotations.MemberInfo;
 import com.project.syncly.global.apiPayload.CustomResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -44,6 +45,12 @@ public class MemberController {
     @PostMapping("/register")
     public CustomResponse<?> register(@RequestBody @Valid MemberRequestDTO.SignUp signUpDTO) {
         memberCommandService.registerMember(signUpDTO);
+        return CustomResponse.success(HttpStatus.OK);
+    }
+
+    @PostMapping("/test")
+    public CustomResponse<?> test(@MemberInfo Member member) {
+        System.out.println(member.toString());
         return CustomResponse.success(HttpStatus.OK);
     }
 
