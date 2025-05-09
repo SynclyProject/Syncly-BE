@@ -57,7 +57,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(WorkspaceErrorCode.MEMBER_NOT_FOUND));
 
-        //개인 워크스페이스 저장
+        //팀 워크스페이스 저장
         Workspace workspace = WorkspaceConverter.toTeamWorkspace(workspaceName);
         workspaceRepository.save(workspace);
 
