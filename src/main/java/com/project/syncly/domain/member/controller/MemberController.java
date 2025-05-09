@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,24 +30,26 @@ public class MemberController {
 
     // 1. 이메일 전송
     @PostMapping("/email/send")
-    public CustomResponse<?> sendEmailAuthCode(@RequestParam @Email @NotBlank String email) {
+    public ResponseEntity<CustomResponse<Void>> sendEmailAuthCode(@RequestParam @Email @NotBlank String email) {
         memberQueryService.sendAuthCode(email);
-
-        return CustomResponse.success(HttpStatus.OK);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 
     // 2. 인증 코드 검증
     @PostMapping("/email/verify")
-    public CustomResponse<Boolean> verifyAuthCode(@RequestParam String email, @RequestParam String code) {
+    public ResponseEntity<CustomResponse<Boolean>> verifyAuthCode(
+            @RequestParam String email,
+            @RequestParam String code) {
         boolean isVerified = memberQueryService.verifyCode(email, code);
-        return CustomResponse.success(HttpStatus.OK,isVerified);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, isVerified));
     }
 
     @PostMapping("/register")
-    public CustomResponse<?> register(@RequestBody @Valid MemberRequestDTO.SignUp signUpDTO) {
+    public ResponseEntity<CustomResponse<Void>> register(@RequestBody @Valid MemberRequestDTO.SignUp signUpDTO) {
         memberCommandService.registerMember(signUpDTO);
-        return CustomResponse.success(HttpStatus.OK);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
+
 
     @PostMapping("/test")
     public CustomResponse<?> test(@MemberInfo Member member) {

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -20,21 +21,21 @@ public class AuthController {
 
     // 실 배포시엔 token 반환 삭제하기
     @PostMapping("/login")
-    public CustomResponse<String> login(@RequestBody MemberRequestDTO.Login request, HttpServletResponse response) {
+    public ResponseEntity<CustomResponse<String>> login(@RequestBody MemberRequestDTO.Login request, HttpServletResponse response) {
         String accessToken = authService.login(request.email(), request.password(), response);
-        return CustomResponse.success(HttpStatus.OK, accessToken);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, accessToken));
     }
 
     /// 테스트용
     @PostMapping("/reissue")
-    public CustomResponse<String> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<CustomResponse<String>> reissue(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = authService.reissueAccessToken(request, response);
-        return CustomResponse.success(HttpStatus.OK, accessToken);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, accessToken));
     }
 
     @PostMapping("/logout")
-    public CustomResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<CustomResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
         authService.logout(request, response);
-        return CustomResponse.success(HttpStatus.OK);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 }
