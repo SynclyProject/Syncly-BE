@@ -5,6 +5,7 @@ import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.auth.cache.LoginCacheService;
+import com.project.syncly.domain.member.service.MemberQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,17 +15,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PrincipalDetailsService implements UserDetailsService {
+public class PrincipalDetailsService {
 
-    private final MemberRepository memberRepository;
+    private final MemberQueryService memberQueryService;
     private final LoginCacheService loginCacheService;
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND_BY_EMAIL));
-
-
+    public UserDetails loadUserById(Long id) {
+        Member member = memberQueryService.getMemberById(id);
         return new PrincipalDetails(member);
     }
 } 
