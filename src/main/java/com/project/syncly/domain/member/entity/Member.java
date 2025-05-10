@@ -3,6 +3,7 @@ package com.project.syncly.domain.member.entity;
 import com.project.syncly.global.entity.BaseTimeDeletedEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "members", indexes = {
@@ -12,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Where(clause = "is_deleted = false")//조회 시 쿼리에 "is_deleted = false" 조건 추가
 public class Member extends BaseTimeDeletedEntity {
 
     @Id
