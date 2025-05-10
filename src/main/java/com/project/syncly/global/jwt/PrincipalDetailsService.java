@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 public class PrincipalDetailsService {
 
     private final MemberQueryService memberQueryService;
-    private final LoginCacheService loginCacheService;
 
     public UserDetails loadUserById(Long id) {
         Member member = memberQueryService.getMemberById(id);
