@@ -13,8 +13,8 @@ public class OAuthAttributes {
     private final String email;
     private final String name;
 
-    public static OAuthAttributes of(SocialLoginProvider SocialLoginProvider, Map<String, Object> attributes) {
-        return switch (SocialLoginProvider) {
+    public static OAuthAttributes of(SocialLoginProvider socialLoginProvider, Map<String, Object> attributes) {
+        return switch (socialLoginProvider) {
             case GOOGLE -> ofGoogle(attributes);
             default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         };
