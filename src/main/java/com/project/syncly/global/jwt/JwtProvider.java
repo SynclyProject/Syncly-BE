@@ -70,7 +70,7 @@ public class JwtProvider {
     }
 
     // JWT 토큰 생성 로직
-    private String createToken(String email, Long memberId, long expiration) {
+    private String createToken(String email, Long memberId, long expiration, TokenType tokenType) {
         Instant issuedAt = Instant.now(); // 만들어진 시간을 현재 시간으로
         Instant expiredAt = issuedAt.plusMillis(expiration); // 만들어진 시간에 시간을 추가해 만료일 만들기
 
@@ -110,10 +110,22 @@ public class JwtProvider {
     }
 
     // memberId claim 추출
-    public Long getMemberIdWithBlacklistCheck(String token) {
-        if (tokenBlacklistService.isAccessTokenBlacklisted(token)) {
-            throw new JwtException(JwtErrorCode.BLACKLISTED_ACCESS_TOKEN);
+    public Long getMemberIdWithBlacklistCheck(String token, TokenType tokenType) {
+        switch (tokenType) {
+            case ACCESS:
+                if (tokenBlacklistService.isAccessTokenBlacklisted(token)) {
+                    throw new JwtException(JwtErrorCode.BLACKLISTED_ACCESS_TOKEN);
+                }
+                break;
+            case REFRESH:
+                if (tokenBlacklistService.isRefreshTokenBlacklisted(token)) {
+                    throw new JwtException(JwtErrorCode.BLACKLISTED_REFRESH_TOKEN);
+                }
+                break;
+            default:
+                throw new JwtException(JwtErrorCode.UNSUPPORTED_TOKEN);
         }
+
         return getMemberId(token); // 내부는 순수 파싱
     }
     public Long getMemberId(String token) {

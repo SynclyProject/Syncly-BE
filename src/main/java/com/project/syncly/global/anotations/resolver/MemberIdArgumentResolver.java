@@ -2,6 +2,7 @@ package com.project.syncly.global.anotations.resolver;
 
 import com.project.syncly.global.anotations.MemberIdInfo;
 import com.project.syncly.global.jwt.JwtProvider;
+import com.project.syncly.global.jwt.enums.TokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,8 @@ public class MemberIdArgumentResolver implements HandlerMethodArgumentResolver {
         String token = webRequest.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
-            return jwtProvider.getMemberIdWithBlacklistCheck(token);
+            TokenType tokenType = jwtProvider.getTokenType(token);
+            Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(token, tokenType);
         }
         return null;
     }

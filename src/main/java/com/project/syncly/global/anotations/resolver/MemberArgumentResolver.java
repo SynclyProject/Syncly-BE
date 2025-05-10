@@ -4,6 +4,7 @@ import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.global.anotations.MemberInfo;
 import com.project.syncly.global.jwt.JwtProvider;
+import com.project.syncly.global.jwt.enums.TokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,8 @@ public class MemberArgumentResolver implements HandlerMethodArgumentResolver {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
 
-            Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(token);
+            TokenType tokenType = jwtProvider.getTokenType(token);
+            Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(token, tokenType);
             return memberQueryService.getMemberById(memberId);
         }
         return null;

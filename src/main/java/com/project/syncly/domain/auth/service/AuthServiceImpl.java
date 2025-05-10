@@ -5,6 +5,7 @@ import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.global.jwt.JwtProvider;
+import com.project.syncly.global.jwt.enums.TokenType;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
 import com.project.syncly.global.jwt.service.TokenService;
@@ -48,8 +49,8 @@ public class AuthServiceImpl implements AuthService {
                 .map(Cookie::getValue)
                 .orElseThrow(() -> new JwtException(JwtErrorCode.EMPTY_TOKEN));
 
-        String email = jwtProvider.getEmail(refreshToken);
-        Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(refreshToken);
+        TokenType tokenType = jwtProvider.getTokenType(refreshToken);
+        Long memberId = jwtProvider.getMemberId(refreshToken);
         return tokenService.reissueAccessToken(memberId, response);
     }
 
