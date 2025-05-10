@@ -4,6 +4,7 @@ import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
+import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.global.jwt.JwtProvider;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
@@ -24,7 +25,7 @@ import java.util.Optional;
 public class TokenService {
 
     private final JwtProvider jwtProvider;
-    private final MemberRepository memberRepository;
+    private final MemberQueryService memberQueryService;
     private final TokenBlacklistService tokenBlacklistService;
     private final LoginCacheService loginCacheService;
 
@@ -48,10 +49,8 @@ public class TokenService {
     }
 
     // [JWT Filter] Access Token 재발급
-    public String reissueAccessToken(Long memberId, String email, HttpServletResponse response) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-
+    public String reissueAccessToken(Long memberId, HttpServletResponse response) {
+        Member member = memberQueryService.getMemberById(memberId);
         String newAccessToken = jwtProvider.createAccessToken(member);
         response.setHeader("Authorization", "Bearer " + newAccessToken);
         return newAccessToken;
@@ -72,7 +71,6 @@ public class TokenService {
         String refreshToken = extractRefreshToken(request);
 
         Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(accessToken);
-//        loginCacheService.removeLoginStatus(memberId);  //로그인캐시 삭제
         tokenBlacklistService.blacklistAccessToken(accessToken); //블랙리스트 올리기
         tokenBlacklistService.blacklistRefreshToken(refreshToken);
         removeRefreshTokenCookie(response);
