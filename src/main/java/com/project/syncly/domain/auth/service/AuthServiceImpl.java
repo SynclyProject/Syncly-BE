@@ -50,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
 
         String email = jwtProvider.getEmail(refreshToken);
         Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(refreshToken);
-        return tokenService.reissueAccessToken(memberId, email,response);
+        return tokenService.reissueAccessToken(memberId, response);
     }
 
     @Override
