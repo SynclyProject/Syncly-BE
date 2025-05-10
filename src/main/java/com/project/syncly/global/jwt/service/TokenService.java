@@ -72,7 +72,7 @@ public class TokenService {
         String refreshToken = extractRefreshToken(request);
 
         Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(accessToken);
-        loginCacheService.removeLoginStatus(memberId);  //로그인캐시 삭제
+//        loginCacheService.removeLoginStatus(memberId);  //로그인캐시 삭제
         tokenBlacklistService.blacklistAccessToken(accessToken); //블랙리스트 올리기
         tokenBlacklistService.blacklistRefreshToken(refreshToken);
         removeRefreshTokenCookie(response);

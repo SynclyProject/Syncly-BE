@@ -25,7 +25,7 @@ public class PrincipalDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND_BY_EMAIL));
 
         // 로그인 성공 시 Redis에 로그인 캐시 저장
-        loginCacheService.saveLoginStatus(member.getId());
+//        loginCacheService.saveLoginStatus(member.getId());
 
         return new PrincipalDetails(member);
     }
