@@ -37,5 +37,10 @@ public class Member extends BaseTimeDeletedEntity {
     @Column(nullable = true)
     private SocialLoginProvider socialLoginProvider;
 
+    @Column
+    private LeaveReasonType leaveReasonType;
+
+    @Column(length = 200)
+    private String LeaveReason;
 
 }

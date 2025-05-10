@@ -14,7 +14,8 @@ public enum MemberErrorCode implements BaseErrorCode {
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER409_01", "이미 가입된 이메일입니다."),
     INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "MEMBER400_01", "인증 코드가 올바르지 않습니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "MEMBER400_02", "이메일 인증이 완료되지 않았습니다."),
-    PASSWORD_NOT_MATCHED(HttpStatus.BAD_REQUEST, "MEMBER400_03", "이메일 혹은 비밀번호가 잘못되었습니다.");
+    PASSWORD_NOT_MATCHED(HttpStatus.BAD_REQUEST, "MEMBER400_03", "이메일 혹은 비밀번호가 잘못되었습니다."),
+    NO_LEAVE_REASON_TYPE(HttpStatus.BAD_REQUEST, "MEMBER400_04", "잘못된 탈퇴사유 타입입니다."),
     ;
 
     private final HttpStatus status;
