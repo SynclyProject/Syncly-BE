@@ -1,9 +1,6 @@
 package com.project.syncly.global.jwt.service;
 
 import com.project.syncly.domain.member.entity.Member;
-import com.project.syncly.domain.member.exception.MemberErrorCode;
-import com.project.syncly.domain.member.exception.MemberException;
-import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.global.jwt.JwtProvider;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
@@ -70,7 +67,6 @@ public class TokenService {
         String accessToken = jwtProvider.resolveAccessToken(request);
         String refreshToken = extractRefreshToken(request);
 
-        Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(accessToken);
         tokenBlacklistService.blacklistAccessToken(accessToken); //블랙리스트 올리기
         tokenBlacklistService.blacklistRefreshToken(refreshToken);
         removeRefreshTokenCookie(response);
