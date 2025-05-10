@@ -2,6 +2,7 @@ package com.project.syncly.global.jwt;
 
 import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
+import com.project.syncly.global.jwt.enums.TokenType;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
 import com.project.syncly.global.jwt.service.TokenService;
@@ -38,16 +39,10 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String accessToken = extractAccessToken(request);
+            String accessToken = extractAccessToken(request);
 
         if (StringUtils.hasText(accessToken)) {
             try {
-                jwtProvider.getClaims(accessToken); // 검증 실패 시 예외 발생
-                /// 블랙리스트 검사
-                if (tokenBlacklistService.isAccessTokenBlacklisted(accessToken)) {
-                    throw new JwtException(JwtErrorCode.BLACKLISTED_ACCESS_TOKEN);
-                }
-
                 processValidAccessToken(accessToken);
                 filterChain.doFilter(request, response);//accessToken있다면 반환하고 JwtFilter 끝
                 return;
@@ -63,15 +58,10 @@ public class JwtFilter extends OncePerRequestFilter {
         if (refreshTokenCookie.isPresent()) {
             String refreshToken = refreshTokenCookie.get().getValue();
             try {
-                jwtProvider.getClaims(refreshToken);
-                /// 블랙리스트 검사
-                if (tokenBlacklistService.isRefreshTokenBlacklisted(refreshToken)) {
-                    throw new JwtException(JwtErrorCode.BLACKLISTED_REFRESH_TOKEN);
-                }
 
-                String email = jwtProvider.getEmail(refreshToken);
-                Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(refreshToken);
-                UserDetails userDetails = principalDetailsService.loadUserByUsername(email);
+                TokenType tokenType = jwtProvider.getTokenType(refreshToken);
+                Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(refreshToken, tokenType);
+                UserDetails userDetails = principalDetailsService.loadUserById(memberId);
 
                 String newAccessToken = tokenService.reissueAccessToken(memberId, response);
                 response.setHeader("Authorization", "Bearer " + newAccessToken);
@@ -116,9 +106,10 @@ public class JwtFilter extends OncePerRequestFilter {
         return Optional.empty();
     }
 
-    private void processValidAccessToken(String token) {
-        String email = jwtProvider.getEmail(token);
-        UserDetails userDetails = principalDetailsService.loadUserByUsername(email);
+    private void processValidAccessToken(String accessToken) {
+        TokenType tokenType = jwtProvider.getTokenType(accessToken);
+        Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(accessToken, tokenType);
+        UserDetails userDetails = principalDetailsService.loadUserById(memberId);
 
         if (userDetails != null) {
             Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
