@@ -2,9 +2,9 @@ package com.project.syncly.domain.auth.oauth.handler;
 
 
 import com.project.syncly.global.jwt.JwtProvider;
-import com.project.syncly.domain.auth.oauth.dto.CustomOAuth2User;
 import com.project.syncly.domain.auth.oauth.dto.TokenResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.syncly.global.jwt.PrincipalDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,7 +27,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                                         Authentication authentication)
             throws IOException, ServletException {
 
-        CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
+        PrincipalDetails user = (PrincipalDetails) authentication.getPrincipal();
         String accessToken = jwtProvider.createAccessToken(user.getMember());
         String refreshToken = jwtProvider.createRefreshToken(user.getMember());
 

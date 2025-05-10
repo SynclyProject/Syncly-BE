@@ -4,7 +4,7 @@ import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.entity.SocialLoginProvider;
 import com.project.syncly.domain.member.service.MemberCommandService;
 import com.project.syncly.domain.auth.oauth.attribute.OAuthAttributes;
-import com.project.syncly.domain.auth.oauth.dto.CustomOAuth2User;
+import com.project.syncly.global.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -33,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Member member = memberCommandService.findOrCreateSocialMember(email, name, socialLoginProvider); // 또는 GOOGLE
 
 
-        return new CustomOAuth2User(member, oAuth2User.getAttributes());
+        return new PrincipalDetails(member, oAuth2User.getAttributes());
     }
 
 
