@@ -49,24 +49,14 @@ public class JwtProvider {
         return null;
     }
 
-    // 일반 로그인용 AccessToken 생성
+    // AccessToken 생성
     public String createAccessToken(Member member) {
-        return createToken(member.getEmail(), member.getId(), this.jwtConfig.getAccessExpiration());
+        return createToken(member.getEmail(), member.getId(), this.jwtConfig.getAccessExpiration(), TokenType.ACCESS);
     }
 
-    // 일반 로그인용 RefreshToken 생성
+    // RefreshToken 생성
     public String createRefreshToken(Member member) {
-        return createToken(member.getEmail(), member.getId(), this.jwtConfig.getRefreshExpiration());
-    }
-
-    // 소셜 로그인용 AccessToken 생성 (id 없음)
-    public String createAccessToken(String email) {
-        return createToken(email, null, this.jwtConfig.getAccessExpiration());
-    }
-
-    // 소셜 로그인용 RefreshToken 생성 (id 없음)
-    public String createRefreshToken(String email) {
-        return createToken(email, null, this.jwtConfig.getRefreshExpiration());
+        return createToken(member.getEmail(), member.getId(), this.jwtConfig.getRefreshExpiration(), TokenType.REFRESH);
     }
 
     // JWT 토큰 생성 로직
@@ -79,6 +69,7 @@ public class JwtProvider {
                 .setSubject(email) // JWT의 Subject을 email로 설정
                 .setIssuedAt(Date.from(issuedAt)) // 만들어진 시간을 현재 시간으로 설정
                 .setExpiration(Date.from(expiredAt)) // 유효기간 설정
+                .claim("type", tokenType.name())
                 .signWith(secret, SignatureAlgorithm.HS256); // 암호화를 위한 sign 설정
 
         if (memberId != null) {
@@ -128,6 +119,8 @@ public class JwtProvider {
 
         return getMemberId(token); // 내부는 순수 파싱
     }
+
+
     public Long getMemberId(String token) {
         return getClaims(token).getBody().get("id", Long.class);
     }

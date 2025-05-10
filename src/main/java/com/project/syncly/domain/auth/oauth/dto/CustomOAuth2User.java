@@ -1,6 +1,7 @@
 package com.project.syncly.domain.auth.oauth.dto;
 
 import com.project.syncly.domain.member.entity.Member;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class CustomOAuth2User implements OAuth2User {
 
     private final Member member;

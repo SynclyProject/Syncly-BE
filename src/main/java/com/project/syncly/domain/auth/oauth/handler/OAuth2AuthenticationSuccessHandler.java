@@ -28,8 +28,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             throws IOException, ServletException {
 
         CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-        String accessToken = jwtProvider.createAccessToken(user.getName());
-        String refreshToken = jwtProvider.createRefreshToken(user.getName());
+        String accessToken = jwtProvider.createAccessToken(user.getMember());
+        String refreshToken = jwtProvider.createRefreshToken(user.getMember());
 
         // accessToken은 Authorization 헤더에 추가
         response.setHeader("Authorization", "Bearer " + accessToken);
