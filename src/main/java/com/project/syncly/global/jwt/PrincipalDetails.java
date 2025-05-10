@@ -20,7 +20,7 @@ public class PrincipalDetails implements UserDetails {
     @Override
     // 권한을 가져오는 메소드
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();//권한 인증X
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));//권한 인증X
     }
 
     @Override
