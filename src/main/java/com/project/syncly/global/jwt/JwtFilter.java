@@ -73,7 +73,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(refreshToken);
                 UserDetails userDetails = principalDetailsService.loadUserByUsername(email);
 
-                String newAccessToken = tokenService.reissueAccessToken(memberId, email, response);
+                String newAccessToken = tokenService.reissueAccessToken(memberId, response);
                 response.setHeader("Authorization", "Bearer " + newAccessToken);
 
                 Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
