@@ -18,10 +18,10 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     private final EmailSender emailSender;
 
     // TTL 설정 - application.yml에서 가져옴
-    @Value("${email-auth.code-ttl-seconds}")
+    @Value("${spring.mail.code-ttl-seconds}")
     private long codeTtlSeconds;
 
-    @Value("${email-auth.verified-ttl-seconds}")
+    @Value("${spring.mail.verified-ttl-seconds}")
     private long verifiedTtlSeconds;
 
     @Override
