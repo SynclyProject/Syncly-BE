@@ -61,9 +61,6 @@ redis:
     login-ttl-seconds: 1800     # 30분 == access token TTL
     member-ttl-seconds: 259200   # 3일
 
-email-auth:
-  code-ttl-seconds: 180       # 인증코드 유효 시간 3분
-  verified-ttl-seconds: 600   # 인증 완료 상태 유지 시간 10분
 
 #localhost:8080/하면 swagger실행
 springdoc:
