@@ -10,4 +10,9 @@ public class WorkspaceRequestDto {
             @NotNull String workspaceName
     ) {
     }
-}
+
+    @Schema(description = "워크스페이스 초대 DTO")
+    public record CreateInvitationMailRequestDto(
+            @NotNull String email
+    ) {
+    }}

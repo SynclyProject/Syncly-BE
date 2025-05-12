@@ -17,5 +17,6 @@ import org.springframework.stereotype.Service;
 public interface WorkspaceService {
     public WorkspaceResponseDto.CreateWorkspaceResponseDto createPersonalWorkspace(Long memberId);
     public WorkspaceResponseDto.CreateWorkspaceResponseDto createTeamWorkspace(Long memberId, String workspaceName);
+    public WorkspaceResponseDto.InviteWorkspaceResponseDto inviteTeamWorkspace(Long workspaceId, Long inviterId, String email);
 }
 

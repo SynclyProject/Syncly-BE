@@ -1,6 +1,7 @@
 package com.project.syncly.domain.workspace.repository;
 
 import com.project.syncly.domain.workspace.entity.Workspace;
+import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +18,5 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
           AND ws.workspaceType = 'PERSONAL'
         """)
     boolean existsPersonalWorkspaceManagedBy(@Param("memberId") Long memberId);
+
 }

@@ -10,10 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,5 +49,20 @@ public class WorkspaceController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.success(HttpStatus.CREATED, response));
+    }
+
+    @PostMapping("/{workspaceId}/invite")
+    @Operation(summary = "워크스페이스 초대 API")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.InviteWorkspaceResponseDto>> inviteToWorkspace(
+            @PathVariable("workspaceId") Long workspaceId,
+            @RequestBody @Valid WorkspaceRequestDto.CreateInvitationMailRequestDto workspaceRequestDto
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviterId = 1234L; // 목 데이터
+
+        WorkspaceResponseDto.InviteWorkspaceResponseDto response = workspaceService.inviteTeamWorkspace(workspaceId, inviterId, workspaceRequestDto.email());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
     }
 }

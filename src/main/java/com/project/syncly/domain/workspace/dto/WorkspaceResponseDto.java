@@ -16,4 +16,12 @@ public class WorkspaceResponseDto {
             LocalDateTime createdAt
     ) {
     }
+
+    @Builder
+    @Schema(description = "워크스페이스 초대완료 DTO")
+    public record InviteWorkspaceResponseDto(
+            String inviteeEmail,
+            String token,
+            String expiredAt
+    ) {}
 }
