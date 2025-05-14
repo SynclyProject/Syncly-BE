@@ -2,7 +2,15 @@ package com.project.syncly.domain.member.repository;
 
 import com.project.syncly.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
+@Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    //구현할 메서드 인터페이스 정의
+
+
+    Optional<Member> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
