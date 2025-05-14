@@ -1,9 +1,11 @@
 package com.project.syncly.domain.workspace.repository;
 
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
+import com.project.syncly.domain.workspace.entity.enums.InvitationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -13,4 +15,10 @@ public interface WorkspaceInvitationRepository extends JpaRepository<WorkspaceIn
 
     //토큰으로 초대 조회
     Optional<WorkspaceInvitation> findByToken(String token);
+
+    //사용자에게 온 모든 초대 내역 조회
+    List<WorkspaceInvitation> findAllByInviteeIdAndTypeAndExpiredAtAfter(Long inviteeId, InvitationType type, LocalDateTime now
+    );
+
+
 }

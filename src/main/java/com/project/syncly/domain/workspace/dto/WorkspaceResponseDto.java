@@ -45,4 +45,12 @@ public class WorkspaceResponseDto {
     ) {
     }
 
+    @Builder
+    @Schema(description = "팀 워크스페이스 초대 내역 조회 DTO")
+    public record InvitationInfoDto(
+            Long invitationId,
+            String workspaceName,
+            String inviterName,
+            String expiredAt
+    ) {}
 }

@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/workspaces")
@@ -87,7 +89,7 @@ public class WorkspaceController {
             @RequestBody @Valid WorkspaceRequestDto.acceptInvitationRequestDto workspaceRequestDto
     ) {
         // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
-        Long inviteeId = 2L; // 목 데이터
+        Long inviteeId = 3L; // 목 데이터
 
         WorkspaceResponseDto.AcceptWorkspaceResponseDto response = workspaceService.acceptInvitation(inviteeId, workspaceRequestDto.invitationId());
 
@@ -108,6 +110,20 @@ public class WorkspaceController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CustomResponse.success(HttpStatus.OK, response));
     }
+
+
+    @GetMapping("/invites")
+    @Operation(summary = "사용자의 초대 목록 조회")
+    public ResponseEntity<CustomResponse<List<WorkspaceResponseDto.InvitationInfoDto>>> getInvitations(
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long memberId = 3L; // 목 데이터
+
+        List<WorkspaceResponseDto.InvitationInfoDto> invites = workspaceService.getInvitations(memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, invites));
+    }
+
 
 
 

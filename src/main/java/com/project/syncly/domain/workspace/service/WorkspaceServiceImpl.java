@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -228,5 +229,19 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         // 응답 반환
         return WorkspaceConverter.toRejectInviteResponse(invitation);
     }
+
+    @Override
+    public List<WorkspaceResponseDto.InvitationInfoDto> getInvitations(Long memberId) {
+        //유효한 사용자인지 조회
+        Member invitee = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.MEMBER_NOT_FOUND));
+
+        //PENDING 상태, 만료되지 않은 모든 초대 조회
+        List<WorkspaceInvitation> invitations = workspaceInvitationRepository
+                .findAllByInviteeIdAndTypeAndExpiredAtAfter(invitee.getId(), InvitationType.PENDING, LocalDateTime.now());
+
+        return WorkspaceConverter.toInvitationListResponse(invitations);
+    }
+
 }
 

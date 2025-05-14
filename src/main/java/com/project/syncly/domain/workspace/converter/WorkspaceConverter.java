@@ -9,6 +9,7 @@ import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import org.hibernate.jdbc.Work;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class WorkspaceConverter {
 
@@ -71,4 +72,16 @@ public class WorkspaceConverter {
                 .respondedAt(invitation.getRespondedAt())
                 .build();
     }
+
+    public static List<WorkspaceResponseDto.InvitationInfoDto> toInvitationListResponse(List<WorkspaceInvitation> invitations) {
+        return invitations.stream()
+                .map(invite -> WorkspaceResponseDto.InvitationInfoDto.builder()
+                        .invitationId(invite.getId())
+                        .workspaceName(invite.getWorkspace().getWorkspaceName())
+                        .inviterName(invite.getInviter().getName())
+                        .expiredAt(invite.getExpiredAt().toString())
+                        .build()
+                ).toList();
+    }
+
 }
