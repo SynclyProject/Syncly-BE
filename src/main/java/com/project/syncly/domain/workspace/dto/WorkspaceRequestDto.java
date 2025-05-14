@@ -15,4 +15,17 @@ public class WorkspaceRequestDto {
     public record CreateInvitationMailRequestDto(
             @NotNull String email
     ) {
-    }}
+    }
+
+    @Schema(description = "워크스페이스 초대 수락 DTO")
+    public record acceptInvitationRequestDto(
+            @NotNull Long invitationId
+    ) {
+    }
+
+
+}
+
+
+
+

@@ -54,4 +54,14 @@ public class WorkspaceConverter {
                 .expiredAt(invitation.getExpiredAt().toString())
                 .build();
     }
+
+    public static WorkspaceResponseDto.AcceptWorkspaceResponseDto toAcceptInviteResponse(WorkspaceInvitation invitation) {
+        return WorkspaceResponseDto.AcceptWorkspaceResponseDto.builder()
+                .workspaceId(invitation.getWorkspace().getId())
+                .workspaceName(invitation.getWorkspace().getWorkspaceName())
+                .inviter(invitation.getInviter().getName())
+                .invitee(invitation.getInvitee().getName())
+                .respondedAt(invitation.getRespondedAt())
+                .build();
+    }
 }

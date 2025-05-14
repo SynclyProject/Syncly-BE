@@ -6,6 +6,7 @@ import com.project.syncly.domain.workspace.converter.WorkspaceConverter;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
+import com.project.syncly.domain.workspace.entity.enums.InvitationType;
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
 import com.project.syncly.domain.workspace.repository.WorkspaceInvitationRepository;
@@ -17,11 +18,13 @@ import com.project.syncly.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class WorkspaceServiceImpl implements WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
@@ -129,7 +132,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         String token = invitationMailService.generateUniqueToken();
 
         // 이메일 전송
-        String invitationLink = invitationLinkPrefix + "/" + token;
+        String invitationLink = invitationLinkPrefix + "/api/workspaces/accept/" + token;
         invitationMailService.sendSimpleMessage(invitee.getEmail(), invitationLink); // 실제 구현 필요
 
         // 초대 엔티티 저장
@@ -138,6 +141,66 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         // 응답 반환
         return WorkspaceConverter.toInviteResponse(invitation, invitee.getEmail());
+    }
+
+    @Override
+    public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitationByToken(Long inviteeId, String token) {
+        // 초대 토큰으로 초대 엔티티 조회
+        WorkspaceInvitation invitation = workspaceInvitationRepository.findByToken(token)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.TOKEN_NOT_FOUND));
+
+        // 기존 로직 그대로 재활용
+        return acceptInvitation(inviteeId, invitation.getId());
+    }
+
+
+    @Override
+    public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitation(Long inviteeId, Long invitationId) {
+        // invitationId로 유효한 초대인지 확인
+        WorkspaceInvitation invitation = workspaceInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.INVITATION_NOT_FOUND));
+
+        // 초대 기간이 만료되지 않았는지 혹은 PENDING 상태인지 확인
+        if (invitation.getType() != InvitationType.PENDING || invitation.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new CustomException(WorkspaceErrorCode.INVITATION_EXPIRED);
+        }
+
+        // invitee가 유효한 멤버인지 확인
+        Member invitee = memberRepository.findById(inviteeId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.MEMBER_NOT_FOUND));
+
+        // workspace가 유효한 워크스페이스인지 확인
+        Workspace workspace = workspaceRepository.findById(invitation.getWorkspace().getId())
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 이미 워크 스페이스에 참여한 멤버인지 확인
+        boolean isAlreadyMember = workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspace.getId(), invitee.getId());
+        if (isAlreadyMember) {
+            throw new CustomException(WorkspaceErrorCode.ALREADY_WORKSPACE_MEMBER);
+        }
+
+        // invitationId에서의 invitee와 일치하는지 확인
+        if (!invitation.getInvitee().getId().equals(invitee.getId())) {
+            throw new CustomException(WorkspaceErrorCode.NOT_INVITEE);
+        }
+
+        // 워크스페이스 타입이 TEAM인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.CANNOT_JOIN_PERSONAL_WORKSPACE);
+        }
+
+        //새로운 workspaceMember 객체 생성, 권한은 CREW
+        WorkspaceMember newMember = WorkspaceMemberConverter.toWorkspaceCrew(invitee, workspace, invitee.getName());
+        workspaceMemberRepository.save(newMember);
+
+        //초대 상태를 ACCEPTED로 변경, 응답 시간 기록
+        invitation.setRespondedAt(LocalDateTime.now());
+        invitation.setType(InvitationType.ACCEPTED);
+
+        workspaceInvitationRepository.save(invitation);
+
+        // 응답 반환
+        return WorkspaceConverter.toAcceptInviteResponse(invitation);
     }
 }
 

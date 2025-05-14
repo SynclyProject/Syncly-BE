@@ -24,4 +24,18 @@ public class WorkspaceResponseDto {
             String token,
             String expiredAt
     ) {}
+
+
+    @Builder
+    @Schema(description = "팀 워크스페이스 초대 수락 응답 DTO")
+    public record AcceptWorkspaceResponseDto(
+            Long workspaceId,
+            String workspaceName,
+            String inviter,
+            String invitee,
+            LocalDateTime respondedAt
+    ) {
+    }
+
+
 }

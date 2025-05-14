@@ -28,7 +28,15 @@ public enum WorkspaceErrorCode implements BaseErrorCode {
     // 초대 - 메일 발송 관련 에러
     TOKEN_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Invite500_0", "초대 토큰 생성에 반복적으로 실패했습니다."),
     MESSAGE_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Mail500_0", "메일 메시지 생성 중 오류가 발생했습니다."),
-    MAIL_SENDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Mail500_1", "메일 발송 중 오류가 발생했습니다.");
+    MAIL_SENDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Mail500_1", "메일 발송 중 오류가 발생했습니다."),
+
+    // 초대 관련 수락/검증 에러
+    INVITATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Invite404_1", "초대를 찾을 수 없습니다."),
+    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Invite404_2", "유효하지 않은 초대 토큰입니다."),
+    INVITATION_EXPIRED(HttpStatus.BAD_REQUEST, "Invite400_3", "초대가 만료되었거나 유효하지 않습니다."),
+    INVITATION_ALREADY_ACCEPTED(HttpStatus.CONFLICT, "Invite409_1", "이미 수락된 초대입니다."),
+    NOT_INVITEE(HttpStatus.BAD_REQUEST, "Invite400_4", "초대 대상과 요청 사용자가 일치하지 않습니다."),
+    CANNOT_JOIN_PERSONAL_WORKSPACE(HttpStatus.BAD_REQUEST, "Invite400_5", "개인 워크스페이스에는 참여할 수 없습니다.");
 
 
     private final HttpStatus status;

@@ -47,4 +47,12 @@ public class WorkspaceInvitation { //초대 정보는 시간을 직접 설정해
 
     @Column(name = "expired_at")
     private LocalDateTime expiredAt;
+
+    public void setRespondedAt(LocalDateTime respondedAt) {
+        this.respondedAt = respondedAt;
+    }
+
+    public void setType(InvitationType type) {
+        this.type = type;
+    }
 }

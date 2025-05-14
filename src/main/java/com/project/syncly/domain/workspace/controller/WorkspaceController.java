@@ -65,4 +65,38 @@ public class WorkspaceController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CustomResponse.success(HttpStatus.OK, response));
     }
+
+    @GetMapping("/accept/{token}")
+    @Operation(summary = "워크스페이스 초대 수락 API(이메일 링크 클릭)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.AcceptWorkspaceResponseDto>> acceptInvitationByToken(
+            @PathVariable("token") String token
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviteeId = 2L; // 목 데이터
+
+        WorkspaceResponseDto.AcceptWorkspaceResponseDto response = workspaceService.acceptInvitationByToken(inviteeId, token);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
+    @PostMapping("/accept")
+    @Operation(summary = "워크스페이스 초대 수락 API(알림창)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.AcceptWorkspaceResponseDto>> acceptInvitation(
+            @RequestBody @Valid WorkspaceRequestDto.acceptInvitationRequestDto workspaceRequestDto
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviteeId = 2L; // 목 데이터
+
+        WorkspaceResponseDto.AcceptWorkspaceResponseDto response = workspaceService.acceptInvitation(inviteeId, workspaceRequestDto.invitationId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
+
+
+
 }

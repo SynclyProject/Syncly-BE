@@ -18,5 +18,7 @@ public interface WorkspaceService {
     public WorkspaceResponseDto.CreateWorkspaceResponseDto createPersonalWorkspace(Long memberId);
     public WorkspaceResponseDto.CreateWorkspaceResponseDto createTeamWorkspace(Long memberId, String workspaceName);
     public WorkspaceResponseDto.InviteWorkspaceResponseDto inviteTeamWorkspace(Long workspaceId, Long inviterId, String email);
+    public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitationByToken(Long inviteeId, String token);
+    public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitation(Long inviteeId, Long invitationId);
 }
 
