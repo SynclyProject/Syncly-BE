@@ -47,7 +47,7 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         }
 
         // [4] 같은 부모 안에 동일한 이름의 폴더 존재하는지 확인
-        if (folderRepository.existsByParentIdAndName(requestDto.parentId(), requestDto.name())) {
+        if (folderRepository.existsByWorkspaceIdAndParentIdAndName(requestDto.workspaceId(), requestDto.parentId(), requestDto.name())) {
             throw new FolderException(FolderErrorCode.DUPLICATE_FOLDER_NAME);
         }
 

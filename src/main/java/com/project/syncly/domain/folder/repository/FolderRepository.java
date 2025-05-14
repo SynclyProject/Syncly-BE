@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, Long> {
-    boolean existsByParentIdAndName(Long parentId, String name);
+    // 동일 워크스페이스 + 동일 parentId 내 존재 여부 확인
+    boolean existsByWorkspaceIdAndParentIdAndName(Long workspaceId, Long parentId, String name);
 }
