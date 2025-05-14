@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.regex.Pattern;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,8 +26,13 @@ public class FolderCommandServiceImpl implements FolderCommandService{
     @Override
     public FolderResponseDto.Create create(FolderRequestDto.Create requestDto) {
 
-        // [1] 이름에 공백 포함 안되도록 검증
-        if (requestDto.name()== null || requestDto.name().trim().isEmpty() || requestDto.name().contains(" ")) {
+        // [1] 이름 검증
+        String name = requestDto.name();
+        if (name == null || name.trim().isEmpty()) {
+            throw new FolderException(FolderErrorCode.EMPTY_NAME);
+        }
+        String nameRegex = "^[a-zA-Z0-9가-힣_-]{1,50}$";
+        if (!Pattern.matches(nameRegex, name)) {
             throw new FolderException(FolderErrorCode.INVALID_NAME);
         }
 

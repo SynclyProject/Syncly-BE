@@ -12,8 +12,8 @@ public class FolderRequestDto {
             Long parentId,
             @NotNull(message = "폴더 이름은 필수입니다.")
             @Pattern(
-                    regexp = "^[^\\s]+$",
-                    message = "폴더 이름에는 공백이 포함될 수 없습니다."
+                    regexp = "^[a-zA-Z0-9가-힣_-]{1,50}$",
+                    message = "폴더 이름은 1~50자 사이의 한글, 영문, 숫자, '-', '_'만 사용할 수 있으며 공백과 특수문자는 사용할 수 없습니다."
             )String name
     ) {}
 }

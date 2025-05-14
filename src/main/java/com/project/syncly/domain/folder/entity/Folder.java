@@ -19,8 +19,8 @@ public class Folder extends BaseTimeEntity {
     private Long workspaceId;
 
     @Column(name = "parent_id")
-    private Long parentId; // 최상위 폴더면 NULL
+    private Long parentId;
 
     @Column(name = "name", nullable = false)
-    private String name; // 폴더명
+    private String name;
 }
