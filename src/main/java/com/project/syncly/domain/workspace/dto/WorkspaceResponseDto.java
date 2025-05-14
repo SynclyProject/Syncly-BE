@@ -37,5 +37,12 @@ public class WorkspaceResponseDto {
     ) {
     }
 
+    @Builder
+    @Schema(description = "팀 워크스페이스 초대 거절 응답 DTO")
+    public record RejectWorkspaceResponseDto(
+            Long invitationId,
+            LocalDateTime respondedAt
+    ) {
+    }
 
 }

@@ -64,4 +64,11 @@ public class WorkspaceConverter {
                 .respondedAt(invitation.getRespondedAt())
                 .build();
     }
+
+    public static WorkspaceResponseDto.RejectWorkspaceResponseDto toRejectInviteResponse(WorkspaceInvitation invitation) {
+        return WorkspaceResponseDto.RejectWorkspaceResponseDto.builder()
+                .invitationId(invitation.getId())
+                .respondedAt(invitation.getRespondedAt())
+                .build();
+    }
 }

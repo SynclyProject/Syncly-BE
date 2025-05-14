@@ -23,7 +23,11 @@ public class WorkspaceRequestDto {
     ) {
     }
 
-
+    @Schema(description = "워크스페이스 초대 거절 DTO")
+    public record rejectInvitationRequestDto(
+            @NotNull Long invitationId
+    ) {
+    }
 }
 
 

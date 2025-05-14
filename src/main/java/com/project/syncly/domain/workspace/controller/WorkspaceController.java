@@ -95,7 +95,19 @@ public class WorkspaceController {
                 .body(CustomResponse.success(HttpStatus.OK, response));
     }
 
+    @PostMapping("/reject")
+    @Operation(summary = "워크스페이스 초대 거절 API(알림창)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.RejectWorkspaceResponseDto>> rejectInvitation(
+            @RequestBody @Valid WorkspaceRequestDto.rejectInvitationRequestDto workspaceRequestDto
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviteeId = 2L; // 목 데이터
 
+        WorkspaceResponseDto.RejectWorkspaceResponseDto response = workspaceService.rejectInvitation(inviteeId, workspaceRequestDto.invitationId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
 
 
 

@@ -202,5 +202,31 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         // 응답 반환
         return WorkspaceConverter.toAcceptInviteResponse(invitation);
     }
+
+    @Override
+    public WorkspaceResponseDto.RejectWorkspaceResponseDto rejectInvitation(Long inviteeId, Long invitationId) {
+        // invitationId로 유효한 초대인지 확인
+        WorkspaceInvitation invitation = workspaceInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.INVITATION_NOT_FOUND));
+
+        // 초대 기간이 만료되지 않았는지 혹은 PENDING 상태인지 확인
+        if (invitation.getType() != InvitationType.PENDING || invitation.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new CustomException(WorkspaceErrorCode.INVITATION_EXPIRED);
+        }
+
+        // invitee가 유효한 멤버인지 확인
+        Member invitee = memberRepository.findById(inviteeId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.MEMBER_NOT_FOUND));
+
+
+        //초대 상태를 rejected 로 변경, 응답 시간 기록
+        invitation.setRespondedAt(LocalDateTime.now());
+        invitation.setType(InvitationType.REJECTED);
+
+        workspaceInvitationRepository.save(invitation);
+
+        // 응답 반환
+        return WorkspaceConverter.toRejectInviteResponse(invitation);
+    }
 }
 
