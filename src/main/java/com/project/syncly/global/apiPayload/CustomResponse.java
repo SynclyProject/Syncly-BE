@@ -27,6 +27,10 @@ public class CustomResponse<T> {
     public static <T> CustomResponse<T> success(HttpStatus status, T result) {
         return new CustomResponse<>(true, String.valueOf(status.value()), status.getReasonPhrase(), result);
     }
+    //상태 코드를 받아서 사용하는 성공 응답 생성 메서드
+    public static  CustomResponse success(HttpStatus status) {
+        return new CustomResponse<>(true, String.valueOf(status.value()), status.getReasonPhrase(), null);
+    }
     //실패 응답 생성 메서드 (데이터 포함)
     public static <T> CustomResponse<T> failure(String code, String message, T result) {
         return new CustomResponse<>(false, code, message, result);

@@ -4,7 +4,10 @@ import com.project.syncly.global.apiPayload.CustomResponse;
 import com.project.syncly.global.apiPayload.code.BaseErrorCode;
 import com.project.syncly.global.apiPayload.code.GeneralErrorCode;
 import com.project.syncly.global.apiPayload.exception.CustomException;
+import com.project.syncly.global.jwt.exception.JwtException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,6 +37,24 @@ public class GlobalExceptionHandler {
         );
         // 에러 코드, 메시지와 함께 errors를 반환
         return ResponseEntity.status(validationErrorCode.getStatus()).body(errorResponse);
+    }
+
+    //@RequestParam, @PathVariable, @ModelAttribute 같은 메서드 파라미터 자체에 붙은 제약조건 어노테이션 위반 시
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException e) {
+        log.warn("유효성 검증 실패 (RequestParam 등): {}", e.getMessage());
+        return ResponseEntity
+                .status(GeneralErrorCode.VALIDATION_FAILED.getStatus())
+                .body(GeneralErrorCode.VALIDATION_FAILED.getErrorResponse());
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<?> handleJwtException(JwtException e) {
+        BaseErrorCode code = e.getCode();
+        log.warn("JwtException 발생: {}", code.getMessage());
+        return ResponseEntity
+                .status(code.getStatus())
+                .body(code.getErrorResponse());
     }
 
     //애플리케이션에서 발생하는 커스텀 예외를 처리
