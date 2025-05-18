@@ -43,6 +43,10 @@ spring:
         provider:
           google:
             user-name-attribute: sub
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 Jwt:
   secret: ${JWT_SECRET_KEY}
@@ -55,11 +59,6 @@ redis:
     login-ttl-seconds: 1800     # 30분 == access token TTL
     member-ttl-seconds: 259200   # 3일
 
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
 
 
 
