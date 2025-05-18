@@ -16,7 +16,6 @@ spring:
       ddl-auto: create
     show-sql: true
 
-  mail:
-    invitation:
-      link: ${SYNCLY_LINK}
+
+
 

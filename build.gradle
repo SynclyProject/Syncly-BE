@@ -28,7 +28,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    //lombok
     compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
     //runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -40,6 +44,21 @@ dependencies {
     // http://localhost:8080/swagger-ui/index.html#/
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.7.0'
+
+    //security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // OAuth2 / JWT
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    // mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // Email
     implementation 'com.sun.mail:jakarta.mail:2.0.1'
