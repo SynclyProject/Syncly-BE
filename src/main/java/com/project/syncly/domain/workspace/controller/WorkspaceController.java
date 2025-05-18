@@ -10,10 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,4 +52,79 @@ public class WorkspaceController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.success(HttpStatus.CREATED, response));
     }
+
+    @PostMapping("/{workspaceId}/invite")
+    @Operation(summary = "워크스페이스 초대 API")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.InviteWorkspaceResponseDto>> inviteToWorkspace(
+            @PathVariable("workspaceId") Long workspaceId,
+            @RequestBody @Valid WorkspaceRequestDto.CreateInvitationMailRequestDto workspaceRequestDto
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviterId = 1234L; // 목 데이터
+
+        WorkspaceResponseDto.InviteWorkspaceResponseDto response = workspaceService.inviteTeamWorkspace(workspaceId, inviterId, workspaceRequestDto.email());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+    @GetMapping("/accept/{token}")
+    @Operation(summary = "워크스페이스 초대 수락 API(이메일 링크 클릭)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.AcceptWorkspaceResponseDto>> acceptInvitationByToken(
+            @PathVariable("token") String token
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviteeId = 2L; // 목 데이터
+
+        WorkspaceResponseDto.AcceptWorkspaceResponseDto response = workspaceService.acceptInvitationByToken(inviteeId, token);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
+    @PostMapping("/accept")
+    @Operation(summary = "워크스페이스 초대 수락 API(알림창)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.AcceptWorkspaceResponseDto>> acceptInvitation(
+            @RequestBody @Valid WorkspaceRequestDto.acceptInvitationRequestDto workspaceRequestDto
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviteeId = 3L; // 목 데이터
+
+        WorkspaceResponseDto.AcceptWorkspaceResponseDto response = workspaceService.acceptInvitation(inviteeId, workspaceRequestDto.invitationId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+    @PostMapping("/reject")
+    @Operation(summary = "워크스페이스 초대 거절 API(알림창)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.RejectWorkspaceResponseDto>> rejectInvitation(
+            @RequestBody @Valid WorkspaceRequestDto.rejectInvitationRequestDto workspaceRequestDto
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long inviteeId = 2L; // 목 데이터
+
+        WorkspaceResponseDto.RejectWorkspaceResponseDto response = workspaceService.rejectInvitation(inviteeId, workspaceRequestDto.invitationId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
+    @GetMapping("/invites")
+    @Operation(summary = "사용자의 초대 목록 조회")
+    public ResponseEntity<CustomResponse<List<WorkspaceResponseDto.InvitationInfoDto>>> getInvitations(
+    ) {
+        // Long inviterId = userDetails.getId(); // 실제 로그인 정보 사용 시
+        Long memberId = 3L; // 목 데이터
+
+        List<WorkspaceResponseDto.InvitationInfoDto> invites = workspaceService.getInvitations(memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, invites));
+    }
+
+
+
+
 }

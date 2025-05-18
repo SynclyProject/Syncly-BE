@@ -14,8 +14,15 @@ import com.project.syncly.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 public interface WorkspaceService {
     public WorkspaceResponseDto.CreateWorkspaceResponseDto createPersonalWorkspace(Long memberId);
     public WorkspaceResponseDto.CreateWorkspaceResponseDto createTeamWorkspace(Long memberId, String workspaceName);
+    public WorkspaceResponseDto.InviteWorkspaceResponseDto inviteTeamWorkspace(Long workspaceId, Long inviterId, String email);
+    public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitationByToken(Long inviteeId, String token);
+    public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitation(Long inviteeId, Long invitationId);
+    public WorkspaceResponseDto.RejectWorkspaceResponseDto rejectInvitation(Long inviteeId, Long invitationId);
+    public List<WorkspaceResponseDto.InvitationInfoDto> getInvitations(Long memberId);
 }
 

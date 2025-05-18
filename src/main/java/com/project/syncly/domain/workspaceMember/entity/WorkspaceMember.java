@@ -35,7 +35,6 @@ public class WorkspaceMember extends BaseTimeDeletedEntity {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Lob
-    @Column(name = "profile_image")
+    @Column(name = "profile_image", length = 500)
     private String profileImage;
 }
