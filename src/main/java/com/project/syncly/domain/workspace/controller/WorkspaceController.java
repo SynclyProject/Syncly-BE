@@ -125,6 +125,21 @@ public class WorkspaceController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, invites));
     }
 
+    @PatchMapping("/{workspaceId}/name")
+    @Operation(summary = "팀 워크스페이스 이름 변경 API (MANAGER만 가능)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.RenameWorkspaceResponseDto>> renameWorkspace(
+            @PathVariable Long workspaceId,
+            @RequestBody @Valid WorkspaceRequestDto.RenameWorkspaceRequestDto requestDto,
+            @AuthenticationPrincipal PrincipalDetails userDetails
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        WorkspaceResponseDto.RenameWorkspaceResponseDto response = workspaceService.renameTeamWorkspace(workspaceId, memberId, requestDto.newName());
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
 
 
 

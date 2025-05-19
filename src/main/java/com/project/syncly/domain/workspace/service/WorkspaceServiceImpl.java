@@ -13,6 +13,7 @@ import com.project.syncly.domain.workspace.repository.WorkspaceInvitationReposit
 import com.project.syncly.domain.workspace.repository.WorkspaceRepository;
 import com.project.syncly.domain.workspaceMember.converter.WorkspaceMemberConverter;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
+import com.project.syncly.domain.workspaceMember.entity.enums.Role;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -242,6 +243,33 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         return WorkspaceConverter.toInvitationListResponse(invitations);
     }
+
+    @Override
+    public WorkspaceResponseDto.RenameWorkspaceResponseDto renameTeamWorkspace(Long workspaceId, Long memberId, String newName) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 사용자 조회 및 사용자 권한이 MANAGER인지 확인
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        if (member.getRole() != Role.MANAGER) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MANAGER);
+        }
+
+        // 이름 변경
+        workspace.setWorkspaceName(newName);
+        workspaceRepository.save(workspace);
+
+        return WorkspaceConverter.toRenameWorkspaceResponse(workspace);
+    }
+
 
 }
 

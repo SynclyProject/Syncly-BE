@@ -29,4 +29,8 @@ public class Workspace extends BaseCreatedEntity {
 
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkspaceMember> workspaceMembers;
+
+    public void setWorkspaceName(String workspaceName) {
+        this.workspaceName = workspaceName;
+    }
 }

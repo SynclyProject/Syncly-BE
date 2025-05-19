@@ -84,4 +84,12 @@ public class WorkspaceConverter {
                 ).toList();
     }
 
+    public static WorkspaceResponseDto.RenameWorkspaceResponseDto toRenameWorkspaceResponse(Workspace workspace) {
+        return WorkspaceResponseDto.RenameWorkspaceResponseDto.builder()
+                .workspaceId(workspace.getId())
+                .newName(workspace.getWorkspaceName())
+                .build();
+    }
+
+
 }

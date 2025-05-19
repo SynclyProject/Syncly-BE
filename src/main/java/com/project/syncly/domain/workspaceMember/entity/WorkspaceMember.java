@@ -5,16 +5,14 @@ import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspaceMember.entity.enums.Role;
 import com.project.syncly.global.entity.BaseTimeDeletedEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "workspace_member")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
+@Getter
 public class WorkspaceMember extends BaseTimeDeletedEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

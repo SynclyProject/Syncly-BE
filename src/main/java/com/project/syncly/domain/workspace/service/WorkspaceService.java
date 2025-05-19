@@ -24,5 +24,6 @@ public interface WorkspaceService {
     public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitation(Long inviteeId, Long invitationId);
     public WorkspaceResponseDto.RejectWorkspaceResponseDto rejectInvitation(Long inviteeId, Long invitationId);
     public List<WorkspaceResponseDto.InvitationInfoDto> getInvitations(Long memberId);
+    public WorkspaceResponseDto.RenameWorkspaceResponseDto renameTeamWorkspace(Long workspaceId, Long memberId, String newName);
 }
 

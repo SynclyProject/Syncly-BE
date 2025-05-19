@@ -53,4 +53,12 @@ public class WorkspaceResponseDto {
             String inviterName,
             String expiredAt
     ) {}
+
+    @Builder
+    @Schema(description = "팀 워크스페이스 이름 변경 응답 DTO")
+    public record RenameWorkspaceResponseDto(
+            Long workspaceId,
+            String newName
+    ) {}
+
 }
