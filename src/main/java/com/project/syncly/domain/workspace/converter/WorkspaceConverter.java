@@ -114,5 +114,15 @@ public class WorkspaceConverter {
                 .build();
     }
 
+    public static List<WorkspaceResponseDto.MyWorkspaceResponseDto> toMyWorkspaceListResponse(List<Workspace> workspaces) {
+        return workspaces.stream()
+                .map(workspace -> WorkspaceResponseDto.MyWorkspaceResponseDto.builder()
+                        .workspaceId(workspace.getId())
+                        .workspaceName(workspace.getWorkspaceName())
+                        .workspaceType(workspace.getWorkspaceType())
+                        .build()
+                ).toList();
+    }
+
 
 }

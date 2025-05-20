@@ -27,6 +27,7 @@ public interface WorkspaceService {
     public WorkspaceResponseDto.RenameWorkspaceResponseDto renameTeamWorkspace(Long workspaceId, Long memberId, String newName);
     public WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspace(Long workspaceId, Long memberId);
     public WorkspaceResponseDto.KickMemberResponseDto kickMember(Long workspaceId, Long memberId, Long targetMemberId);
+    public List<WorkspaceResponseDto.MyWorkspaceResponseDto> getMyWorkspaces(Long memberId);
 
 }
 

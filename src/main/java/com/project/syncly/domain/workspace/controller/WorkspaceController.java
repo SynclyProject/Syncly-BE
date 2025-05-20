@@ -167,6 +167,19 @@ public class WorkspaceController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
 
+    @GetMapping()
+    @Operation(summary = "내가 가입된 모든 워크스페이스 리스트 조회")
+    public ResponseEntity<CustomResponse<List<WorkspaceResponseDto.MyWorkspaceResponseDto>>> getMyWorkspaces(
+            @AuthenticationPrincipal PrincipalDetails userDetails
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        List<WorkspaceResponseDto.MyWorkspaceResponseDto> workspaces = workspaceService.getMyWorkspaces(memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, workspaces));
+    }
+
+
 
 
 

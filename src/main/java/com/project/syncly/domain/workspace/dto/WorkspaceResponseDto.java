@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspace.dto;
 
+import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -78,5 +79,14 @@ public class WorkspaceResponseDto {
             String workspaceName,
             LocalDateTime deletedAt
     ) {}
+
+    @Builder
+    @Schema(description = "워크스페이스 조회 응답 DTO")
+    public record MyWorkspaceResponseDto(
+            Long workspaceId,
+            String workspaceName,
+            WorkspaceType workspaceType
+    ) {}
+
 
 }

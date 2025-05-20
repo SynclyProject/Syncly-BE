@@ -358,15 +358,25 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_CREW);
         }
 
-
-
-
         // 멤버 삭제 (추방)
         workspaceMemberRepository.delete(targetMember);
 
         //반환
         return WorkspaceConverter.toKickMemberResponse(workspaceId, targetMemberId, workspace.getWorkspaceName(), LocalDateTime.now());
     }
+
+    @Override
+    public List<WorkspaceResponseDto.MyWorkspaceResponseDto> getMyWorkspaces(Long memberId) {
+        boolean exists = memberRepository.existsById(memberId);
+        if (!exists) {
+            throw new CustomException(WorkspaceErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        List<Workspace> workspace = workspaceRepository.findAllByMemberId(memberId);
+
+        return WorkspaceConverter.toMyWorkspaceListResponse(workspace);
+    }
+
 
 
 
