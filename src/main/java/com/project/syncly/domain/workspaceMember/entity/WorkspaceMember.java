@@ -3,7 +3,7 @@ package com.project.syncly.domain.workspaceMember.entity;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspaceMember.entity.enums.Role;
-import com.project.syncly.global.entity.BaseTimeDeletedEntity;
+import com.project.syncly.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
-public class WorkspaceMember extends BaseTimeDeletedEntity {
+public class WorkspaceMember extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,4 +35,8 @@ public class WorkspaceMember extends BaseTimeDeletedEntity {
 
     @Column(name = "profile_image", length = 500)
     private String profileImage;
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
 }

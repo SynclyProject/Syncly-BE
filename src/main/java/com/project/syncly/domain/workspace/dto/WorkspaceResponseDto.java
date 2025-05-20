@@ -61,4 +61,13 @@ public class WorkspaceResponseDto {
             String newName
     ) {}
 
+    @Builder
+    @Schema(description = "팀 워크스페이스 탈퇴 응답 DTO")
+    public record LeaveWorkspaceResponseDto(
+            Long workspaceId,
+            Long workspaceMemberId,
+            String workspaceName,
+            LocalDateTime leavedAt
+    ) {}
+
 }

@@ -140,6 +140,20 @@ public class WorkspaceController {
     }
 
 
+    @DeleteMapping("/{workspaceId}/leave")
+    @Operation(summary = "워크스페이스 나가기 API (MANAGER가 나갈시에는 위임)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.LeaveWorkspaceResponseDto>> leaveWorkspace(
+            @AuthenticationPrincipal PrincipalDetails userDetails,
+            @PathVariable Long workspaceId
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        WorkspaceResponseDto.LeaveWorkspaceResponseDto response = workspaceService.leaveWorkspace(workspaceId, memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
+
 
 
 

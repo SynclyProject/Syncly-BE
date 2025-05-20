@@ -270,6 +270,60 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         return WorkspaceConverter.toRenameWorkspaceResponse(workspace);
     }
 
+    @Override
+    public WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspace(Long workspaceId, Long memberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        String workspaceName = workspace.getWorkspaceName();
+
+        // 멤버 조회
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 해당 워크 스페이스의 팀원이 몇명인지 조회
+        long numOfMembers = workspaceMemberRepository.countByWorkspaceId(workspaceId);
+        if (numOfMembers < 1) {
+            throw new CustomException(WorkspaceErrorCode.NO_MEMBERS);
+        }
+
+        //나가고자 하는 사람이 매니저 일 경우
+        //다른 팀원에게 매니저 위임 (팀원이 2명 이상일 경우)
+        if (member.getRole() == Role.MANAGER && numOfMembers >= 2) {
+            WorkspaceMember nextManager = workspaceMemberRepository.findFirstCrewByWorkspaceIdOrderedByEmail(workspaceId, Role.CREW)
+                    .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NO_OTHER_CREW_TO_DELEGATE));
+
+            nextManager.setRole(Role.MANAGER);
+            workspaceMemberRepository.save(nextManager);
+
+            // 멤버 삭제
+            workspaceMemberRepository.delete(member);
+        }
+
+        //나가고자 하는 사람이 매니저 일 경우 ( && 팀원이 매니저 포함 1명일 경우)
+        else if (member.getRole() == Role.MANAGER) {
+            //멤버 삭제 후 워크 스페이스 삭제
+            workspaceMemberRepository.delete(member);
+            workspaceRepository.delete(workspace);
+        }
+
+        //CREW 일 경우
+        else {
+            // 멤버 삭제
+            workspaceMemberRepository.delete(member);
+        }
+
+        //반환
+        return WorkspaceConverter.leaveWorkspaceResponse(workspaceId, memberId, workspaceName, LocalDateTime.now());
+    }
+
+
 
 }
 

@@ -18,6 +18,8 @@ public enum WorkspaceErrorCode implements BaseErrorCode {
     NOT_TEAM_WORKSPACE(HttpStatus.BAD_REQUEST, "Workspace400_1", "팀 워크스페이스가 아닙니다."),
     NOT_WORKSPACE_MEMBER(HttpStatus.FORBIDDEN, "Workspace403_1", "워크스페이스의 멤버가 아닙니다."),
     NOT_WORKSPACE_MANAGER(HttpStatus.FORBIDDEN, "Workspace403_2", "워크스페이스의 매니저만 이름을 변경할 수 있습니다."),
+    NO_MEMBERS(HttpStatus.NOT_FOUND, "Workspace404_1", "워크스페이스에 멤버가 존재하지 않습니다."),
+    NO_OTHER_CREW_TO_DELEGATE(HttpStatus.CONFLICT, "Workspace409_1", "위임 가능한 팀원이 존재하지 않습니다."),
 
 
     // 초대 관련 에러

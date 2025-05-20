@@ -6,6 +6,9 @@ import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
 import com.project.syncly.domain.workspace.entity.enums.InvitationType;
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
+import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import org.hibernate.jdbc.Work;
 
 import java.time.LocalDateTime;
@@ -88,6 +91,16 @@ public class WorkspaceConverter {
         return WorkspaceResponseDto.RenameWorkspaceResponseDto.builder()
                 .workspaceId(workspace.getId())
                 .newName(workspace.getWorkspaceName())
+                .build();
+    }
+
+
+    public static WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspaceResponse(Long workspaceId, Long memberId, String workspaceName, LocalDateTime leavedAt) {
+        return WorkspaceResponseDto.LeaveWorkspaceResponseDto.builder()
+                .workspaceId(workspaceId)
+                .workspaceMemberId(memberId)
+                .workspaceName(workspaceName)
+                .leavedAt(leavedAt)
                 .build();
     }
 
