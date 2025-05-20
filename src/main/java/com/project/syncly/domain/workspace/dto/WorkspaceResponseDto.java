@@ -85,7 +85,8 @@ public class WorkspaceResponseDto {
     public record MyWorkspaceResponseDto(
             Long workspaceId,
             String workspaceName,
-            WorkspaceType workspaceType
+            WorkspaceType workspaceType,
+            LocalDateTime createdAt
     ) {}
 
 

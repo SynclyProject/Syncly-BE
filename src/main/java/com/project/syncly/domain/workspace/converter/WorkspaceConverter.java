@@ -120,6 +120,7 @@ public class WorkspaceConverter {
                         .workspaceId(workspace.getId())
                         .workspaceName(workspace.getWorkspaceName())
                         .workspaceType(workspace.getWorkspaceType())
+                        .createdAt(workspace.getCreatedAt())
                         .build()
                 ).toList();
     }
