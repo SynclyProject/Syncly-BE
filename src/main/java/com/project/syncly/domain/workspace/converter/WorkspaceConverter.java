@@ -95,12 +95,22 @@ public class WorkspaceConverter {
     }
 
 
-    public static WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspaceResponse(Long workspaceId, Long memberId, String workspaceName, LocalDateTime leavedAt) {
+    public static WorkspaceResponseDto.LeaveWorkspaceResponseDto toLeaveWorkspaceResponse(Long workspaceId, Long memberId, String workspaceName, LocalDateTime leavedAt) {
         return WorkspaceResponseDto.LeaveWorkspaceResponseDto.builder()
                 .workspaceId(workspaceId)
                 .workspaceMemberId(memberId)
                 .workspaceName(workspaceName)
                 .leavedAt(leavedAt)
+                .build();
+    }
+
+
+    public static WorkspaceResponseDto.KickMemberResponseDto toKickMemberResponse(Long workspaceId, Long targetMemberId, String workspaceName, LocalDateTime deletedAt) {
+        return WorkspaceResponseDto.KickMemberResponseDto.builder()
+                .workspaceId(workspaceId)
+                .targetMemberId(targetMemberId)
+                .workspaceName(workspaceName)
+                .deletedAt(deletedAt)
                 .build();
     }
 

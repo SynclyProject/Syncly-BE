@@ -153,6 +153,22 @@ public class WorkspaceController {
     }
 
 
+    @DeleteMapping("/{workspaceId}/members/{targetMemberId}/kick")
+    @Operation(summary = "워크스페이스 멤버 추방 API (매니저만 가능/본인 추방 불가)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.KickMemberResponseDto>> kickMember(
+            @AuthenticationPrincipal PrincipalDetails userDetails,
+            @PathVariable Long workspaceId,
+            @PathVariable Long targetMemberId
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        WorkspaceResponseDto.KickMemberResponseDto response = workspaceService.kickMember(workspaceId, memberId, targetMemberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
+
 
 
 

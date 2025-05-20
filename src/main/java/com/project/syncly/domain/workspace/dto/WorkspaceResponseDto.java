@@ -70,4 +70,13 @@ public class WorkspaceResponseDto {
             LocalDateTime leavedAt
     ) {}
 
+    @Builder
+    @Schema(description = "팀 워크스페이스 회원 추방 응답 DTO")
+    public record KickMemberResponseDto(
+            Long workspaceId,
+            Long targetMemberId,
+            String workspaceName,
+            LocalDateTime deletedAt
+    ) {}
+
 }

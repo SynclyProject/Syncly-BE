@@ -320,8 +320,54 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         }
 
         //반환
-        return WorkspaceConverter.leaveWorkspaceResponse(workspaceId, memberId, workspaceName, LocalDateTime.now());
+        return WorkspaceConverter.toLeaveWorkspaceResponse(workspaceId, memberId, workspaceName, LocalDateTime.now());
     }
+
+    @Override
+    public WorkspaceResponseDto.KickMemberResponseDto kickMember(Long workspaceId, Long memberId, Long targetMemberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 멤버 조회
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 멤버가 Manager가 맞는지 확인
+        if (member.getRole() != Role.MANAGER) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MANAGER);
+        }
+
+
+        // 추방하고자 하는 멤버 조회
+        WorkspaceMember targetMember = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, targetMemberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 본인 추방 불가
+        if (member.getId().equals(targetMember.getId())) {
+            throw new CustomException(WorkspaceErrorCode.CANNOT_KICK_SELF);
+        }
+
+        // 추방하고자 하는 멤버가 CREW가 맞는지 확인
+        if (targetMember.getRole() != Role.CREW) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_CREW);
+        }
+
+
+
+
+        // 멤버 삭제 (추방)
+        workspaceMemberRepository.delete(targetMember);
+
+        //반환
+        return WorkspaceConverter.toKickMemberResponse(workspaceId, targetMemberId, workspace.getWorkspaceName(), LocalDateTime.now());
+    }
+
 
 
 
