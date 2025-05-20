@@ -23,11 +23,13 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
     boolean existsPersonalWorkspaceManagedBy(@Param("memberId") Long memberId);
 
 
+    //가입되어 있는 모든 워크스페이스 조회 - 생성날짜 내림차순
     @Query("""
         SELECT ws
         FROM Workspace ws
         JOIN ws.workspaceMembers wm
         WHERE wm.member.id = :memberId
+        ORDER BY ws.createdAt DESC
         """)
     List<Workspace> findAllByMemberId(@Param("memberId") Long memberId);
 
