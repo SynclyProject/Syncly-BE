@@ -30,5 +30,6 @@ public interface WorkspaceService {
     public WorkspaceResponseDto.KickMemberResponseDto kickMember(Long workspaceId, Long memberId, Long targetMemberId);
     public List<WorkspaceResponseDto.MyWorkspaceResponseDto> getMyWorkspaces(Long memberId);
     public List<WorkspaceMemberInfoResponseDto> getWorkspaceMembers(Long workspaceId);
+    public WorkspaceResponseDto.DeleteWorkspaceResponseDto deleteWorkspace(Long workspaceId, Long memberId);
 }
 

@@ -190,6 +190,20 @@ public class WorkspaceController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, members));
     }
 
+    @DeleteMapping("/{workspaceId}")
+    @Operation(summary = "워크스페이스 삭제 API (MANAGER 권한만 가능)")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.DeleteWorkspaceResponseDto>> deleteWorkspace(
+            @AuthenticationPrincipal PrincipalDetails userDetails,
+            @PathVariable Long workspaceId
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        WorkspaceResponseDto.DeleteWorkspaceResponseDto response = workspaceService.deleteWorkspace(workspaceId, memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
 
 
 

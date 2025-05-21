@@ -125,5 +125,23 @@ public class WorkspaceConverter {
                 ).toList();
     }
 
+    @Builder
+    @Schema(description = "워크스페이스 삭제 응답 DTO")
+    public record DeleteWorkspaceResponseDto(
+            Long workspaceId,
+            String workspaceName,
+            LocalDateTime createdAt,
+            LocalDateTime deletedAt
+    ) {}
+
+    public static WorkspaceResponseDto.DeleteWorkspaceResponseDto toDeleteWorkspaceResponse(Long workspaceId, String workspaceName, LocalDateTime createdAt, LocalDateTime deletedAt) {
+        return WorkspaceResponseDto.DeleteWorkspaceResponseDto.builder()
+                .workspaceId(workspaceId)
+                .workspaceName(workspaceName)
+                .createdAt(createdAt)
+                .deletedAt(deletedAt)
+                .build();
+    }
+
 
 }

@@ -90,6 +90,15 @@ public class WorkspaceResponseDto {
             LocalDateTime createdAt
     ) {}
 
+    @Builder
+    @Schema(description = "워크스페이스 삭제 응답 DTO")
+    public record DeleteWorkspaceResponseDto(
+            Long workspaceId,
+            String workspaceName,
+            LocalDateTime createdAt,
+            LocalDateTime deletedAt
+    ) {}
+
 
 
 
