@@ -429,6 +429,20 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         return WorkspaceConverter.toDeleteWorkspaceResponse(workspaceId, workspaceName, createdAt, deletedAt);
     }
 
+    @Override
+    public WorkspaceResponseDto.GetWorkspaceRoleResponseDto getMyRole(Long workspaceId, Long memberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 워크스페이스 멤버 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        return WorkspaceConverter.toGetWorkspaceRoleResponse(workspace.getId(), workspaceMember.getRole());
+    }
+
+
 
 
 

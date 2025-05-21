@@ -203,6 +203,20 @@ public class WorkspaceController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
 
+    @GetMapping("/{workspaceId}/role")
+    @Operation(summary = "해당 워크스페이스 내 본인 ROLE 조회 API")
+    public ResponseEntity<CustomResponse<WorkspaceResponseDto.GetWorkspaceRoleResponseDto>> getMyRole(
+            @AuthenticationPrincipal PrincipalDetails userDetails,
+            @PathVariable Long workspaceId
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        WorkspaceResponseDto.GetWorkspaceRoleResponseDto response = workspaceService.getMyRole(workspaceId, memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
+
+
 
 
 

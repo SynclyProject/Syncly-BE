@@ -6,10 +6,8 @@ import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
 import com.project.syncly.domain.workspace.entity.enums.InvitationType;
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
-import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import org.hibernate.jdbc.Work;
+import com.project.syncly.domain.workspaceMember.entity.enums.Role;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -125,14 +123,6 @@ public class WorkspaceConverter {
                 ).toList();
     }
 
-    @Builder
-    @Schema(description = "워크스페이스 삭제 응답 DTO")
-    public record DeleteWorkspaceResponseDto(
-            Long workspaceId,
-            String workspaceName,
-            LocalDateTime createdAt,
-            LocalDateTime deletedAt
-    ) {}
 
     public static WorkspaceResponseDto.DeleteWorkspaceResponseDto toDeleteWorkspaceResponse(Long workspaceId, String workspaceName, LocalDateTime createdAt, LocalDateTime deletedAt) {
         return WorkspaceResponseDto.DeleteWorkspaceResponseDto.builder()
@@ -140,6 +130,13 @@ public class WorkspaceConverter {
                 .workspaceName(workspaceName)
                 .createdAt(createdAt)
                 .deletedAt(deletedAt)
+                .build();
+    }
+
+    public static WorkspaceResponseDto.GetWorkspaceRoleResponseDto toGetWorkspaceRoleResponse(Long workspaceId, Role role) {
+        return WorkspaceResponseDto.GetWorkspaceRoleResponseDto.builder()
+                .workspaceId(workspaceId)
+                .role(role)
                 .build();
     }
 

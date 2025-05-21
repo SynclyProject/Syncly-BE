@@ -99,6 +99,13 @@ public class WorkspaceResponseDto {
             LocalDateTime deletedAt
     ) {}
 
+    @Builder
+    @Schema(description = "워크스페이스 ROLE 조회 응답 DTO")
+    public record GetWorkspaceRoleResponseDto(
+            Long workspaceId,
+            Role role
+    ) {}
+
 
 
 
