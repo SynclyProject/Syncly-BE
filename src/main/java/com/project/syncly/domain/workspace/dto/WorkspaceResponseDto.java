@@ -1,6 +1,7 @@
 package com.project.syncly.domain.workspace.dto;
 
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
+import com.project.syncly.domain.workspaceMember.entity.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -88,6 +89,8 @@ public class WorkspaceResponseDto {
             WorkspaceType workspaceType,
             LocalDateTime createdAt
     ) {}
+
+
 
 
 }

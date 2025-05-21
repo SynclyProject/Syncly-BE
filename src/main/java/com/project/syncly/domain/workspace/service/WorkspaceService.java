@@ -3,6 +3,7 @@ package com.project.syncly.domain.workspace.service;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.workspace.converter.WorkspaceConverter;
+import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
@@ -28,6 +29,6 @@ public interface WorkspaceService {
     public WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspace(Long workspaceId, Long memberId);
     public WorkspaceResponseDto.KickMemberResponseDto kickMember(Long workspaceId, Long memberId, Long targetMemberId);
     public List<WorkspaceResponseDto.MyWorkspaceResponseDto> getMyWorkspaces(Long memberId);
-
+    public List<WorkspaceMemberInfoResponseDto> getWorkspaceMembers(Long workspaceId);
 }
 

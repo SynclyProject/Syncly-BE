@@ -1,11 +1,15 @@
 package com.project.syncly.domain.workspaceMember.repository;
 
+import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
+import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 import com.project.syncly.domain.workspaceMember.entity.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+
+import java.util.List;
 import java.util.Optional;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
@@ -30,6 +34,23 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
             @Param("workspaceId") Long workspaceId,
             @Param("role") Role role
     );
+
+    //워크스페이스 멤버 전체 조회, 매니저는 맨 위에 뜨고, 나머지는 이름 오름차순 조회
+    @Query("""
+        SELECT new com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto(
+            wm.id,
+            m.name,
+            m.email,
+            wm.role,
+            wm.createdAt
+        )
+        FROM WorkspaceMember wm
+        JOIN wm.member m
+        WHERE wm.workspace.id = :workspaceId
+        ORDER BY CASE WHEN wm.role = 'MANAGER' THEN 0 ELSE 1 END, m.name ASC
+    """)
+    List<WorkspaceMemberInfoResponseDto> findAllMembersByWorkspaceIdOrdered(@Param("workspaceId") Long workspaceId);
+
 
 
 }

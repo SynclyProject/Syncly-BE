@@ -3,6 +3,7 @@ package com.project.syncly.domain.workspace.service;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.workspace.converter.WorkspaceConverter;
+import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
@@ -127,7 +128,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         boolean hasActiveInvite = workspaceInvitationRepository.existsByWorkspaceIdAndInviteeIdAndExpiredAtAfter(
                 workspaceId, invitee.getId(), LocalDateTime.now());
         if (hasActiveInvite) {
-            throw new CustomException(WorkspaceErrorCode.ALREADY_INVITED);
+            //초대 만료 전 초대가 존재하나, 멤버가 그룹에 포함되어 있지 않으면서 ACCEPT or REJECT 상태라면 재전송 가능
+            WorkspaceInvitation invited = workspaceInvitationRepository.findByWorkspaceIdAndInviteeIdAndExpiredAtAfter(workspaceId, invitee.getId(), LocalDateTime.now())
+                    .orElseThrow(() -> new CustomException(WorkspaceErrorCode.INVITATION_NOT_FOUND));
+            if (invited.getType() == InvitationType.PENDING) {
+                throw new CustomException(WorkspaceErrorCode.ALREADY_INVITED);
+            }
         }
 
         // 초대 토큰 생성 (invitationMailService 에서 중복 여부 확인)
@@ -376,6 +382,22 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         return WorkspaceConverter.toMyWorkspaceListResponse(workspace);
     }
+
+    @Override
+    public List<WorkspaceMemberInfoResponseDto> getWorkspaceMembers(Long workspaceId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        //워크스페이스 멤버 목록 반환
+        return workspaceMemberRepository.findAllMembersByWorkspaceIdOrdered(workspaceId);
+    }
+
 
 
 

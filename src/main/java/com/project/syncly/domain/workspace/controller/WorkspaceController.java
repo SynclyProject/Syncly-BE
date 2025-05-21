@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspace.controller;
 
+import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.service.WorkspaceServiceImpl;
 import com.project.syncly.domain.workspace.dto.WorkspaceRequestDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
@@ -178,6 +179,17 @@ public class WorkspaceController {
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, workspaces));
     }
+
+    @GetMapping("/{workspaceId}/members")
+    @Operation(summary = "워크스페이스 소속 멤버 조회 API")
+    public ResponseEntity<CustomResponse<List<WorkspaceMemberInfoResponseDto>>> getWorkspaceMembers(
+            @PathVariable Long workspaceId
+    ) {
+        List<WorkspaceMemberInfoResponseDto> members = workspaceService.getWorkspaceMembers(workspaceId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, members));
+    }
+
 
 
 
