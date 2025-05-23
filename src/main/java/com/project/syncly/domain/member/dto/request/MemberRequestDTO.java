@@ -16,4 +16,8 @@ public class MemberRequestDTO {
             @Email @NotBlank String email,
             @ValidPassword String password
     ) { }
+
+    public record UpdateName(
+            @ValidName String newName
+    ){}
 }

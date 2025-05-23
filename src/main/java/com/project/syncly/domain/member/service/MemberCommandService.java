@@ -7,5 +7,5 @@ import com.project.syncly.domain.member.entity.SocialLoginProvider;
 public interface MemberCommandService {
     public void registerMember(MemberRequestDTO.SignUp dto);
     public Member findOrCreateSocialMember(String email, String name, SocialLoginProvider provider);
-
+    public void updateName(MemberRequestDTO.UpdateName updateName, Long memberId);
 }

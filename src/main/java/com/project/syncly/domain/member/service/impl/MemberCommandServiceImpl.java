@@ -51,4 +51,11 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         loginCacheService.cacheMember(member);
         return member;
     }
+
+    @Override
+    public void updateName(MemberRequestDTO.UpdateName updateName,Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        member.updateName(updateName.newName());
+    }
 }
