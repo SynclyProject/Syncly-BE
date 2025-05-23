@@ -11,6 +11,9 @@ import com.project.syncly.domain.member.service.MemberCommandService;
 import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.domain.auth.cache.LoginCacheService;
 import com.project.syncly.domain.auth.email.EmailAuthService;
+import com.project.syncly.global.jwt.service.TokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     private final PasswordEncoder passwordEncoder;
     private final LoginCacheService loginCacheService;
     private final EmailAuthService emailAuthService;
+    private final TokenService tokenService;
 
 
 
@@ -57,5 +61,18 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         member.updateName(updateName.newName());
+    }
+
+    @Override
+    public void deleteMember(HttpServletRequest request, HttpServletResponse response,
+                             Long memberId, MemberRequestDTO.DeleteMember toDelete) {
+        //삭제전엔 안전하게 db에서 조회
+        Member member = memberRepository.findById(memberId).orElseThrow(() ->
+                new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        if (!passwordEncoder.matches(toDelete.password(), member.getPassword())) {
+            throw new MemberException(MemberErrorCode.PASSWORD_NOT_MATCHED);
+        }
+        member.markAsDeleted(toDelete.leaveReasonType(), toDelete.leaveReason());
+        tokenService.logout(request, response);
     }
 }

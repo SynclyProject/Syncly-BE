@@ -3,7 +3,6 @@ package com.project.syncly.domain.member.entity;
 import com.project.syncly.global.entity.BaseTimeDeletedEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 @Entity
@@ -46,6 +45,13 @@ public class Member extends BaseTimeDeletedEntity {
 
     public void updateName(String newName) {
         this.name = newName;
+    }
+
+
+    public void markAsDeleted(LeaveReasonType reasonType, String leaveReason) {
+        super.markAsDeleted();
+        this.leaveReasonType = reasonType;
+        this.leaveReason = leaveReason;
     }
 
 }

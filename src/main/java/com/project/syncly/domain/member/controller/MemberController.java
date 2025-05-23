@@ -9,6 +9,7 @@ import com.project.syncly.domain.member.service.MemberCommandService;
 import com.project.syncly.global.anotations.MemberIdInfo;
 import com.project.syncly.global.anotations.MemberInfo;
 import com.project.syncly.global.apiPayload.CustomResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -62,6 +63,15 @@ public class MemberController {
     public ResponseEntity<CustomResponse<Void>> updateName(@RequestBody @Valid MemberRequestDTO.UpdateName updateName,
                                         @MemberIdInfo Long memberId) {
         memberCommandService.updateName(updateName, memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<CustomResponse<Void>> deleteMember(HttpServletRequest servletRequest,
+                                                             HttpServletResponse servletResponse,
+                                                             @MemberIdInfo Long memberId,
+                                                             @RequestBody @Valid MemberRequestDTO.DeleteMember deleteMember) {
+        memberCommandService.deleteMember(servletRequest, servletResponse, memberId, deleteMember);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 
