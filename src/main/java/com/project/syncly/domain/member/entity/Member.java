@@ -6,9 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.Where;
 
 @Entity
-@Table(name = "members", indexes = {
-        @Index(name = "idx_member_is_deleted", columnList = "isDeleted")
-})
+@Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
