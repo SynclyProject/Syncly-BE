@@ -38,7 +38,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         }
         String encodedPassword = passwordEncoder.encode(dto.password());
 
-        Member member = MemberConverter.toMember(dto.email(), encodedPassword, dto.name());
+        Member member = MemberConverter.toLocalMember(dto.email(), encodedPassword, dto.name());
 
         memberRepository.save(member);
         emailAuthService.clearVerified(dto.email());

@@ -12,11 +12,12 @@ public class MemberConverter {
                 .build();
     }
 
-    public static Member toMember(String email, String encodedPassword, String name) {
+    public static Member toLocalMember(String email, String encodedPassword, String name) {
         return Member.builder()
                 .email(email)
                 .password(encodedPassword)
                 .name(name)
+                .socialLoginProvider(SocialLoginProvider.LOCAL)
                 .build();
     }
 
