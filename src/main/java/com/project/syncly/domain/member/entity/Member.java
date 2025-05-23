@@ -51,6 +51,10 @@ public class Member extends BaseTimeDeletedEntity {
         this.password = newPassword;
     }
 
+    public void updateProfileImage(String newProfileImageUrl) {
+        this.profileImage = newProfileImageUrl;
+    }
+
 
     public void markAsDeleted(LeaveReasonType reasonType, String leaveReason) {
         super.markAsDeleted();
