@@ -64,7 +64,6 @@ public class TokenService {
 
     // 로그아웃 처리
     public void logout(HttpServletRequest request, HttpServletResponse response) {
-        String accessToken = jwtProvider.resolveAccessToken(request);
         String refreshToken = extractRefreshToken(request);
 
         tokenBlacklistService.blacklistRefreshToken(refreshToken);//블랙리스트 올리기
