@@ -98,6 +98,19 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     }
 
     @Override
+    public void deleteProfileImage(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getProfileImage() == null) {
+            throw new MemberException(MemberErrorCode.PROFILE_IMAGE_NOT_FOUND);
+        }
+
+        s3Util.delete(member.getProfileImage());
+        member.updateProfileImage(null);
+    }
+
+    @Override
     public void updatePassword(MemberRequestDTO.UpdatePassword updatePassword, Long memberId) {
 
         Member member = memberRepository.findById(memberId)

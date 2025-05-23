@@ -3,6 +3,7 @@ package com.project.syncly.domain.member.service;
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.entity.SocialLoginProvider;
+import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -15,5 +16,4 @@ public interface MemberCommandService {
     public void deleteProfileImage(Long memberId);
     public void deleteMember(HttpServletRequest request, HttpServletResponse response,
                              Long memberId, MemberRequestDTO.DeleteMember toDelete);
-    public void updatePassword(MemberRequestDTO.UpdatePassword updatePassword, Long memberId);
 }

@@ -74,6 +74,12 @@ public class MemberController {
         memberCommandService.updateProfileImage(memberId, request);
         return CustomResponse.success(HttpStatus.OK);
     }
+
+    @DeleteMapping("/profile-image")
+    public ResponseEntity<CustomResponse<Void>> deleteProfileImage(@MemberIdInfo Long memberId) {
+        memberCommandService.deleteProfileImage(memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));    }
+
     @PatchMapping("/password")
     public ResponseEntity<CustomResponse<Void>> updatePassword(@RequestBody @Valid MemberRequestDTO.UpdatePassword updatePassword,
                                                            @MemberIdInfo Long memberId) {

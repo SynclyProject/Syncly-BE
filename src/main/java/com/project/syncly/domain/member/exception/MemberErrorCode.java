@@ -17,6 +17,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     PASSWORD_NOT_MATCHED(HttpStatus.BAD_REQUEST, "MEMBER400_03", "이메일 혹은 비밀번호가 잘못되었습니다."),
     NO_LEAVE_REASON_TYPE(HttpStatus.BAD_REQUEST, "MEMBER400_04", "잘못된 탈퇴사유 타입입니다."),
     SOCIAL_MEMBER_CANNOT_USE_THIS_FEATURE(HttpStatus.BAD_REQUEST,"MEMBER400_05", "소셜 로그인 사용자는 이 기능을 이용할 수 없습니다."),
+    PROFILE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER400_05", "등록된 프로필 이미지가 없습니다."),
     ;
 
     private final HttpStatus status;
