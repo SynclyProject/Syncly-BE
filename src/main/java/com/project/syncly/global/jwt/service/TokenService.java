@@ -67,8 +67,7 @@ public class TokenService {
         String accessToken = jwtProvider.resolveAccessToken(request);
         String refreshToken = extractRefreshToken(request);
 
-        tokenBlacklistService.blacklistAccessToken(accessToken); //블랙리스트 올리기
-        tokenBlacklistService.blacklistRefreshToken(refreshToken);
+        tokenBlacklistService.blacklistRefreshToken(refreshToken);//블랙리스트 올리기
         removeRefreshTokenCookie(response);
     }
 

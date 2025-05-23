@@ -104,9 +104,6 @@ public class JwtProvider {
     public Long getMemberIdWithBlacklistCheck(String token, TokenType tokenType) {
         switch (tokenType) {
             case ACCESS:
-                if (tokenBlacklistService.isAccessTokenBlacklisted(token)) {
-                    throw new JwtException(JwtErrorCode.BLACKLISTED_ACCESS_TOKEN);
-                }
                 break;
             case REFRESH:
                 if (tokenBlacklistService.isRefreshTokenBlacklisted(token)) {
