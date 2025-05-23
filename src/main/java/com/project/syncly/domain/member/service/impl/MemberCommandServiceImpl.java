@@ -61,6 +61,8 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         member.updateName(updateName.newName());
+        loginCacheService.cacheMember(member);
+
     }
 
     @Override
@@ -74,5 +76,6 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         }
         member.markAsDeleted(toDelete.leaveReasonType(), toDelete.leaveReason());
         tokenService.logout(request, response);
+        loginCacheService.removeMemberCache(member.getId());
     }
 }
