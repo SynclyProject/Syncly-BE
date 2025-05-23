@@ -12,4 +12,5 @@ public interface MemberCommandService {
     public void updateName(MemberRequestDTO.UpdateName updateName, Long memberId);
     public void deleteMember(HttpServletRequest request, HttpServletResponse response,
                              Long memberId, MemberRequestDTO.DeleteMember toDelete);
+    public void updatePassword(MemberRequestDTO.UpdatePassword updatePassword, Long memberId);
 }

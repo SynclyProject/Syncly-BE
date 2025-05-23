@@ -66,6 +66,21 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     }
 
     @Override
+    public void updatePassword(MemberRequestDTO.UpdatePassword updatePassword, Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(updatePassword.currentPassword(), member.getPassword())) {
+            throw new MemberException(MemberErrorCode.PASSWORD_NOT_MATCHED);
+        }
+        String encodedNewPassword = passwordEncoder.encode(updatePassword.newPassword());
+        member.updatePassword(encodedNewPassword);
+
+        loginCacheService.cacheMember(member);
+    }
+
+    @Override
     public void deleteMember(HttpServletRequest request, HttpServletResponse response,
                              Long memberId, MemberRequestDTO.DeleteMember toDelete) {
         //삭제전엔 안전하게 db에서 조회

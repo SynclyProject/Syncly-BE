@@ -47,6 +47,10 @@ public class Member extends BaseTimeDeletedEntity {
         this.name = newName;
     }
 
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
 
     public void markAsDeleted(LeaveReasonType reasonType, String leaveReason) {
         super.markAsDeleted();

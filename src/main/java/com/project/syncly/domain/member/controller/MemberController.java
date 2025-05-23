@@ -66,6 +66,13 @@ public class MemberController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 
+    @PatchMapping("/password")
+    public ResponseEntity<CustomResponse<Void>> updatePassword(@RequestBody @Valid MemberRequestDTO.UpdatePassword updatePassword,
+                                                           @MemberIdInfo Long memberId) {
+        memberCommandService.updatePassword(updatePassword, memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
+    }
+
     @DeleteMapping
     public ResponseEntity<CustomResponse<Void>> deleteMember(HttpServletRequest servletRequest,
                                                              HttpServletResponse servletResponse,
