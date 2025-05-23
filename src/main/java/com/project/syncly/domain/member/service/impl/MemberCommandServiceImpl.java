@@ -8,10 +8,15 @@ import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.member.service.MemberCommandService;
-import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.domain.auth.cache.LoginCacheService;
 import com.project.syncly.domain.auth.email.EmailAuthService;
+import com.project.syncly.domain.s3.dto.S3RequestDTO;
+import com.project.syncly.domain.s3.exception.S3ErrorCode;
+import com.project.syncly.domain.s3.exception.S3Exception;
+import com.project.syncly.domain.s3.util.S3Util;
 import com.project.syncly.global.jwt.service.TokenService;
+import com.project.syncly.global.redis.core.RedisStorage;
+import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -28,6 +33,9 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     private final LoginCacheService loginCacheService;
     private final EmailAuthService emailAuthService;
     private final TokenService tokenService;
+    private final S3Util s3Util;
+    private final RedisStorage redisStorage;
+
 
 
 
@@ -63,6 +71,30 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         member.updateName(updateName.newName());
         loginCacheService.cacheMember(member);
 
+    }
+
+    @Override
+    public void updateProfileImage(Long memberId, S3RequestDTO.UpdateFile request) {
+        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId+'_'+request.fileName());
+        String cachedObjectKey = redisStorage.get(redisKey);
+
+        if (cachedObjectKey == null) {
+            throw new S3Exception(S3ErrorCode.OBJECT_KEY_NOT_FOUND);
+        }
+        if (!cachedObjectKey.equals(request.objectKey())) {
+            throw new S3Exception(S3ErrorCode.OBJECT_KEY_MISMATCH);
+        }
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getProfileImage() != null) {
+            s3Util.delete(member.getProfileImage());
+        }
+
+        String newImageUrl = s3Util.getObjectUrl(request.objectKey());
+        member.updateProfileImage(newImageUrl);
+        redisStorage.delete(redisKey);
     }
 
     @Override

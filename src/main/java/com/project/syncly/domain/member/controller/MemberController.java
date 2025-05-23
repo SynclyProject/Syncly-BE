@@ -6,6 +6,7 @@ import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.domain.member.service.MemberCommandService;
 
+import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import com.project.syncly.global.anotations.MemberIdInfo;
 import com.project.syncly.global.anotations.MemberInfo;
 import com.project.syncly.global.apiPayload.CustomResponse;
@@ -66,6 +67,13 @@ public class MemberController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 
+    @PatchMapping("/profile-image")
+    public CustomResponse<Void> updateProfileImage(
+            @RequestBody @Valid S3RequestDTO.UpdateFile request,
+            @MemberIdInfo Long memberId) {
+        memberCommandService.updateProfileImage(memberId, request);
+        return CustomResponse.success(HttpStatus.OK);
+    }
     @PatchMapping("/password")
     public ResponseEntity<CustomResponse<Void>> updatePassword(@RequestBody @Valid MemberRequestDTO.UpdatePassword updatePassword,
                                                            @MemberIdInfo Long memberId) {
