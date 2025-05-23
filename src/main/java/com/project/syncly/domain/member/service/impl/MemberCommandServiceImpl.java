@@ -71,6 +71,10 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        if (member.getSocialLoginProvider() != SocialLoginProvider.LOCAL) {
+            throw new MemberException(MemberErrorCode.SOCIAL_MEMBER_CANNOT_USE_THIS_FEATURE);
+        }
+
         if (!passwordEncoder.matches(updatePassword.currentPassword(), member.getPassword())) {
             throw new MemberException(MemberErrorCode.PASSWORD_NOT_MATCHED);
         }
