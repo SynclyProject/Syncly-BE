@@ -2,6 +2,7 @@ package com.project.syncly.domain.member.dto.request;
 
 
 import com.project.syncly.domain.member.entity.LeaveReasonType;
+import com.project.syncly.global.validator.annotation.PasswordMatch;
 import com.project.syncly.global.validator.annotation.ValidLeaveReason;
 import com.project.syncly.global.validator.annotation.ValidName;
 import com.project.syncly.global.validator.annotation.ValidPassword;
@@ -21,6 +22,13 @@ public class MemberRequestDTO {
 
     public record UpdateName(
             @ValidName String newName
+    ){}
+
+    @PasswordMatch
+    public record UpdatePassword(
+            @NotBlank String currentPassword,
+            @ValidPassword String newPassword,
+            @NotBlank String confirmPassword
     ){}
 
     @ValidLeaveReason//LeaveReasonType.ETC 일 경우에만 leaveReason null, 공백문자체크
