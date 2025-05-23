@@ -1,6 +1,8 @@
 package com.project.syncly.domain.member.dto.request;
 
 
+import com.project.syncly.domain.member.entity.LeaveReasonType;
+import com.project.syncly.global.validator.annotation.ValidLeaveReason;
 import com.project.syncly.global.validator.annotation.ValidName;
 import com.project.syncly.global.validator.annotation.ValidPassword;
 import jakarta.validation.constraints.Email;
