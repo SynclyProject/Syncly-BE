@@ -24,7 +24,7 @@ public class S3Controller {
     public ResponseEntity<CustomResponse<S3ResponseDTO.PreSignedUrl>> generatePresignedUrl(
             @RequestBody @Valid S3RequestDTO.PreSignedUrl request,
             @MemberIdInfo Long memberId) {
-        S3ResponseDTO.PreSignedUrl presignedUrl = s3Service.generatePresignedUrl(memberId, request);
+        S3ResponseDTO.PreSignedUrl presignedUrl = s3Service.generatePresignedPutUrl(memberId, request);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK ,presignedUrl));
     }
 }
