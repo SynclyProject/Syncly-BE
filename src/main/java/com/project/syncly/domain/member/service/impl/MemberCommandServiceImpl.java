@@ -95,6 +95,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         String newImageUrl = s3Util.getObjectUrl(request.objectKey());
         member.updateProfileImage(newImageUrl);
         redisStorage.delete(redisKey);
+        loginCacheService.cacheMember(member);
     }
 
     @Override
@@ -108,6 +109,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
 
         s3Util.delete(member.getProfileImage());
         member.updateProfileImage(null);
+        loginCacheService.cacheMember(member);
     }
 
     @Override
