@@ -47,7 +47,7 @@ public class TokenService {
 
     // [JWT Filter] Access Token 재발급
     public String reissueAccessToken(Long memberId, HttpServletResponse response) {
-        Member member = memberQueryService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberByIdWithRedis(memberId);
         String newAccessToken = jwtProvider.createAccessToken(member);
         response.setHeader("Authorization", "Bearer " + newAccessToken);
         return newAccessToken;

@@ -41,7 +41,7 @@ public class MemberQueryServiceImpl implements MemberQueryService {
     }
 
     @Override
-    public Member getMemberById(Long memberId) {
+    public Member getMemberByIdWithRedis(Long memberId) {
         Member member = loginCacheService.getCachedMember(memberId);
         if(member == null) {
             member = memberRepository.findById(memberId)

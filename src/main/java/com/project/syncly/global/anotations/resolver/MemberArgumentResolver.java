@@ -35,7 +35,7 @@ public class MemberArgumentResolver implements HandlerMethodArgumentResolver {
 
             TokenType tokenType = jwtProvider.getTokenType(token);
             Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(token, tokenType);
-            return memberQueryService.getMemberById(memberId);
+            return memberQueryService.getMemberByIdWithRedis(memberId);
         }
         return null;
     }
