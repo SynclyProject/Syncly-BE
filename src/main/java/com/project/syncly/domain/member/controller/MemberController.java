@@ -2,6 +2,7 @@ package com.project.syncly.domain.member.controller;
 
 
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
+import com.project.syncly.domain.member.dto.response.MemberResponseDTO;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.domain.member.service.MemberCommandService;
@@ -58,6 +59,11 @@ public class MemberController {
     public CustomResponse<?> test(@MemberInfo Member member) {
         System.out.println(member.toString());
         return CustomResponse.success(HttpStatus.OK);
+    }
+    @GetMapping
+    public ResponseEntity<CustomResponse<MemberResponseDTO.MemberInfo>> getMember(@MemberInfo Member member) {
+        MemberResponseDTO.MemberInfo memberInfo = memberQueryService.getMyInfo(member);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, memberInfo));
     }
 
     @PatchMapping("/name")

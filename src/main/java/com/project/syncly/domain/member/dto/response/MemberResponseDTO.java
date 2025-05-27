@@ -8,4 +8,11 @@ public class MemberResponseDTO {
         String accessToken,
         String refreshToken
     ){ }
+    @Builder
+    public record MemberInfo(
+            String name,
+            String email,
+            String profileImageObjectKey
+    ){ }
+
 }
