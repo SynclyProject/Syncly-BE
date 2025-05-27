@@ -9,4 +9,8 @@ public class S3ResponseDTO {
             String uploadUrl,
             String objectKey
     ) {}
+    @Builder
+    public record GetUrl(
+            String url
+    ) {}
 }

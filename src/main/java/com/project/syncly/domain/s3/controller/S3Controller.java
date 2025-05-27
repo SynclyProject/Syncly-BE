@@ -27,4 +27,22 @@ public class S3Controller {
         S3ResponseDTO.PreSignedUrl presignedUrl = s3Service.generatePresignedPutUrl(memberId, request);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK ,presignedUrl));
     }
+
+    // 2. 이미지 조회용 Presigned URL 발급 (권한 없이 공개 이미지 사용 가능)
+    @PostMapping("/view-url")
+    public ResponseEntity<CustomResponse<S3ResponseDTO.GetUrl>> getViewUrl(@RequestBody @Valid S3RequestDTO.GetViewUrl request) {
+        S3ResponseDTO.GetUrl url = s3Service.generatePresignedGetViewUrl(request);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, url));
+    }
+
+
+    // 3. 파일 다운로드용 Presigned URL 발급 (로그인 필요)
+    @GetMapping("/download-url")
+    public ResponseEntity<CustomResponse<S3ResponseDTO.GetUrl>> generatePresignedGetDownloadUrl(
+            @RequestBody @Valid S3RequestDTO.GetDownloadUrl request,
+            @MemberIdInfo Long memberId) {
+        S3ResponseDTO.GetUrl url = s3Service.generatePresignedGetDownloadUrl(request, memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, url));
+    }
+
 }

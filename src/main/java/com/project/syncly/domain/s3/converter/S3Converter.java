@@ -12,4 +12,9 @@ public class S3Converter {
                 .objectKey(objectKey)
                 .build();
     }
+    public static S3ResponseDTO.GetUrl toGetUrlResDTO(String url) {
+        return S3ResponseDTO.GetUrl.builder()
+                .url(url)
+                .build();
+    }
 }
