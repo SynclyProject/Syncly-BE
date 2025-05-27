@@ -19,7 +19,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class S3Util {
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${aws.s3.bucket}")
     private String bucket;
 
     private final S3Presigner s3Presigner;
