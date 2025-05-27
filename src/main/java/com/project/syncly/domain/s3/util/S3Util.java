@@ -47,10 +47,6 @@ public class S3Util {
 
     public void delete(String objectKeyOrUrl) {
         try {
-            String objectKey = objectKeyOrUrl.startsWith("https://")
-                    ? objectKeyOrUrl.replace("https://" + bucket + ".s3.amazonaws.com/", "")
-                    : objectKeyOrUrl;
-
             DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
                     .bucket(bucket)
                     .key(objectKey)
@@ -62,7 +58,4 @@ public class S3Util {
         }
     }
 
-    public String getObjectUrl(String objectKey) {
-        return "https://" + bucket + ".s3.amazonaws.com/" + objectKey;
-    }
 }

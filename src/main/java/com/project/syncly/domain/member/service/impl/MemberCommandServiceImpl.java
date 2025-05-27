@@ -92,8 +92,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
             s3Util.delete(member.getProfileImage());
         }
 
-        String newImageUrl = s3Util.getObjectUrl(request.objectKey());
-        member.updateProfileImage(newImageUrl);
+        member.updateProfileImage(request.objectKey());
         redisStorage.delete(redisKey);
         loginCacheService.cacheMember(member);
     }
