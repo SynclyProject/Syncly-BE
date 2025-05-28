@@ -10,12 +10,8 @@ import jakarta.validation.constraints.NotBlank;
 public class S3RequestDTO {
     public record PreSignedUrl(
             @ValidFileName String fileName,
-            @ValidMimeType String mimeType
-    ) {
-        public void isFileNameAndMimeTypeMatch() {
-            String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
-            FileMimeType expected = FileMimeType.fromExtension(ext);
-            FileMimeType actual = FileMimeType.fromMimeType(mimeType);
+            FileMimeType mimeType)
+            implements MimeMatchValidatable {
 
             if (expected != actual) {
                 throw new S3Exception(S3ErrorCode.MIME_TYPE_MISMATCH);
@@ -30,13 +26,13 @@ public class S3RequestDTO {
 
     public record GetViewUrl(
             @NotBlank String objectKey,
-            @ValidMimeType String mimeType
+            FileMimeType mimeType
     ) {}
 
     public record GetDownloadUrl(
             //여기 그냥 파일아이디만 받고 파일에 저 내용들 넣어두는 방식이 좋을 듯
             @NotBlank String objectKey,
-            @ValidMimeType String mimeType,
+            FileMimeType mimeType,
             @ValidFileName String fileName,
             @NotBlank Long fileId
     ) {}

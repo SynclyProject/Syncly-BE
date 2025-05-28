@@ -2,26 +2,28 @@ package com.project.syncly.domain.s3.enums;
 
 import com.project.syncly.domain.s3.exception.S3Exception;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
+import com.project.syncly.global.enums.BaseEnum;
 import lombok.Getter;
 
 import java.util.Arrays;
 
 @Getter
-public enum FileMimeType {
+public enum FileMimeType implements BaseEnum {
     JPG("image/jpg"),
     JPEG("image/jpeg"),
     PNG("image/png"),
     ;
 
-    private final String mimeType;
+    private final String key;
 
-    FileMimeType(String mimeType) {
-        this.mimeType = mimeType;
+    FileMimeType(String key) {
+        this.key = key;
     }
 
-    public static boolean isValid(String input) {
-        return Arrays.stream(values())
-                .anyMatch(e -> e.mimeType.equalsIgnoreCase(input));
+    public static FileMimeType extractMimeType(String fileName) {
+        String ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+        FileMimeType expected = fromExtension(ext);
+        return expected;
     }
 
     // 확장자 -> mime
@@ -36,7 +38,7 @@ public enum FileMimeType {
 
     public static FileMimeType fromMimeType(String mimeType) {
         return Arrays.stream(values())
-                .filter(e -> e.mimeType.equalsIgnoreCase(mimeType))
+                .filter(e -> e.key.equalsIgnoreCase(mimeType))
                 .findFirst()
                 .orElseThrow(() -> new S3Exception(S3ErrorCode.UNSUPPORTED_MIME_TYPE));
     }
