@@ -8,15 +8,10 @@ import com.project.syncly.global.validator.annotation.ValidMimeType;
 import jakarta.validation.constraints.NotBlank;
 
 public class S3RequestDTO {
+    @ValidMimeMatch
     public record PreSignedUrl(
             @ValidFileName String fileName,
-            FileMimeType mimeType)
-            implements MimeMatchValidatable {
-
-            if (expected != actual) {
-                throw new S3Exception(S3ErrorCode.MIME_TYPE_MISMATCH);
-            }
-        }
+            FileMimeType mimeType) {
     }
 
     public record UpdateFile(
