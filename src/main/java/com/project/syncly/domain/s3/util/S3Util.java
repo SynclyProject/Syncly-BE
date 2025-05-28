@@ -1,5 +1,6 @@
 package com.project.syncly.domain.s3.util;
 
+import com.project.syncly.domain.s3.enums.FileMimeType;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
 import com.project.syncly.domain.s3.exception.S3Exception;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +29,12 @@ public class S3Util {
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
 
-    public String createPresignedUrl(String objectKey, String mimeType) {
+    public String createPresignedUrl(String objectKey, FileMimeType mimeType) {
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucket)
                     .key(objectKey)
-                    .contentType(mimeType)
+                    .contentType(mimeType.getKey())
                     .build();
 
             PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
@@ -48,12 +49,11 @@ public class S3Util {
         }
     }
 
-    public String createPresignedGetUrlForView(String objectKey, String mimeType) {
+    public String createPresignedGetUrlForView(String objectKey) {
         try {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(objectKey)
-                    .responseContentType(mimeType)
                     .responseContentDisposition("inline")//브라우저가 지원하는 파일이면 바로 띄움
                     .build();
 
@@ -69,14 +69,13 @@ public class S3Util {
         }
     }
 
-    public String createPresignedGetUrlForDownload(String objectKey, String mimeType, String fileName) {
+    public String createPresignedGetUrlForDownload(String objectKey, String fileName) {
         try {
             //ContentDisposition는 이 파일의 행동을 강제한다(download, view)
             //ContentType는 랜더링 방식을 결정한다. 어떤 뷰어를 쓸 것인지
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(objectKey)
-                    .responseContentType(mimeType)
                     .responseContentDisposition("attachment; filename=\"" + fileName + "\"")//브라우저가 무조건 다운로드 창 띄움
                     .build();
 
