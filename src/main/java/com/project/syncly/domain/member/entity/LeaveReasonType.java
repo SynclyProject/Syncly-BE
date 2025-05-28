@@ -1,7 +1,9 @@
 package com.project.syncly.domain.member.entity;
 
 import com.project.syncly.global.enums.BaseEnum;
+import lombok.Getter;
 
+@Getter
 public enum LeaveReasonType implements BaseEnum {
 
     INCONVENIENT_SERVICE("INCONVENIENT_SERVICE", "서비스 이용이 불편해요"),
@@ -16,15 +18,6 @@ public enum LeaveReasonType implements BaseEnum {
     LeaveReasonType(String key, String description) {
         this.key = key;
         this.description = description;
-    }
-
-    @Override
-    public String getKey() {
-        return key;
-    }
-    @Override
-    public String getDescription() {
-        return description;
     }
 
 }
