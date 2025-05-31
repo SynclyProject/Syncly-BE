@@ -6,11 +6,24 @@ import com.project.syncly.global.validator.annotation.ValidMimeMatch;
 import jakarta.validation.constraints.NotBlank;
 
 public class S3RequestDTO {
-    @ValidMimeMatch
-    public record PreSignedUrl(
-            @ValidFileName String fileName,
-            FileMimeType mimeType) {
+    public interface UploadPreSignedUrl {
+        String fileName();
+        FileMimeType mimeType();
     }
+    @ValidMimeMatch
+    public record ProfileImageUploadPreSignedUrl(
+            @ValidFileName String fileName,
+            FileMimeType mimeType
+    ) implements UploadPreSignedUrl {}
+
+    @ValidMimeMatch
+    public record DriveFileUploadPreSignedUrl (
+            Long folderId,
+            Long memberId,
+            @ValidFileName String fileName,
+            FileMimeType mimeType
+    ) implements UploadPreSignedUrl {}
+
 
     public record UpdateFile(
             @NotBlank String fileName,

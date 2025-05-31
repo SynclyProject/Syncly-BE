@@ -16,7 +16,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.net.URL;
 import java.time.Duration;
 
 @Component

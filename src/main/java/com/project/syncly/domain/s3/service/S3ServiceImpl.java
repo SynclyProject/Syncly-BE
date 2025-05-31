@@ -22,9 +22,13 @@ public class S3ServiceImpl implements S3Service {
 
         String objectKey = UUID.randomUUID().toString();
         String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId + '_' + request.fileName());
+    public S3ResponseDTO.PreSignedUrl generatePresignedPutUrl(Long memberId, S3RequestDTO.UploadPreSignedUrl request) {
+        String extension = request.mimeType().getExtension();
+        String objectKey = "uploads/" + UUID.randomUUID() + "." + extension;
+        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId + ':' + request.fileName() + ':' + objectKey);
         String url = s3Util.createPresignedUrl(objectKey, request.mimeType());
 
-        redisStorage.set(redisKey, objectKey, Duration.ofMinutes(10));
+        redisStorage.set(redisKey, request, Duration.ofMinutes(10));
 
         return S3Converter.toPreSignedUrlResDTO(request.fileName(), url, objectKey);
     }
