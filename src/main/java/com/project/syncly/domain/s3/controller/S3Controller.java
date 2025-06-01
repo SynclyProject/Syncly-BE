@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/uploads")
+@RequestMapping("/api/s3")
 public class S3Controller {
 
     private final S3Service s3Service;

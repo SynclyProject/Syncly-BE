@@ -36,11 +36,20 @@ public enum FileMimeType implements BaseEnum {
         };
     }
 
-    public static FileMimeType fromMimeType(String mimeType) {
+
+    // JSON -> enum 역직렬화 시 사용
+    @JsonCreator
+    public static FileMimeType fromKey(String mimeType) {
         return Arrays.stream(values())
                 .filter(e -> e.key.equalsIgnoreCase(mimeType))
                 .findFirst()
                 .orElseThrow(() -> new S3Exception(S3ErrorCode.UNSUPPORTED_MIME_TYPE));
+    }
+
+    // enum -> JSON 직렬화 시 사용
+    @JsonValue
+    public String getKey() {
+        return key;
     }
 }
 
