@@ -2,13 +2,19 @@ package com.project.syncly.domain.s3.service;
 import com.project.syncly.domain.s3.converter.S3Converter;
 import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import com.project.syncly.domain.s3.dto.S3ResponseDTO;
+import com.project.syncly.domain.s3.util.CloudFrontUtil;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.domain.s3.util.S3Util;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
