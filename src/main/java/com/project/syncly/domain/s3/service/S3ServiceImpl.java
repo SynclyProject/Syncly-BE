@@ -28,7 +28,7 @@ public class S3ServiceImpl implements S3Service {
     public S3ResponseDTO.PreSignedUrl generatePresignedPutUrl(Long memberId, S3RequestDTO.UploadPreSignedUrl request) {
         String extension = request.mimeType().getExtension();
         String objectKey = "uploads/" + UUID.randomUUID() + "." + extension;
-        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId + ':' + request.fileName() + ':' + objectKey);
+        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId.toString() + ':' + request.fileName() + ':' + objectKey);
         String url = s3Util.createPresignedUrl(objectKey, request.mimeType());
 
         redisStorage.set(redisKey, request, Duration.ofMinutes(10));
