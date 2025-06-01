@@ -1,5 +1,7 @@
 package com.project.syncly.domain.s3.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.project.syncly.domain.s3.exception.S3Exception;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
 import com.project.syncly.global.enums.BaseEnum;
@@ -9,15 +11,17 @@ import java.util.Arrays;
 
 @Getter
 public enum FileMimeType implements BaseEnum {
-    JPG("image/jpg"),
-    JPEG("image/jpeg"),
-    PNG("image/png"),
+    JPG("image/jpg", "jpg"),
+    JPEG("image/jpeg", "jpeg"),
+    PNG("image/png", "png"),
     ;
 
     private final String key;
+    private final String extension;
 
-    FileMimeType(String key) {
+    FileMimeType(String key, String extension) {
         this.key = key;
+        this.extension = extension;
     }
 
     public static FileMimeType extractMimeType(String fileName) {
