@@ -6,6 +6,7 @@ import com.project.syncly.domain.s3.dto.S3ResponseDTO;
 import com.project.syncly.domain.s3.service.S3Service;
 import com.project.syncly.global.anotations.MemberIdInfo;
 import com.project.syncly.global.apiPayload.CustomResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,24 +21,33 @@ public class S3Controller {
 
     private final S3Service s3Service;
 
-    @PostMapping("/presigned-url")
-    public ResponseEntity<CustomResponse<S3ResponseDTO.PreSignedUrl>> generatePresignedUrl(
-            @RequestBody @Valid S3RequestDTO.PreSignedUrl request,
+    @PostMapping("/presigned-url/profile")
+    public ResponseEntity<CustomResponse<S3ResponseDTO.PreSignedUrl>> getProfilePresignedUrl(
+            @RequestBody @Valid S3RequestDTO.ProfileImageUploadPreSignedUrl request,
             @MemberIdInfo Long memberId) {
-        S3ResponseDTO.PreSignedUrl presignedUrl = s3Service.generatePresignedPutUrl(memberId, request);
-        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK ,presignedUrl));
+
+        return ResponseEntity.ok(CustomResponse.success(
+                HttpStatus.OK, s3Service.generatePresignedPutUrl(memberId, request)));
     }
 
-    // 2. 이미지 조회용 Presigned URL 발급 (권한 없이 공개 이미지 사용 가능)
-    @PostMapping("/view-url")
-    public ResponseEntity<CustomResponse<S3ResponseDTO.GetUrl>> getViewUrl(@RequestBody @Valid S3RequestDTO.GetViewUrl request) {
-        S3ResponseDTO.GetUrl url = s3Service.generatePresignedGetViewUrl(request);
-        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, url));
+    @PostMapping("/presigned-url/drive")
+    public ResponseEntity<CustomResponse<S3ResponseDTO.PreSignedUrl>> getDrivePresignedUrl(
+            @RequestBody @Valid S3RequestDTO.DriveFileUploadPreSignedUrl request,
+            @MemberIdInfo Long memberId) {
+        return ResponseEntity.ok(CustomResponse.success(
+                HttpStatus.OK, s3Service.generatePresignedPutUrl(memberId, request)));
     }
 
+    // 이미지 조회용 CloudFront Signed Cookie 방식
+    @PostMapping("/view-cookie")
+    public ResponseEntity<Void> issueSignedCookieForView(
+            @RequestBody @Valid S3RequestDTO.GetViewUrl request,
+            HttpServletResponse response) {
+        return s3Service.generateSignedCookieForView(request, response);
+    }
 
-    // 3. 파일 다운로드용 Presigned URL 발급 (로그인 필요)
-    @GetMapping("/download-url")
+    // 파일 다운로드용 Presigned URL 발급
+    @PostMapping("/download-url")
     public ResponseEntity<CustomResponse<S3ResponseDTO.GetUrl>> generatePresignedGetDownloadUrl(
             @RequestBody @Valid S3RequestDTO.GetDownloadUrl request,
             @MemberIdInfo Long memberId) {
