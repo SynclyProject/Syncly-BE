@@ -16,6 +16,7 @@ import java.util.UUID;
 public class S3ServiceImpl implements S3Service {
     private final RedisStorage redisStorage;
     private final S3Util s3Util;
+    private final CloudFrontUtil cloudFrontUtil;
 
     @Override
     public S3ResponseDTO.PreSignedUrl generatePresignedPutUrl(Long memberId, S3RequestDTO.UploadPreSignedUrl request) {
@@ -30,9 +31,24 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public S3ResponseDTO.GetUrl generatePresignedGetViewUrl(S3RequestDTO.GetViewUrl request) {
-        String url = s3Util.createPresignedGetUrlForView(request.objectKey());
-        return S3Converter.toGetUrlResDTO(url);
+    public ResponseEntity<Void> generateSignedCookieForView(S3RequestDTO.GetViewUrl request, HttpServletResponse response) {
+        String resourcePath = request.objectKey();
+
+        Map<String, String> cookies = cloudFrontUtil.generateSignedCookies(resourcePath, Duration.ofMinutes(10));
+
+        cookies.forEach((name, value) -> {
+            ResponseCookie cookie = ResponseCookie.from(name, value)
+                    .path("/") // or specific resource
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .maxAge(Duration.ofMinutes(10))
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        });
+
+        // 클라이언트는 이제 https://d123.cloudfront.net/uploads/abc123.jpg 직접 접근 가능
+        return ResponseEntity.noContent().build();
     }
 
     @Override

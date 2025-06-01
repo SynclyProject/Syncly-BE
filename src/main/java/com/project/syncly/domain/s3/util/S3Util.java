@@ -48,26 +48,6 @@ public class S3Util {
         }
     }
 
-    public String createPresignedGetUrlForView(String objectKey) {
-        try {
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(objectKey)
-                    .responseContentDisposition("inline")//브라우저가 지원하는 파일이면 바로 띄움
-                    .build();
-
-            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                    .getObjectRequest(getObjectRequest)
-                    .signatureDuration(Duration.ofMinutes(5))
-                    .build();
-
-            PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-            return presignedRequest.url().toString();
-        } catch (Exception e) {
-            throw new S3Exception(S3ErrorCode.PRESIGNED_URL_FAILED);
-        }
-    }
-
     public String createPresignedGetUrlForDownload(String objectKey, String fileName) {
         try {
             //ContentDisposition는 이 파일의 행동을 강제한다(download, view)
