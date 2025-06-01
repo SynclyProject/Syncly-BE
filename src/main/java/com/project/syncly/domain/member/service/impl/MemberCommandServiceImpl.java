@@ -75,14 +75,15 @@ public class MemberCommandServiceImpl implements MemberCommandService {
 
     @Override
     public void updateProfileImage(Long memberId, S3RequestDTO.UpdateFile request) {
-        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId+'_'+request.fileName());
-        String cachedObjectKey = redisStorage.get(redisKey);
+        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(
+                memberId.toString() + ':' + request.fileName() + ':' + request.objectKey());
 
-        if (cachedObjectKey == null) {
+        S3RequestDTO.ProfileImageUploadPreSignedUrl saved = redisStorage.get(
+                redisKey, S3RequestDTO.ProfileImageUploadPreSignedUrl.class
+        );
+
+        if (saved == null) {
             throw new S3Exception(S3ErrorCode.OBJECT_KEY_NOT_FOUND);
-        }
-        if (!cachedObjectKey.equals(request.objectKey())) {
-            throw new S3Exception(S3ErrorCode.OBJECT_KEY_MISMATCH);
         }
 
         Member member = memberRepository.findById(memberId)
