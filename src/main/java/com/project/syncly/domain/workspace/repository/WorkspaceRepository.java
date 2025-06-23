@@ -6,10 +6,11 @@ import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
+@Repository
 public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
     //개인 워크 스페이스 존재 여부 확인
     @Query("""

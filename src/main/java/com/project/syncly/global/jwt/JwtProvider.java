@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -30,6 +33,7 @@ public class JwtProvider {
     private final SecretKey secret;
     private final JwtConfig jwtConfig;
     private final TokenBlacklistService tokenBlacklistService;
+    private final PrincipalDetailsService principalDetailsService;
 
     // @Value: yml에서 해당 값을 가져오기 (아래의 YML의 값을 가져올 수 있음)
     /*public JwtProvider(@Value("${Jwt.secret}") String secret,
@@ -155,6 +159,23 @@ public class JwtProvider {
     public TokenType getTokenType(String token) {
         String type = getClaims(token).getBody().get("type", String.class);
         return TokenType.from(type);
+    }
+
+    //토큰 검증
+    public boolean isValidToken(String token) {
+        try {
+            getClaims(token); // 파싱 시도 (예외 발생 시 catch)
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+
+    public Authentication getAuthentication(String token) {
+        Long id = getMemberIdWithBlacklistCheck(token, getTokenType(token));
+        UserDetails userDetails = principalDetailsService.loadUserById(id);
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
 }
