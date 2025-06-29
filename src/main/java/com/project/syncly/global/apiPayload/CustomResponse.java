@@ -3,6 +3,7 @@ package com.project.syncly.global.apiPayload;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.project.syncly.global.apiPayload.code.BaseErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,4 +40,15 @@ public class CustomResponse<T> {
     public static <T> CustomResponse<T> failure(String code, String message) {
         return new CustomResponse<>(false, code, message, null);
     }
+
+    // BaseErrorCode 기반 실패 응답
+    public static CustomResponse<Void> from(BaseErrorCode errorCode) {
+        return new CustomResponse<>(false, errorCode.getCode(), errorCode.getMessage(), null);
+    }
+
+    public static <T> CustomResponse<T> from(BaseErrorCode errorCode, T result) {
+        return new CustomResponse<>(false, errorCode.getCode(), errorCode.getMessage(), result);
+    }
+
+
 }
