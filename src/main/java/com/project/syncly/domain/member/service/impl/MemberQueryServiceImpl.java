@@ -1,5 +1,7 @@
 package com.project.syncly.domain.member.service.impl;
 
+import com.project.syncly.domain.member.converter.MemberConverter;
+import com.project.syncly.domain.member.dto.response.MemberResponseDTO;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.exception.MemberErrorCode;
 import com.project.syncly.domain.member.exception.MemberException;
@@ -41,7 +43,7 @@ public class MemberQueryServiceImpl implements MemberQueryService {
     }
 
     @Override
-    public Member getMemberById(Long memberId) {
+    public Member getMemberByIdWithRedis(Long memberId) {
         Member member = loginCacheService.getCachedMember(memberId);
         if(member == null) {
             member = memberRepository.findById(memberId)
@@ -59,5 +61,9 @@ public class MemberQueryServiceImpl implements MemberQueryService {
         return member;
     }
 
+    @Override
+    public MemberResponseDTO.MemberInfo getMyInfo(Member member) {
+        return MemberConverter.toMemberInfo(member);
+    }
 
 }

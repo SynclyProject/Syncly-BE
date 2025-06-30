@@ -107,8 +107,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private void processValidAccessToken(String accessToken) {
-        TokenType tokenType = jwtProvider.getTokenType(accessToken);
-        Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(accessToken, tokenType);
+        Long memberId = jwtProvider.getMemberId(accessToken);
         UserDetails userDetails = principalDetailsService.loadUserById(memberId);
 
         if (userDetails != null) {

@@ -1,4 +1,7 @@
 package com.project.syncly.global.redis.core;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.syncly.global.redis.error.RedisErrorCode;
+import com.project.syncly.global.redis.error.RedisException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,6 +17,7 @@ import java.time.Duration;
 public class RedisStorageImpl implements RedisStorage {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper redisObjectMapper;
 
     @PostConstruct
     public void check() {
@@ -47,6 +51,11 @@ public class RedisStorageImpl implements RedisStorage {
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
         }
-        return null;
+        // 강제 변환
+        try {
+            return redisObjectMapper.convertValue(value, clazz); // 주입받은 거 사용
+        } catch (Exception e) {
+            throw new RedisException(RedisErrorCode.CONVERT_FAIL_REDIS_TO_OBJECT);
+        }
     }
 }

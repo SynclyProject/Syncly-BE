@@ -66,6 +66,11 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+
+    // S3
+    implementation "software.amazon.awssdk:s3:2.25.11"
+
 }
 
 tasks.named('test') {

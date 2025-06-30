@@ -5,6 +5,7 @@ public enum RedisKeyPrefix {
     EMAIL_AUTH_VERIFIED("EMAIL_AUTH:V:"),
     LOGIN_CACHE("LOGIN_CACHE:"),
     MEMBER_CACHE("MEMBER_CACHE:"),
+    S3_AUTH_OBJECT_KEY("S3_OBJECT_KEY:"),
     BLACKLIST_ACCESS("BLACKLIST:ACCESS:"),
     BLACKLIST_REFRESH("BLACKLIST:REFRESH:");
 
@@ -21,5 +22,6 @@ public enum RedisKeyPrefix {
     public String get(Object suffix) {
         return prefix + suffix.toString();
     }
+
 }
 
