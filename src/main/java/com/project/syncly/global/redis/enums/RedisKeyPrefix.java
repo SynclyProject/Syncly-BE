@@ -27,5 +27,7 @@ public enum RedisKeyPrefix {
         return prefix + suffix.toString();
     }
 
+    public String get() { return prefix; }
+
 }
 
