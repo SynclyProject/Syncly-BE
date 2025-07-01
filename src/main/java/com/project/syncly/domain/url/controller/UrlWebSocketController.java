@@ -21,6 +21,7 @@ public class UrlWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final UrlWebSocketServiceImpl urlWebSocketService;
 
+    //URL 탭 생성 API
     @MessageMapping("/createTab")
     public void createUrlTab(UrlWebSocketRequestDto.CreateUrlTabRequestDto request, Principal principal) {
         String userEmail = principal.getName();
@@ -28,6 +29,30 @@ public class UrlWebSocketController {
         UrlWebSocketResponseDto.CreateUrlTabResponseDto response = urlWebSocketService.createUrlTab(userEmail, request);
 
         //"/topic/workspace.{workspaceID}를 구독한 모든 사용자에게 실시간 탭 생성 알림
+        String destination = "/topic/workspace." + request.workspaceId();
+        messagingTemplate.convertAndSend(destination, CustomResponse.success(response));
+    }
+
+    //URL 탭 삭제 API
+    @MessageMapping("/deleteTab")
+    public void deleteUrlTab(UrlWebSocketRequestDto.DeleteUrlTabRequestDto request, Principal principal) {
+        String userEmail = principal.getName();
+
+        UrlWebSocketResponseDto.DeleteUrlTabResponseDto response = urlWebSocketService.deleteUrlTab(userEmail, request);
+
+        // "/topic/workspace.{workspaceID}"를 구독한 사용자에게 실시간 삭제 알림
+        String destination = "/topic/workspace." + request.workspaceId();
+        messagingTemplate.convertAndSend(destination, CustomResponse.success(response));
+    }
+
+    //URL 탭 이름 변경 API
+    @MessageMapping("/updateTabName")
+    public void updateUrlTabName(UrlWebSocketRequestDto.UpdateUrlTabNameRequestDto request, Principal principal) {
+        String userEmail = principal.getName();
+
+        UrlWebSocketResponseDto.UpdateUrlTabNameResponseDto response = urlWebSocketService.updateUrlTabName(userEmail, request);
+
+        // "/topic/workspace.{workspaceId}" 구독자에게 실시간 이름 변경 알림
         String destination = "/topic/workspace." + request.workspaceId();
         messagingTemplate.convertAndSend(destination, CustomResponse.success(response));
     }

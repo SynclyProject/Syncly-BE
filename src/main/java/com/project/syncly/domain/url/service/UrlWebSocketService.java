@@ -9,5 +9,7 @@ import java.util.List;
 
 public interface UrlWebSocketService {
     public UrlWebSocketResponseDto.CreateUrlTabResponseDto createUrlTab(String userEmail, UrlWebSocketRequestDto.CreateUrlTabRequestDto request);
+    public UrlWebSocketResponseDto.DeleteUrlTabResponseDto deleteUrlTab(String userEmail, UrlWebSocketRequestDto.DeleteUrlTabRequestDto request);
+    public UrlWebSocketResponseDto.UpdateUrlTabNameResponseDto updateUrlTabName(String userEmail, UrlWebSocketRequestDto.UpdateUrlTabNameRequestDto request);
 }
 

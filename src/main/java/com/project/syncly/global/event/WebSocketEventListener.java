@@ -3,7 +3,9 @@ package com.project.syncly.global.event;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import java.security.Principal;
 public class WebSocketEventListener {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final ApplicationContext applicationContext;
 
 
 
@@ -37,6 +40,11 @@ public class WebSocketEventListener {
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+        if (!((AbstractApplicationContext) applicationContext).isActive()) {
+            log.warn("ApplicationContext 종료로 인한 redis 삭제 생략 {}", event.getSessionId());
+            return;
+        }
+
         String sessionId = event.getSessionId();
 
         String userId = (String) redisTemplate.opsForHash().get(RedisKeyPrefix.WS_SESSIONS.get(), sessionId);

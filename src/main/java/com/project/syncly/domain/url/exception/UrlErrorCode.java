@@ -23,7 +23,10 @@ public enum UrlErrorCode implements BaseErrorCode {
     NOT_OWNER_OF_URL(HttpStatus.FORBIDDEN, "Url403_0", "해당 URL에 대한 수정 권한이 없습니다."),
     URL_TAB_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "Url400_1", "URL 탭 이름은 필수 입력값입니다."),
     URL_ITEM_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "Url400_2", "URL 항목 이름은 필수 입력값입니다."),
-    URL_ITEM_LINK_REQUIRED(HttpStatus.BAD_REQUEST, "Url400_3", "URL 링크는 필수 입력값입니다.");
+    URL_ITEM_LINK_REQUIRED(HttpStatus.BAD_REQUEST, "Url400_3", "URL 링크는 필수 입력값입니다."),
+
+    // URL 탭-워크스페이스 관계 오류
+    URL_TAB_NOT_BELONG_TO_WORKSPACE(HttpStatus.BAD_REQUEST, "Url400_4", "해당 URL 탭은 요청한 워크스페이스에 속하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;
