@@ -3,6 +3,7 @@ package com.project.syncly.domain.workspace.service;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.workspace.converter.WorkspaceConverter;
+import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
@@ -13,6 +14,7 @@ import com.project.syncly.domain.workspace.repository.WorkspaceInvitationReposit
 import com.project.syncly.domain.workspace.repository.WorkspaceRepository;
 import com.project.syncly.domain.workspaceMember.converter.WorkspaceMemberConverter;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
+import com.project.syncly.domain.workspaceMember.entity.enums.Role;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -126,7 +128,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         boolean hasActiveInvite = workspaceInvitationRepository.existsByWorkspaceIdAndInviteeIdAndExpiredAtAfter(
                 workspaceId, invitee.getId(), LocalDateTime.now());
         if (hasActiveInvite) {
-            throw new CustomException(WorkspaceErrorCode.ALREADY_INVITED);
+            //초대 만료 전 초대가 존재하나, 멤버가 그룹에 포함되어 있지 않으면서 ACCEPT or REJECT 상태라면 재전송 가능
+            WorkspaceInvitation invited = workspaceInvitationRepository.findByWorkspaceIdAndInviteeIdAndExpiredAtAfter(workspaceId, invitee.getId(), LocalDateTime.now())
+                    .orElseThrow(() -> new CustomException(WorkspaceErrorCode.INVITATION_NOT_FOUND));
+            if (invited.getType() == InvitationType.PENDING) {
+                throw new CustomException(WorkspaceErrorCode.ALREADY_INVITED);
+            }
         }
 
         // 초대 토큰 생성 (invitationMailService 에서 중복 여부 확인)
@@ -242,6 +249,205 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         return WorkspaceConverter.toInvitationListResponse(invitations);
     }
+
+    @Override
+    public WorkspaceResponseDto.RenameWorkspaceResponseDto renameTeamWorkspace(Long workspaceId, Long memberId, String newName) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 사용자 조회 및 사용자 권한이 MANAGER인지 확인
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        if (member.getRole() != Role.MANAGER) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MANAGER);
+        }
+
+        // 이름 변경
+        workspace.setWorkspaceName(newName);
+        workspaceRepository.save(workspace);
+
+        return WorkspaceConverter.toRenameWorkspaceResponse(workspace);
+    }
+
+    @Override
+    public WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspace(Long workspaceId, Long memberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        String workspaceName = workspace.getWorkspaceName();
+
+        // 멤버 조회
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 해당 워크 스페이스의 팀원이 몇명인지 조회
+        long numOfMembers = workspaceMemberRepository.countByWorkspaceId(workspaceId);
+        if (numOfMembers < 1) {
+            throw new CustomException(WorkspaceErrorCode.NO_MEMBERS);
+        }
+
+        //나가고자 하는 사람이 매니저 일 경우
+        //다른 팀원에게 매니저 위임 (팀원이 2명 이상일 경우)
+        if (member.getRole() == Role.MANAGER && numOfMembers >= 2) {
+            WorkspaceMember nextManager = workspaceMemberRepository.findFirstCrewByWorkspaceIdOrderedByEmail(workspaceId, Role.CREW)
+                    .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NO_OTHER_CREW_TO_DELEGATE));
+
+            nextManager.setRole(Role.MANAGER);
+            workspaceMemberRepository.save(nextManager);
+
+            // 멤버 삭제
+            workspaceMemberRepository.delete(member);
+        }
+
+        //나가고자 하는 사람이 매니저 일 경우 ( && 팀원이 매니저 포함 1명일 경우)
+        else if (member.getRole() == Role.MANAGER) {
+            //멤버 삭제 후 워크 스페이스 삭제
+            workspaceMemberRepository.delete(member);
+            workspaceRepository.delete(workspace);
+        }
+
+        //CREW 일 경우
+        else {
+            // 멤버 삭제
+            workspaceMemberRepository.delete(member);
+        }
+
+        //반환
+        return WorkspaceConverter.toLeaveWorkspaceResponse(workspaceId, memberId, workspaceName, LocalDateTime.now());
+    }
+
+    @Override
+    public WorkspaceResponseDto.KickMemberResponseDto kickMember(Long workspaceId, Long memberId, Long targetMemberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 멤버 조회
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 멤버가 Manager가 맞는지 확인
+        if (member.getRole() != Role.MANAGER) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MANAGER);
+        }
+
+
+        // 추방하고자 하는 멤버 조회
+        WorkspaceMember targetMember = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, targetMemberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 본인 추방 불가
+        if (member.getId().equals(targetMember.getId())) {
+            throw new CustomException(WorkspaceErrorCode.CANNOT_KICK_SELF);
+        }
+
+        // 추방하고자 하는 멤버가 CREW가 맞는지 확인
+        if (targetMember.getRole() != Role.CREW) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_CREW);
+        }
+
+        // 멤버 삭제 (추방)
+        workspaceMemberRepository.delete(targetMember);
+
+        //반환
+        return WorkspaceConverter.toKickMemberResponse(workspaceId, targetMemberId, workspace.getWorkspaceName(), LocalDateTime.now());
+    }
+
+    @Override
+    public List<WorkspaceResponseDto.MyWorkspaceResponseDto> getMyWorkspaces(Long memberId) {
+        boolean exists = memberRepository.existsById(memberId);
+        if (!exists) {
+            throw new CustomException(WorkspaceErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        List<Workspace> workspace = workspaceRepository.findAllByMemberId(memberId);
+
+        return WorkspaceConverter.toMyWorkspaceListResponse(workspace);
+    }
+
+    @Override
+    public List<WorkspaceMemberInfoResponseDto> getWorkspaceMembers(Long workspaceId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        //워크스페이스 멤버 목록 반환
+        return workspaceMemberRepository.findAllMembersByWorkspaceIdOrdered(workspaceId);
+    }
+
+    @Override
+    public WorkspaceResponseDto.DeleteWorkspaceResponseDto deleteWorkspace(Long workspaceId, Long memberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 멤버 조회
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        // 팀 워크스페이스인지 확인
+        if (workspace.getWorkspaceType() != WorkspaceType.TEAM) {
+            throw new CustomException(WorkspaceErrorCode.NOT_TEAM_WORKSPACE);
+        }
+
+        // 매니저인지 권한 확인
+        if (member.getRole() != Role.MANAGER) {
+            throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MANAGER);
+        }
+
+        //반환을 위한 값들 저장
+        String workspaceName = workspace.getWorkspaceName();
+        LocalDateTime createdAt = workspace.getCreatedAt();
+        LocalDateTime deletedAt = LocalDateTime.now();
+
+        // 워크스페이스 및 관련 멤버, 초대 등 연관 데이터 삭제 (Cascade 설정에 따라 자동 삭제)
+        workspaceRepository.delete(workspace);
+
+        return WorkspaceConverter.toDeleteWorkspaceResponse(workspaceId, workspaceName, createdAt, deletedAt);
+    }
+
+    @Override
+    public WorkspaceResponseDto.GetWorkspaceRoleResponseDto getMyRole(Long workspaceId, Long memberId) {
+        // 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 워크스페이스 멤버 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+
+        return WorkspaceConverter.toGetWorkspaceRoleResponse(workspace.getId(), workspaceMember.getRole());
+    }
+
+
+
+
+
+
+
 
 }
 

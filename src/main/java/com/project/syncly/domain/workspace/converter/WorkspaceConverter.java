@@ -6,7 +6,8 @@ import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.WorkspaceInvitation;
 import com.project.syncly.domain.workspace.entity.enums.InvitationType;
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
-import org.hibernate.jdbc.Work;
+import com.project.syncly.domain.workspaceMember.entity.enums.Role;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -83,5 +84,61 @@ public class WorkspaceConverter {
                         .build()
                 ).toList();
     }
+
+    public static WorkspaceResponseDto.RenameWorkspaceResponseDto toRenameWorkspaceResponse(Workspace workspace) {
+        return WorkspaceResponseDto.RenameWorkspaceResponseDto.builder()
+                .workspaceId(workspace.getId())
+                .newName(workspace.getWorkspaceName())
+                .build();
+    }
+
+
+    public static WorkspaceResponseDto.LeaveWorkspaceResponseDto toLeaveWorkspaceResponse(Long workspaceId, Long memberId, String workspaceName, LocalDateTime leavedAt) {
+        return WorkspaceResponseDto.LeaveWorkspaceResponseDto.builder()
+                .workspaceId(workspaceId)
+                .workspaceMemberId(memberId)
+                .workspaceName(workspaceName)
+                .leavedAt(leavedAt)
+                .build();
+    }
+
+
+    public static WorkspaceResponseDto.KickMemberResponseDto toKickMemberResponse(Long workspaceId, Long targetMemberId, String workspaceName, LocalDateTime deletedAt) {
+        return WorkspaceResponseDto.KickMemberResponseDto.builder()
+                .workspaceId(workspaceId)
+                .targetMemberId(targetMemberId)
+                .workspaceName(workspaceName)
+                .deletedAt(deletedAt)
+                .build();
+    }
+
+    public static List<WorkspaceResponseDto.MyWorkspaceResponseDto> toMyWorkspaceListResponse(List<Workspace> workspaces) {
+        return workspaces.stream()
+                .map(workspace -> WorkspaceResponseDto.MyWorkspaceResponseDto.builder()
+                        .workspaceId(workspace.getId())
+                        .workspaceName(workspace.getWorkspaceName())
+                        .workspaceType(workspace.getWorkspaceType())
+                        .createdAt(workspace.getCreatedAt())
+                        .build()
+                ).toList();
+    }
+
+
+    public static WorkspaceResponseDto.DeleteWorkspaceResponseDto toDeleteWorkspaceResponse(Long workspaceId, String workspaceName, LocalDateTime createdAt, LocalDateTime deletedAt) {
+        return WorkspaceResponseDto.DeleteWorkspaceResponseDto.builder()
+                .workspaceId(workspaceId)
+                .workspaceName(workspaceName)
+                .createdAt(createdAt)
+                .deletedAt(deletedAt)
+                .build();
+    }
+
+    public static WorkspaceResponseDto.GetWorkspaceRoleResponseDto toGetWorkspaceRoleResponse(Long workspaceId, Role role) {
+        return WorkspaceResponseDto.GetWorkspaceRoleResponseDto.builder()
+                .workspaceId(workspaceId)
+                .role(role)
+                .build();
+    }
+
 
 }

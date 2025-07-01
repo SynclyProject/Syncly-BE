@@ -3,6 +3,7 @@ package com.project.syncly.domain.workspace.service;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.workspace.converter.WorkspaceConverter;
+import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
@@ -24,5 +25,12 @@ public interface WorkspaceService {
     public WorkspaceResponseDto.AcceptWorkspaceResponseDto acceptInvitation(Long inviteeId, Long invitationId);
     public WorkspaceResponseDto.RejectWorkspaceResponseDto rejectInvitation(Long inviteeId, Long invitationId);
     public List<WorkspaceResponseDto.InvitationInfoDto> getInvitations(Long memberId);
+    public WorkspaceResponseDto.RenameWorkspaceResponseDto renameTeamWorkspace(Long workspaceId, Long memberId, String newName);
+    public WorkspaceResponseDto.LeaveWorkspaceResponseDto leaveWorkspace(Long workspaceId, Long memberId);
+    public WorkspaceResponseDto.KickMemberResponseDto kickMember(Long workspaceId, Long memberId, Long targetMemberId);
+    public List<WorkspaceResponseDto.MyWorkspaceResponseDto> getMyWorkspaces(Long memberId);
+    public List<WorkspaceMemberInfoResponseDto> getWorkspaceMembers(Long workspaceId);
+    public WorkspaceResponseDto.DeleteWorkspaceResponseDto deleteWorkspace(Long workspaceId, Long memberId);
+    public WorkspaceResponseDto.GetWorkspaceRoleResponseDto getMyRole(Long workspaceId, Long memberId);
 }
 
