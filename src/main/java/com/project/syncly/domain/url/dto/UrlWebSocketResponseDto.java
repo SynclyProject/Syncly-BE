@@ -12,7 +12,7 @@ public class UrlWebSocketResponseDto {
     @Builder
     @Schema(description = "팀 워크스페이스 생성 응답 DTO")
     public record CreateUrlTabResponseDto(
-            String message,
+            String action,
             Long urlTabId,
             Long workspaceId,
             String urlTabName,
@@ -23,7 +23,7 @@ public class UrlWebSocketResponseDto {
     @Builder
     @Schema(description = "URL 탭 삭제 응답 DTO")
     public record DeleteUrlTabResponseDto(
-            String message,
+            String action,
             Long urlTabId,
             Long workspaceId,
             LocalDateTime deletedAt

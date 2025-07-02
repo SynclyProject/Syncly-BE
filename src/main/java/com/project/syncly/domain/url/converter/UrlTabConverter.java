@@ -18,7 +18,7 @@ public class UrlTabConverter {
 
     public static UrlWebSocketResponseDto.CreateUrlTabResponseDto toUrlTabResponse(UrlTab urlTab) {
         return UrlWebSocketResponseDto.CreateUrlTabResponseDto.builder()
-                .message("[C]url tab 생성 완료")
+                .action("TAB_ADD")
                 .urlTabId(urlTab.getId())
                 .workspaceId(urlTab.getWorkspace().getId())
                 .urlTabName(urlTab.getTabName())
@@ -28,7 +28,7 @@ public class UrlTabConverter {
 
     public static UrlWebSocketResponseDto.DeleteUrlTabResponseDto toDeleteUrlTabResponse(Long urlTabId, Long workspaceId) {
         return UrlWebSocketResponseDto.DeleteUrlTabResponseDto.builder()
-                .message("[D]url tab 삭제 완료")
+                .action("TAB_DELETE")
                 .urlTabId(urlTabId)
                 .workspaceId(workspaceId)
                 .deletedAt(LocalDateTime.now())
@@ -37,7 +37,7 @@ public class UrlTabConverter {
 
     public static UrlWebSocketResponseDto.UpdateUrlTabNameResponseDto toUpdateUrlTabNameResponse(UrlTab urlTab) {
         return UrlWebSocketResponseDto.UpdateUrlTabNameResponseDto.builder()
-                .message("[U]url tab 이름 변경 완료")
+                .message("TAB_UPDATE")
                 .urlTabId(urlTab.getId())
                 .workspaceId(urlTab.getWorkspace().getId())
                 .updatedTabName(urlTab.getTabName())
