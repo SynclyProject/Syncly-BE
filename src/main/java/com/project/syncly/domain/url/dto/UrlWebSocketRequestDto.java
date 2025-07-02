@@ -1,6 +1,7 @@
 package com.project.syncly.domain.url.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class UrlWebSocketRequestDto {
@@ -40,6 +41,30 @@ public class UrlWebSocketRequestDto {
             @NotNull(message = "변경할 이름은 필수입니다.")
             String newUrlTabName
     ) {}
+
+    @Schema(description = "URL 아이템 추가 요청 DTO")
+    public record AddUrlItemRequestDto(
+            @Schema(description = "URL 탭 ID", example = "12")
+            @NotNull(message = "tabId는 필수입니다.")
+            Long tabId,
+
+            @Schema(description = "추가할 URL", example = "https://example.com")
+            @NotBlank(message = "URL은 필수입니다.")
+            String url
+    ) {}
+
+    @Schema(description = "URL 아이템 삭제 요청 DTO")
+    public record DeleteUrlItemRequestDto(
+            @Schema(description = "URL 탭 ID", example = "12")
+            @NotNull(message = "tabId는 필수입니다.")
+            Long tabId,
+
+            @Schema(description = "삭제할 URL 아이템 ID", example = "123")
+            @NotNull(message = "urlItemId는 필수입니다.")
+            Long urlItemId
+    ) {}
+
+
 
 
 }

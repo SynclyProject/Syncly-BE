@@ -33,13 +33,34 @@ public class UrlWebSocketResponseDto {
     @Builder
     @Schema(description = "URL 탭 이름 변경 응답 DTO")
     public record UpdateUrlTabNameResponseDto(
-            String message,
+            String action,
             Long urlTabId,
             Long workspaceId,
             String updatedTabName,
             LocalDateTime updatedAt
     ) {
     }
+
+    @Builder
+    @Schema(description = "URL 아이템 추가 응답 DTO")
+    public record AddUrlItemResponseDto(
+            String action,
+            Long urlTabId,
+            Long urlItemId,
+            String url,
+            LocalDateTime createdAt
+    ) {}
+
+    @Builder
+    @Schema(description = "URL 아이템 삭제 응답 DTO")
+    public record DeleteUrlItemResponseDto(
+            String action,
+            Long urlTabId,
+            Long urlItemId,
+            LocalDateTime deletedAt
+    ) {}
+
+
 
 
 }

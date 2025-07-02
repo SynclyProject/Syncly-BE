@@ -57,4 +57,27 @@ public class UrlWebSocketController {
         messagingTemplate.convertAndSend(destination, CustomResponse.success(response));
     }
 
+    //URL 아이템 추가 API
+    @MessageMapping("/addUrl")
+    public void addUrlItem(UrlWebSocketRequestDto.AddUrlItemRequestDto request, Principal principal) {
+        String userEmail = principal.getName();
+
+        UrlWebSocketResponseDto.AddUrlItemResponseDto response = urlWebSocketService.addUrlItem(userEmail, request);
+
+        // "/topic/tab.{tabId}"를 구독한 사용자에게 실시간 URL 추가 알림
+        String destination = "/topic/tab." + request.tabId();
+        messagingTemplate.convertAndSend(destination, CustomResponse.success(response));
+    }
+
+    // URL 아이템 삭제 API
+    @MessageMapping("/deleteUrl")
+    public void deleteUrlItem(UrlWebSocketRequestDto.DeleteUrlItemRequestDto request, Principal principal) {
+        String userEmail = principal.getName();
+
+        UrlWebSocketResponseDto.DeleteUrlItemResponseDto response = urlWebSocketService.deleteUrlItem(userEmail, request);
+
+        // "/topic/tab.{tabId}"를 구독한 사용자에게 실시간 삭제 알림
+        String destination = "/topic/tab." + request.tabId();
+        messagingTemplate.convertAndSend(destination, CustomResponse.success(response));
+    }
 }

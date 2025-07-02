@@ -37,7 +37,7 @@ public class UrlTabConverter {
 
     public static UrlWebSocketResponseDto.UpdateUrlTabNameResponseDto toUpdateUrlTabNameResponse(UrlTab urlTab) {
         return UrlWebSocketResponseDto.UpdateUrlTabNameResponseDto.builder()
-                .message("TAB_UPDATE")
+                .action("TAB_UPDATE")
                 .urlTabId(urlTab.getId())
                 .workspaceId(urlTab.getWorkspace().getId())
                 .updatedTabName(urlTab.getTabName())
