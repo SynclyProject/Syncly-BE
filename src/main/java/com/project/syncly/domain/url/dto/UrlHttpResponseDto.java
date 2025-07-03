@@ -49,4 +49,56 @@ public class UrlHttpResponseDto {
             LocalDateTime createdAt
     ) {
     }
+
+    @Builder
+    @Schema(description = "팀 워크스페이스 생성 응답 DTO")
+    public record CreateUrlTabResponseDto(
+            String action,
+            Long urlTabId,
+            Long workspaceId,
+            String urlTabName,
+            LocalDateTime createdAt
+    ) {
+    }
+
+    @Builder
+    @Schema(description = "URL 탭 삭제 응답 DTO")
+    public record DeleteUrlTabResponseDto(
+            String action,
+            Long urlTabId,
+            Long workspaceId,
+            LocalDateTime deletedAt
+    ) {
+    }
+
+    @Builder
+    @Schema(description = "URL 탭 이름 변경 응답 DTO")
+    public record UpdateUrlTabNameResponseDto(
+            String action,
+            Long urlTabId,
+            Long workspaceId,
+            String updatedTabName,
+            LocalDateTime updatedAt
+    ) {
+    }
+
+    @Builder
+    @Schema(description = "URL 아이템 추가 응답 DTO")
+    public record AddUrlItemResponseDto(
+            String action,
+            Long urlTabId,
+            Long urlItemId,
+            String url,
+            LocalDateTime createdAt
+    ) {}
+
+    @Builder
+    @Schema(description = "URL 아이템 삭제 응답 DTO")
+    public record DeleteUrlItemResponseDto(
+            String action,
+            Long urlTabId,
+            Long urlItemId,
+            LocalDateTime deletedAt
+    ) {}
+
 }

@@ -61,5 +61,24 @@ public class UrlItemConverter {
                 .build();
     }
 
+    public static UrlHttpResponseDto.AddUrlItemResponseDto toAddUrlItemHttpResponse(UrlItem urlItem) {
+        return UrlHttpResponseDto.AddUrlItemResponseDto.builder()
+                .action("URL_ADD")
+                .urlTabId(urlItem.getUrlTab().getId())
+                .urlItemId(urlItem.getId())
+                .url(urlItem.getUrl())
+                .createdAt(urlItem.getCreatedAt())
+                .build();
+    }
+
+    public static UrlHttpResponseDto.DeleteUrlItemResponseDto toDeleteUrlItemHttpResponse(UrlItem urlItem) {
+        return UrlHttpResponseDto.DeleteUrlItemResponseDto.builder()
+                .action("URL_DELETE")
+                .urlTabId(urlItem.getUrlTab().getId())
+                .urlItemId(urlItem.getId())
+                .deletedAt(LocalDateTime.now())
+                .build();
+    }
+
 
 }
