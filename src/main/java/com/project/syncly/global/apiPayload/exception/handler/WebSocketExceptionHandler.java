@@ -10,6 +10,7 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import java.security.Principal;
+import java.util.Map;
 
 @Slf4j
 @ControllerAdvice
@@ -25,26 +26,43 @@ public class WebSocketExceptionHandler {
     public void handleCustomException(CustomException ex, Principal principal) {
         log.warn("[ WebSocket CustomException ]: {}", ex.getCode().getMessage());
 
-        CustomResponse<Void> response = CustomResponse.from(ex.getCode());
+        Map<String, Object> errorResult = Map.of(
+                "action", "ERROR",
+                "details", ex.getCode().getMessage()
+        );
+
 
         messagingTemplate.convertAndSendToUser(
-                principal.getName(),                // 로그인된 사용자 식별
-                "/queue/errors",                    // 클라이언트에서 구독할 개인 큐
-                response                       // 에러 메시지 전달
+                principal.getName(),
+                "/queue/errors",
+                CustomResponse.failure(
+                        ex.getCode().getCode(),
+                        ex.getCode().getMessage(),
+                        errorResult
+                )
         );
     }
+
 
     @MessageExceptionHandler(Exception.class)
     public void handleAllOtherExceptions(Exception ex, Principal principal) {
         log.error("[ WebSocket Unexpected Error ]: {}", ex.getMessage());
 
-        CustomResponse<Void> response = GeneralErrorCode.INTERNAL_SERVER_ERROR_500.getErrorResponse();
+        Map<String, Object> errorResult = Map.of(
+                "action", "ERROR",
+                "details", "알 수 없는 서버 에러가 발생했습니다."
+        );
 
         messagingTemplate.convertAndSendToUser(
                 principal.getName(),
                 "/queue/errors",
-                response
+                CustomResponse.failure(
+                        GeneralErrorCode.INTERNAL_SERVER_ERROR_500.getCode(),
+                        GeneralErrorCode.INTERNAL_SERVER_ERROR_500.getMessage(),
+                        errorResult
+                )
         );
     }
+
 }
 

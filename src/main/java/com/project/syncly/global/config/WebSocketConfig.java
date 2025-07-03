@@ -22,8 +22,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
         registry.setApplicationDestinationPrefixes("/app");
+        registry.setUserDestinationPrefix("/user");
     } //클라이언트가 메시지를 보낼 때 /app/으로 시작을 하게 되면
     //서버쪽 컨트롤러 클래스 내부의 @MessageMapping으로 라우팅
 
