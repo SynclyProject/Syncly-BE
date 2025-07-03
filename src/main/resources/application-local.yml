@@ -16,53 +16,16 @@ spring:
       ddl-auto: update
     show-sql: true
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
 
-  mail:
-    host: smtp.gmail.com
-    port: 587 #STARTTLS 보안전송 포트
-    username: ${MAIL_USER_NAME}
-    password: ${MAIL_APP_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-    code-ttl-seconds: 180       # 인증코드 유효 시간 3분
-    verified-ttl-seconds: 600   # 인증 완료 상태 유지 시간 10분
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
-            authorization-grant-type: authorization_code
-            scope:
-              - profile     #이름, 프로필 이미지
-              - email       #이메일
-        provider:
-          google:
-            user-name-attribute: sub
+aws:
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID}
+    secret-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ap-northeast-2
+  s3:
+    bucket: ${AWS_S3_BUCKET_NAME}
+  cloudfront:
+    domain: ${AWS_CLOUDFRONT_DOMAIN}
+    key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
+    private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
 
-Jwt:
-  secret: ${JWT_SECRET_KEY}
-  token:
-    access-expiration-time: 1800000 # 30분
-    refresh-expiration-time: 259200000 # 3일
-
-redis:
-  cache:
-    login-ttl-seconds: 1800     # 30분 == access token TTL
-    member-ttl-seconds: 259200   # 3일
-
-
-#localhost:8080/하면 swagger실행
-springdoc:
-  swagger-ui:
-    path: /

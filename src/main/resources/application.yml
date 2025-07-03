@@ -7,6 +7,58 @@ spring:
     default: local
 
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USER_NAME}
+    password: ${MAIL_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    code-ttl-seconds: 180
+    verified-ttl-seconds: 600
+    invitation:
+      link: ${SYNCLY_LINK}
+      token-expiration-millis: 604800000 #7일
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+            scope:
+              - profile     #이름, 프로필 이미지
+              - email       #이메일
+        provider:
+          google:
+            user-name-attribute: sub
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+Jwt:
+  secret: ${JWT_SECRET_KEY}
+  token:
+    access-expiration-time: 1800000 # 30분
+    refresh-expiration-time: 259200000 # 3일
+
+redis:
+  cache:
+    login-ttl-seconds: 1800     # 30분 == access token TTL
+    member-ttl-seconds: 259200   # 3일
+
 
 
 

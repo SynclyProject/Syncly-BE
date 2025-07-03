@@ -6,9 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.Where;
 
 @Entity
-@Table(name = "members", indexes = {
-        @Index(name = "idx_member_is_deleted", columnList = "isDeleted")
-})
+@Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -43,6 +41,25 @@ public class Member extends BaseTimeDeletedEntity {
     private LeaveReasonType leaveReasonType;
 
     @Column(length = 200)
-    private String LeaveReason;
+    private String leaveReason;
+
+    public void updateName(String newName) {
+        this.name = newName;
+    }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void updateProfileImage(String newProfileImageUrl) {
+        this.profileImage = newProfileImageUrl;
+    }
+
+
+    public void markAsDeleted(LeaveReasonType reasonType, String leaveReason) {
+        super.markAsDeleted();
+        this.leaveReasonType = reasonType;
+        this.leaveReason = leaveReason;
+    }
 
 }

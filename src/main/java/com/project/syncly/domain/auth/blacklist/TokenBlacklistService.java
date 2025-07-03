@@ -28,15 +28,6 @@ public class TokenBlacklistService {
     private final SecretKey secret;
     private final RedisStorage redisStorage;
 
-    public void blacklistAccessToken(String token) {
-        Duration ttl = getValidTtlOrNull(token);
-        if (ttl == null) return;
-
-        String key = RedisKeyPrefix.BLACKLIST_ACCESS.get(token);
-
-        redisStorage.set(key, "true", ttl);
-        log.info("[BLACKLIST] AccessToken 등록 완료");
-    }
 
     public void blacklistRefreshToken(String token) {
         Duration ttl = getValidTtlOrNull(token);
@@ -48,10 +39,6 @@ public class TokenBlacklistService {
         log.info("[BLACKLIST] RefreshToken 등록 완료");
     }
 
-    public boolean isAccessTokenBlacklisted(String token) {
-        String key = RedisKeyPrefix.BLACKLIST_ACCESS.get(token);
-        return "true".equals(redisStorage.get(key));
-    }
 
     public boolean isRefreshTokenBlacklisted(String token) {
         String key = RedisKeyPrefix.BLACKLIST_REFRESH.get(token);
