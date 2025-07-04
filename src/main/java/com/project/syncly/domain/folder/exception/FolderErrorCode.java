@@ -15,7 +15,8 @@ public enum FolderErrorCode implements BaseErrorCode {
     WORKSPACE_NOT_FOUND(HttpStatus.NOT_FOUND, "Folder404_1", "워크스페이스가 존재하지 않습니다."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "Folder403_0", "해당 폴더에 접근할 수 없습니다."),
     EMPTY_NAME(HttpStatus.BAD_REQUEST, "Folder400_1", "폴더 이름은 비워둘 수 없습니다."),
-    INVALID_NAME(HttpStatus.BAD_REQUEST, "Folder400_1", "폴더 이름은 1~50자의 한글, 영문, 숫자, '-', '_'만 사용할 수 있으며 공백이나 특수문자는 허용되지 않습니다.")
+    INVALID_NAME(HttpStatus.BAD_REQUEST, "Folder400_1", "폴더 이름은 1~50자의 한글, 영문, 숫자, '-', '_'만 사용할 수 있으며 공백이나 특수문자는 허용되지 않습니다."),
+    FOLDER_DEPTH_EXCEEDED(HttpStatus.BAD_REQUEST, "Folder400_2", "폴더 최대 깊이를 초과했습니다. 최대 깊이: 5단계"),
     ;
 
     private final HttpStatus status;

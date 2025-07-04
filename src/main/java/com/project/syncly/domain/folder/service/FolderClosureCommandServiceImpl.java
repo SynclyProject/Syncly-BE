@@ -19,7 +19,7 @@ public class FolderClosureCommandServiceImpl implements FolderClosureCommandServ
 
         // [1] 자기 자신 → 자기 자신 (depth = 0) 삽입
         // 중복 삽입 방지 위해 이미 존재하는지 확인
-        if (folderClosureRepository.existsByAncestorIdAndDescendantId(newFolderId, newFolderId)) {
+        if (!folderClosureRepository.existsByAncestorIdAndDescendantId(newFolderId, newFolderId)) {
             folderClosureRepository.save(FolderConverter.toFolderClosure(newFolderId, newFolderId, 0));
         }
 
@@ -32,7 +32,7 @@ public class FolderClosureCommandServiceImpl implements FolderClosureCommandServ
                 Long ancestorId = ancestor.getAncestorId();
                 int depth = ancestor.getDepth() + 1;
                 // 조상 -> 새 폴더 관계가 이미 없다면 삽입
-                if (folderClosureRepository.existsByAncestorIdAndDescendantId(ancestorId, newFolderId)) {
+                if (!folderClosureRepository.existsByAncestorIdAndDescendantId(ancestorId, newFolderId)) {
                     folderClosureRepository.save(FolderConverter.toFolderClosure(ancestorId, newFolderId, depth));
                 }
             }
