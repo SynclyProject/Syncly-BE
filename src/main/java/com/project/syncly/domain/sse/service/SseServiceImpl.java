@@ -15,10 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
-public class SseServiceImpl {
+public class SseServiceImpl implements SseService{
     //단일 브라우저 연결(Map<Long, SseEmitter>) 구조
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
+    @Override
     public SseEmitter subscribe(Long memberId) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); //타임아웃 설정, 브라우저에서 자동 재연결
         emitters.put(memberId, emitter); //해당 유저의 emitter 객체 저장
@@ -37,6 +38,7 @@ public class SseServiceImpl {
         return emitter;
     }
 
+    @Override
     public void sendInvitationAlertToUser(Long memberId, WorkspaceInvitation invitation, Workspace workspace) {
         SseEmitter emitter = emitters.get(memberId);
         if (emitter != null) {
