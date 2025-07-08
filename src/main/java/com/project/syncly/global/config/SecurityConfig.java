@@ -49,7 +49,9 @@ public class SecurityConfig {
             "/api/auth/social/**",
             "/login/oauth2/**",
             "/ws-stomp",
-            "/ws-stomp/**"
+            "/ws-stomp/**",
+            "/api/workspaces/notifications",
+            "/api/workspaces/notifications/**"
     };
 
     @Bean
