@@ -5,11 +5,19 @@ import com.project.syncly.global.redis.error.RedisException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamOffset;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.SetOperations;
+
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -57,5 +65,69 @@ public class RedisStorageImpl implements RedisStorage {
         } catch (Exception e) {
             throw new RedisException(RedisErrorCode.CONVERT_FAIL_REDIS_TO_OBJECT);
         }
+    }
+
+    @Override
+    public Long addToSet(String key, String value) {
+        redisTemplate.opsForSet().add(key, value);
+        return redisTemplate.opsForSet().size(key);
+    }
+
+    @Override
+    public Long removeFromSet(String key, String value) {
+        redisTemplate.opsForSet().remove(key, value);
+        return redisTemplate.opsForSet().size(key);
+    }
+    @Override
+    public Set<Object> getSetValues(String key) {
+        return redisTemplate.opsForSet().members(key);
+    }
+
+    @Override
+    public Boolean addToZSet(String key, String value, double score) {
+        return redisTemplate.opsForZSet().add(key, value, score);
+    }
+
+    @Override
+    public Long removeFromZSet(String key, String value) {
+        return redisTemplate.opsForZSet().remove(key, value);
+    }
+
+    @Override
+    public Set<Object> getZSetByScoreRange(String key, double minScore, double maxScore) {
+        return redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore);
+    }
+
+    @Override
+    public Double getZSetScore(String key, String value) {
+        return redisTemplate.opsForZSet().score(key, value);
+    }
+
+    @Override
+    public Long getZSetSize(String key) {
+        return redisTemplate.opsForZSet().zCard(key);
+    }
+
+
+    @Override
+    public void setHash(String key, Map<String, Object> values, Duration ttl) {
+        HashOperations<String, Object, Object> ops = redisTemplate.opsForHash();
+        ops.putAll(key, values);
+        redisTemplate.expire(key, ttl);
+    }
+
+    @Override
+    public void updateHashField(String key, String field, Object value) {
+        redisTemplate.opsForHash().put(key, field, value);
+    }
+
+    @Override
+    public Map<Object, Object> getHash(String key) {
+        HashOperations<String, Object, Object> ops = redisTemplate.opsForHash();
+        return ops.entries(key);
+    }
+    @Override
+    public void deleteFieldFromHash(String key, String field) {
+        redisTemplate.opsForHash().delete(key, field);
     }
 }
