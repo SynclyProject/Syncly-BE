@@ -7,8 +7,12 @@ public enum RedisKeyPrefix {
     MEMBER_CACHE("MEMBER_CACHE:"),
     S3_AUTH_OBJECT_KEY("S3_OBJECT_KEY:"),
     BLACKLIST_ACCESS("BLACKLIST:ACCESS:"),
-    BLACKLIST_REFRESH("BLACKLIST:REFRESH:");
-
+    BLACKLIST_REFRESH("BLACKLIST:REFRESH:"),
+    //LiveKit
+    CALL_ROOM("CALL_ROOM:"),
+    CALL_PARTICIPANT("CALL_ROOM:%s:PARTICIPANT:%s"),
+    CALL_ROOM_EVENTS("CALL_ROOM_EVENTS"),
+    ;
     private final String prefix;
 
     RedisKeyPrefix(String prefix) {
@@ -21,6 +25,10 @@ public enum RedisKeyPrefix {
 
     public String get(Object suffix) {
         return prefix + suffix.toString();
+    }
+
+    public String format(String... args) {
+        return String.format(this.prefix, (Object[]) args);
     }
 
 }
