@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class LiveKitServiceImpl implements LiveKitService {
+public class LiveKitTokenServiceImpl implements LiveKitTokenService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final LiveKitTokenUtil tokenUtil;
 
