@@ -46,7 +46,8 @@ public class SecurityConfig {
             "/api/member/email/verify",
             "/api/member/register",
             "/api/auth/social/**",
-            "/login/oauth2/**"
+            "/login/oauth2/**",
+            "/api/livekit/webhook"
     };
 
     @Bean
