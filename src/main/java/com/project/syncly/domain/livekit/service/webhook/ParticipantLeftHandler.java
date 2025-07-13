@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 public class ParticipantLeftHandler implements WebhookEventHandler {
 
     private final ParticipantStateService participantStateService;
-    private final RealtimeNotificationService notificationService;
 
     @Override
     public boolean supports(WebhookEvent event) {
@@ -27,11 +26,6 @@ public class ParticipantLeftHandler implements WebhookEventHandler {
         String participantId = event.getParticipant().getIdentity();
 
         participantStateService.removeParticipant(
-                roomId,
-                participantId
-        );
-
-        notificationService.sendLeft(
                 roomId,
                 participantId
         );
