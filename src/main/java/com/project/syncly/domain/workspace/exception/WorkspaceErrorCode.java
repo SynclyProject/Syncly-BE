@@ -16,12 +16,13 @@ public enum WorkspaceErrorCode implements BaseErrorCode {
     // 워크스페이스 관련 에러
     WORKSPACE_NOT_FOUND(HttpStatus.NOT_FOUND, "Workspace404_0", "워크스페이스가 존재하지 않습니다."),
     NOT_TEAM_WORKSPACE(HttpStatus.BAD_REQUEST, "Workspace400_1", "팀 워크스페이스가 아닙니다."),
+    NOT_PERSONAL_WORKSPACE(HttpStatus.BAD_REQUEST, "Workspace400_2", "개인 워크스페이스가 아닙니다."),
     NOT_WORKSPACE_MEMBER(HttpStatus.FORBIDDEN, "Workspace403_1", "워크스페이스의 멤버가 아닙니다."),
     NOT_WORKSPACE_MANAGER(HttpStatus.FORBIDDEN, "Workspace403_2", "워크스페이스의 매니저가 아닙니다."),
     NOT_WORKSPACE_CREW(HttpStatus.FORBIDDEN, "Workspace403_3", "워크스페이스의 크루가 아닙니다."),
     NO_MEMBERS(HttpStatus.NOT_FOUND, "Workspace404_1", "워크스페이스에 멤버가 존재하지 않습니다."),
     NO_OTHER_CREW_TO_DELEGATE(HttpStatus.CONFLICT, "Workspace409_1", "위임 가능한 팀원이 존재하지 않습니다."),
-    CANNOT_KICK_SELF(HttpStatus.BAD_REQUEST, "Workspace400_2", "본인은 추방할 수 없습니다."),
+    CANNOT_KICK_SELF(HttpStatus.BAD_REQUEST, "Workspace400_3", "본인은 추방할 수 없습니다."),
 
 
     // 초대 관련 에러

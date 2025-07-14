@@ -7,7 +7,11 @@ public enum RedisKeyPrefix {
     MEMBER_CACHE("MEMBER_CACHE:"),
     S3_AUTH_OBJECT_KEY("S3_OBJECT_KEY:"),
     BLACKLIST_ACCESS("BLACKLIST:ACCESS:"),
-    BLACKLIST_REFRESH("BLACKLIST:REFRESH:");
+    BLACKLIST_REFRESH("BLACKLIST:REFRESH:"),
+
+    //WebSocket 관련 키
+    WS_SESSIONS("WS:SESSIONS:"),
+    WS_ONLINE_USERS("WS:ONLINE_USERS");
 
     private final String prefix;
 
@@ -22,6 +26,8 @@ public enum RedisKeyPrefix {
     public String get(Object suffix) {
         return prefix + suffix.toString();
     }
+
+    public String get() { return prefix; }
 
 }
 

@@ -26,9 +26,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class WorkspaceServiceImpl implements WorkspaceService {
+
 
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
@@ -441,11 +442,6 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         return WorkspaceConverter.toGetWorkspaceRoleResponse(workspace.getId(), workspaceMember.getRole());
     }
-
-
-
-
-
 
 
 
