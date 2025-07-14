@@ -29,3 +29,8 @@ aws:
     key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
     private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
 
+
+livekit:
+  api-key: ${LIVEKIT_API_KEY}
+  api-secret: ${LIVEKIT_API_SECRET}
+  grpc-url: ${LIVEKIT_GRPC_URL}

@@ -19,7 +19,7 @@ public class LiveKitBeanConfig {
     @Bean
     public ManagedChannel liveKitChannel(LiveKitProperties props) {
         return ManagedChannelBuilder
-                .forTarget(props.getWsUrl()) // 예: "localhost:7881"
+                .forTarget(props.getGrpcUrl()) // 예: "localhost:7881"
                 .usePlaintext() // TLS가 아닌 경우
                 .build();
     }

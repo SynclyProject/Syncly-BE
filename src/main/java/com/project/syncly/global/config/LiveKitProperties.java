@@ -12,5 +12,5 @@ import org.springframework.stereotype.Component;
 public class LiveKitProperties {
     private String apiKey;
     private String apiSecret;
-    private String wsUrl;
+    private String grpcUrl;
 }
