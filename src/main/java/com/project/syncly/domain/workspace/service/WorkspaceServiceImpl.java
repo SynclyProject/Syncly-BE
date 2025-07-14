@@ -2,6 +2,7 @@ package com.project.syncly.domain.workspace.service;
 
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
+import com.project.syncly.domain.sse.service.SseServiceImpl;
 import com.project.syncly.domain.workspace.converter.WorkspaceConverter;
 import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
@@ -36,6 +37,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final MemberRepository memberRepository;
     private final WorkspaceInvitationRepository workspaceInvitationRepository;
     private final InvitationMailServiceImpl invitationMailService;
+    private final SseServiceImpl sseService;
 
 
     @Value("${spring.mail.invitation.link}")
@@ -147,6 +149,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         // 초대 엔티티 저장
         WorkspaceInvitation invitation = WorkspaceConverter.toInvitation(workspace, inviter, invitee, token);
         workspaceInvitationRepository.save(invitation);
+
+        // 초대 대상자에게 SSE 알림 전송
+        sseService.sendInvitationAlertToUser(invitee.getId(), invitation, workspace);
 
         // 응답 반환
         return WorkspaceConverter.toInviteResponse(invitation, invitee.getEmail());
