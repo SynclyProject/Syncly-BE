@@ -15,6 +15,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,7 +47,11 @@ public class SecurityConfig {
             "/api/member/email/verify",
             "/api/member/register",
             "/api/auth/social/**",
-            "/login/oauth2/**"
+            "/login/oauth2/**",
+            "/ws-stomp",
+            "/ws-stomp/**",
+            "/api/workspaces/notifications",
+            "/api/workspaces/notifications/**"
     };
 
     @Bean
@@ -78,6 +83,12 @@ public class SecurityConfig {
         //프론트와 백엔드가 다른 도메인에 있으면 cors 설정 해줘야함
 
         return http.build();
+    }
+
+    //Websocket handshake시 filter chain을 지나지 않고 무시하도록 설정(해당 설정이 없으면 403에러 발생)
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring().requestMatchers("/ws-stomp");
     }
 
 
