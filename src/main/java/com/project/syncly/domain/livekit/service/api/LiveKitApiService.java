@@ -13,12 +13,14 @@ public class LiveKitApiService {
     private final LiveKitApiClient liveKitApiClient;
 
     public void deleteRoom(String roomId) {
-        try {
-            liveKitApiClient.deleteRoom(roomId);
-            log.info("LiveKit 방 삭제 성공: {}", roomId);
-        } catch (Exception e) {
-            log.warn("LiveKit 방 삭제 실패: {}", roomId, e);
-            throw new LiveKitException(LiveKitErrorCode.ROOM_DELETION_FAIL);
-        }
+        log.debug("deleteRoom() 호출됨: {}", roomId);
+        liveKitApiClient.deleteRoom(roomId)
+                .subscribe(
+                        unused -> log.info("LiveKit 방 '{}' 삭제 성공", roomId),
+                        error -> {
+                            log.warn("LiveKit 방 '{}' 삭제 실패", roomId, error);
+                            liveKitApiClient.deleteRoom(roomId);
+                        }
+                );
     }
 }
