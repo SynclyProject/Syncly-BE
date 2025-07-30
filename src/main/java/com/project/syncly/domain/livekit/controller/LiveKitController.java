@@ -45,12 +45,9 @@ public class LiveKitController {
                     .collect(Collectors.joining(System.lineSeparator()));
 
             String auth = request.getHeader("Authorization");
+            System.out.println("LiveKit Webhook 호출됨! " + body);
 
-            if (body == null || body.isBlank()) {
-                throw new LiveKitException(LiveKitErrorCode.INVALID_WEBHOOK_BODY);
-            }
-
-            WebhookEvent event = webhookReceiver.receive(body, auth); // 여기서도 검증 실패 시 예외 발생 가능
+            WebhookEvent event = webhookJwtVerifier.getReceiver().receive(body, auth);
             webhookEventRouter.handle(event);
 
             return ResponseEntity.ok().build();
