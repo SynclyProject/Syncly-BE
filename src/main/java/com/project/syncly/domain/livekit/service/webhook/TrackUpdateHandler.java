@@ -25,6 +25,7 @@ public class TrackUpdateHandler implements WebhookEventHandler {
     public void handle(WebhookEvent event) {
         TrackUpdateDTO dto = TrackUpdateConverter.convert(event);
         participantStateService.updateTrackState(dto);
+        //알림 전송
         notificationService.sendTrackUpdate(dto);
     }
 }

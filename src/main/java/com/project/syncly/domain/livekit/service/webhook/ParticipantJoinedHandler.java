@@ -1,5 +1,7 @@
 package com.project.syncly.domain.livekit.service.webhook;
 
+import com.project.syncly.domain.livekit.converter.TrackUpdateConverter;
+import com.project.syncly.domain.livekit.dto.TrackUpdateDTO;
 import com.project.syncly.domain.livekit.enums.LiveKitWebhookType;
 import com.project.syncly.domain.livekit.service.redis.ParticipantStateService;
 import com.project.syncly.domain.livekit.service.redis.RoomExpirationProducer;
@@ -17,7 +19,6 @@ public class ParticipantJoinedHandler implements WebhookEventHandler {
 
     private final ParticipantStateService participantStateService;
     private final RoomStateService roomStateService;
-    private final RoomExpirationProducer roomExpirationProducer;
     private final RealtimeNotificationService notificationService;
 
     @Override
@@ -37,5 +38,7 @@ public class ParticipantJoinedHandler implements WebhookEventHandler {
         // Set에 추가하고
         roomStateService.addParticipant(roomId, participantId);
 
+        //알림 전송
+        notificationService.participantJoined(roomId, participantId);
     }
 }

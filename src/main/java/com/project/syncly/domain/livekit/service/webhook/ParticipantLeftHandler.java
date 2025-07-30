@@ -16,6 +16,7 @@ public class ParticipantLeftHandler implements WebhookEventHandler {
 
     private final ParticipantStateService participantStateService;
     private final RoomStateService roomStateService;
+    private final RealtimeNotificationService notificationService;
     @Override
     public boolean supports(WebhookEvent event) {
         return LiveKitWebhookType.from(event.getEvent()) == LiveKitWebhookType.PARTICIPANT_LEFT;
@@ -33,5 +34,7 @@ public class ParticipantLeftHandler implements WebhookEventHandler {
         roomStateService.removeParticipant(
                 roomId,
                 participantId);
+        //알림 전송
+        notificationService.participantLeft(roomId, participantId);
     }
 }
