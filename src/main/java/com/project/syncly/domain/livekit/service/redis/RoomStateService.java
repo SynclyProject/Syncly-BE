@@ -1,11 +1,19 @@
 package com.project.syncly.domain.livekit.service.redis;
 
+import com.project.syncly.domain.livekit.converter.LiveKitConverter;
+import com.project.syncly.domain.livekit.dto.ParticipantInfoDTO;
+import com.project.syncly.domain.livekit.dto.ParticipantInfoListDTO;
+import com.project.syncly.domain.livekit.exception.LiveKitErrorCode;
+import com.project.syncly.domain.livekit.exception.LiveKitException;
+import com.project.syncly.domain.livekit.service.LiveKitTokenService;
+import com.project.syncly.domain.livekit.service.api.LiveKitApiService;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -13,6 +21,10 @@ import java.util.Set;
 public class RoomStateService {
 
     private final RedisStorage redisStorage;
+    private final ParticipantStateService participantStateService;
+    private final RoomExpirationProducer roomExpirationProducer;
+    private final LiveKitTokenService liveKitTokenService;
+    private final LiveKitApiService liveKitApiService;
 
     public boolean addParticipant(String roomId, String participantId) {
         String key = RedisKeyPrefix.CALL_ROOM.get(roomId);
@@ -20,20 +32,21 @@ public class RoomStateService {
         return count == 1; // 첫 입장자면 true
     }
 
-    public Set<Object> getParticipantsByRoom(String roomId){
-        return redisStorage.getSetValues(roomId);
-    }
-
     public boolean removeParticipant(String roomId, String participantId) {
         String key = RedisKeyPrefix.CALL_ROOM.get(roomId);
         Long count = redisStorage.removeFromSet(key, participantId);
-        return count == 0; // 첫 입장자면 true
+        return count == 0; // 마지막 참여자면 true
     }
 
     public void removeRoom(String roomId) {
         String key = RedisKeyPrefix.CALL_ROOM.get(roomId);
         redisStorage.delete(key);
+    }
 
+    public void removeRoomAllData(String roomId) {
+        participantStateService.removeAllParticipants(roomId); // Redis hash 제거
+        removeRoom(roomId);  // Redis set 제거
+        roomExpirationProducer.deleteRoomExpiration(roomId);
     }
 
     public ParticipantInfoListDTO getParticipantInfoList(Long workspaceId, Long memberId) {

@@ -1,10 +1,15 @@
 package com.project.syncly.domain.livekit.controller;
 
+import com.project.syncly.domain.livekit.dto.ParticipantInfoListDTO;
 import com.project.syncly.domain.livekit.exception.LiveKitErrorCode;
 import com.project.syncly.domain.livekit.exception.LiveKitException;
 import com.project.syncly.domain.livekit.service.LiveKitTokenService;
 import com.project.syncly.domain.livekit.service.WebhookEventRouter;
+import com.project.syncly.domain.livekit.service.redis.RoomStateService;
+import com.project.syncly.domain.livekit.util.WebhookJwtVerifier;
+import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.global.anotations.MemberIdInfo;
+import com.project.syncly.global.anotations.MemberInfo;
 import com.project.syncly.global.apiPayload.CustomResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import livekit.LivekitWebhook.WebhookEvent;
@@ -27,13 +32,14 @@ public class LiveKitController {
 
     private final LiveKitTokenService liveKitTokenService;
     private final WebhookEventRouter webhookEventRouter;
-    private final WebhookReceiver webhookReceiver;
+    private final WebhookJwtVerifier webhookJwtVerifier;
+    private final RoomStateService roomStateService;
 
     @GetMapping("/token")
     public ResponseEntity<CustomResponse<String>> getLiveKitToken(
             @RequestParam("workspaceId") Long workspaceId,
-            @MemberIdInfo Long memberId) {
-        String token = liveKitTokenService.issueToken(memberId, workspaceId);
+            @MemberInfo Member member) {
+        String token = liveKitTokenService.issueToken(member, workspaceId);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, token));
     }
 
