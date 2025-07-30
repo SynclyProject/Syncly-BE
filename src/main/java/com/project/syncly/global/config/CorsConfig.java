@@ -14,11 +14,15 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 프론트엔드 서버
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:5173"// react dev
+        )); // 프론트엔드 서버
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true); // 쿠키를 포함한 요청 허용
         configuration.setMaxAge(3600L);// 요청 결과 캐싱 시간 (1시간)
+        configuration.addExposedHeader("Authorization");//헤더 접근 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);//내 도메인으로 제한
