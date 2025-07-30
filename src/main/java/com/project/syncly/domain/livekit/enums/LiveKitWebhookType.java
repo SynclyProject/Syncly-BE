@@ -4,10 +4,12 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 public enum LiveKitWebhookType {
+    ROOM_STARTED("room_started"),
     PARTICIPANT_JOINED("participant_joined"),
     PARTICIPANT_LEFT("participant_left"),
     TRACK_PUBLISHED("track_published"),
     TRACK_UNPUBLISHED("track_unpublished"),
+    ROOM_FINISHED("room_finished"),
     UNKNOWN("unknown");
 
     private final String value;

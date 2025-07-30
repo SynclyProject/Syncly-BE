@@ -32,13 +32,10 @@ public class ParticipantJoinedHandler implements WebhookEventHandler {
         long joinedAt = event.getParticipant().getJoinedAt();
 
         // 참가자 정보 저장 (track 상태 false로 초기화)
-        participantStateService.registerParticipant(roomId, participantId, joinedAt);
+        participantStateService.initParticipantFields(roomId, participantId, joinedAt);
 
-        // Set에 추가하고 첫 참가자라면 Stream에 삭제 예약 추가
-        boolean isFirst = roomStateService.addParticipant(roomId, participantId);
-        if (isFirst) {
-            roomExpirationProducer.reserveRoomDeletion(roomId);
-        }
+        // Set에 추가하고
+        roomStateService.addParticipant(roomId, participantId);
 
     }
 }
