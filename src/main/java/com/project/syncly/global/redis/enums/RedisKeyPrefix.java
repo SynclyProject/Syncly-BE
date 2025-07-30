@@ -12,7 +12,12 @@ public enum RedisKeyPrefix {
     CALL_ROOM("CALL_ROOM:"),
     CALL_PARTICIPANT("CALL_ROOM:%s:PARTICIPANT:%s"),
     CALL_ROOM_EVENTS("CALL_ROOM_EVENTS"),
+
+    //WebSocket 관련 키
+    WS_SESSIONS("WS:SESSIONS:"),
+    WS_ONLINE_USERS("WS:ONLINE_USERS"),
     ;
+
     private final String prefix;
 
     RedisKeyPrefix(String prefix) {
@@ -30,6 +35,8 @@ public enum RedisKeyPrefix {
     public String format(String... args) {
         return String.format(this.prefix, (Object[]) args);
     }
+
+    public String get() { return prefix; }
 
 }
 
