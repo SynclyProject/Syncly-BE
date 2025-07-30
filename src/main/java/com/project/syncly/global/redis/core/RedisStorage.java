@@ -20,19 +20,16 @@ public interface RedisStorage {
     //set
     Long addToSet(String key, String value);
     Long removeFromSet(String key, String value);
-    Set<Object> getSetValues(String key);
+    Set<String> getSetValues(String key);
 
     //zset
     Boolean addToZSet(String key, String value, double score);
     Long removeFromZSet(String key, String value);
-    Set<Object> getZSetByScoreRange(String key, double minScore, double maxScore);
-    Double getZSetScore(String key, String value);
-    Long getZSetSize(String key);
+    Set<String> getZSetByScoreRange(String key, double minScore, double maxScore);
 
     //hash
     void setHash(String key, Map<String, Object> values, Duration ttl);
     void updateHashField(String key, String field, Object value);
-    Map<Object, Object> getHash(String key);
-    void deleteFieldFromHash(String key, String field);
+    Map<String, Object> getHash(String key);
 
 }

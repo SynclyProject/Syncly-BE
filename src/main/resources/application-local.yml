@@ -31,6 +31,17 @@ aws:
 
 
 livekit:
-  api-key: ${LIVEKIT_API_KEY}
-  api-secret: ${LIVEKIT_API_SECRET}
-  grpc-url: ${LIVEKIT_GRPC_URL}
+  ingress:
+    api-key: ${LIVEKIT_INGRESS_API_KEY}      # 사용자 입장용 JWT 발급용
+    api-secret: ${LIVEKIT_INGRESS_API_SECRET}
+  admin:
+    api-key: ${LIVEKIT_ADMIN_API_KEY}        # 서버 제어용 JWT (방 삭제 등)
+    api-secret: ${LIVEKIT_ADMIN_API_SECRET}
+  webhook:
+    key: ${LIVEKIT_WEBHOOK_KEY}              # Webhook 검증용
+    secret: ${LIVEKIT_WEBHOOK_SECRET}
+  api-url: ${LIVEKIT_URL}
+
+server:
+  address: 0.0.0.0
+  port: 8080
