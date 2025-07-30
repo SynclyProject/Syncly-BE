@@ -1,6 +1,9 @@
 package com.project.syncly.domain.livekit.service.redis;
 
-import com.project.syncly.domain.livekit.dto.TrackUpdateDto;
+import com.project.syncly.domain.livekit.converter.LiveKitConverter;
+import com.project.syncly.domain.livekit.dto.ParticipantInfoDTO;
+import com.project.syncly.domain.livekit.dto.TrackUpdateDTO;
+import com.project.syncly.domain.livekit.enums.TrackSource;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import lombok.RequiredArgsConstructor;
@@ -17,17 +20,18 @@ public class ParticipantStateService {
 
     private static final Duration TTL = Duration.ofMinutes(60); // 1시간
 
-    public void registerParticipant(String roomId, String participantId, long joinedAt) {
-
+    public ParticipantInfoDTO getParticipantInfo(String roomId, String participantId) {
         String key = RedisKeyPrefix.CALL_PARTICIPANT.format(roomId, participantId);
+        Map<String, Object> data = redisStorage.getHash(key);
 
-        Map<String, Object> participantInfo = new HashMap<>();
-        participantInfo.put("joinedAt", joinedAt);
-        participantInfo.put("micOn", false);
-        participantInfo.put("soundOn", false);
-        participantInfo.put("screenSharing", false);
-
-        redisStorage.updateHashField(key, participantId, participantInfo);
+        if (data == null || data.isEmpty()) {
+            return null;
+        }
+        return LiveKitConverter.toParticipantInfoDTO(
+                participantId,
+                Boolean.parseBoolean(String.valueOf(data.getOrDefault("audioSharing", false))),
+                Boolean.parseBoolean(String.valueOf(data.getOrDefault("screenSharing", false)))
+        );
     }
 
     public void removeParticipant(String roomId, String participantId) {

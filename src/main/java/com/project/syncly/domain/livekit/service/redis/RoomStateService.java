@@ -35,4 +35,36 @@ public class RoomStateService {
         redisStorage.delete(key);
 
     }
+
+    public ParticipantInfoListDTO getParticipantInfoList(Long workspaceId, Long memberId) {
+        if (!liveKitTokenService.isMemberIncludeWorkspace(workspaceId, memberId)) {
+            throw new LiveKitException(LiveKitErrorCode.MEMBER_NOT_INCLUDE_WORKSPACE);
+        }
+        String roomId = LiveKitConverter.getRoomId(workspaceId);
+        String key = RedisKeyPrefix.CALL_ROOM.get(roomId);
+        Set<String> participantIds = redisStorage.getSetValues(key);
+
+        if (participantIds == null || participantIds.isEmpty()) {
+            return LiveKitConverter.toParticipantInfoListDTO(List.of());
+        }
+
+        List<ParticipantInfoDTO> list = participantIds.stream()
+                .map(id -> participantStateService.getParticipantInfo(roomId, id))
+                .filter(Objects::nonNull)
+                .toList();
+
+        return LiveKitConverter.toParticipantInfoListDTO(list);
+    }
+//방삭제 테스트
+    public void deleteRoomTester(String roomId){
+        try {
+            liveKitApiService.deleteRoom(roomId); // LiveKit에서 방 삭제
+        } catch (Exception e) {
+            System.out.println("방 삭제 중 오류 발생: {}"+ roomId+ e.getMessage());
+
+            return;
+        }
+        removeRoomAllData(roomId); // ZSet에서 삭제
+    }
+
 }

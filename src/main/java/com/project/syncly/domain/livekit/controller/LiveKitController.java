@@ -37,7 +37,24 @@ public class LiveKitController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, token));
     }
 
-    @PostMapping(value = "/webhook", consumes = "application/webhook+json")
+    //초기 참가자 정보 조회
+    @GetMapping("/init-info")
+    public ResponseEntity<CustomResponse<ParticipantInfoListDTO>> getParticipantInfo(
+            @RequestParam("workspaceId") Long workspaceId,
+            @MemberIdInfo Long memberId) {
+        ParticipantInfoListDTO infos = roomStateService.getParticipantInfoList(workspaceId, memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, infos));
+    }
+    //방 삭제 테스트
+    @DeleteMapping("/twirp/livekit.RoomService/DeleteRoom")
+    public ResponseEntity<CustomResponse<Void>> deleteLiveKitServerRoom(
+            @RequestParam("roomId") String roomId,
+            @MemberIdInfo Long memberId){
+        roomStateService.deleteRoomTester(roomId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
+    }
+
+    @PostMapping(value = "/webhook", consumes = {"application/webhook+json", "application/json"})
     public ResponseEntity<Void> handleWebhook(HttpServletRequest request) {
         try {
             String body = new BufferedReader(request.getReader())
