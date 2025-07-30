@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspace.entity;
 
+import com.project.syncly.domain.url.entity.UrlTab;
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 import com.project.syncly.global.entity.BaseCreatedEntity;
@@ -29,4 +30,14 @@ public class Workspace extends BaseCreatedEntity {
 
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkspaceMember> workspaceMembers;
+
+    @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkspaceInvitation> workspaceInvitations;
+
+    @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UrlTab> urlTabs;
+
+    public void setWorkspaceName(String workspaceName) {
+        this.workspaceName = workspaceName;
+    }
 }
