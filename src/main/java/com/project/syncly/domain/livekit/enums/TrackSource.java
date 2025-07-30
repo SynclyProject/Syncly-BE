@@ -1,14 +1,13 @@
 package com.project.syncly.domain.livekit.enums;
 
-public enum LiveKitTrackType {
-    MIC,
+public enum TrackSource {
+    MICROPHONE,
     SCREEN_SHARE,
-    SOUND,
     UNKNOWN;
 
-    public static LiveKitTrackType from(String type) {
+    public static TrackSource from(String type) {
         try {
-            return LiveKitTrackType.valueOf(type.toUpperCase());
+            return TrackSource.valueOf(type.toUpperCase());
         } catch (IllegalArgumentException e) {
             return UNKNOWN;//webhook 받을 트랙 선택 불가하므로 unknown 처리 후 무시.
         }

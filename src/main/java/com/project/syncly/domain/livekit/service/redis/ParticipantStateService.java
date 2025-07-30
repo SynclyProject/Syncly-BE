@@ -32,37 +32,33 @@ public class ParticipantStateService {
 
     public void removeParticipant(String roomId, String participantId) {
         String key = RedisKeyPrefix.CALL_PARTICIPANT.format(roomId, participantId);
-        redisStorage.deleteFieldFromHash(key, participantId);
+        redisStorage.delete(key);
     }
     public void removeAllParticipants(String roomId) {
         String key = RedisKeyPrefix.CALL_ROOM.get(roomId);
-        Set<Object> participantIds = redisStorage.getSetValues(key);
+        Set<String> participantIds = redisStorage.getSetValues(key);
         participantIds.forEach(participantId -> {
             redisStorage.delete(
                     RedisKeyPrefix.CALL_PARTICIPANT
-                            .format(roomId, participantId.toString()));});
+                            .format(roomId, participantId));});
 
     }
+    public void initParticipantFields(String roomId, String participantId, long joinedAt) {
+        String key = RedisKeyPrefix.CALL_PARTICIPANT.format(roomId, participantId);
 
-    public void updateTrackState(TrackUpdateDto dto) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("joinedAt", joinedAt);
+        values.put("audioSharing", false);
+        values.put("screenSharing", false);
+        redisStorage.setHash(key, values, TTL);
+    }
+
+    public void updateTrackState(TrackUpdateDTO dto) {
         String key = RedisKeyPrefix.CALL_PARTICIPANT.format(dto.roomId(), dto.participantId());
-
-        // 기존 데이터 가져오기
-        Map<Object, Object> existing = redisStorage.getHash(key);
-        Object raw = existing.get(dto.participantId());
-
-        if (raw instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> updated = new HashMap<>((Map<String, Object>) raw);
-            updated.put("micOn", dto.micOn());
-            updated.put("screenSharing", dto.screenSharing());
-            redisStorage.updateHashField(key, dto.participantId(), updated);
-        } else {
-            // 초기화된 적 없는 경우 새로 생성
-            Map<String, Object> newState = new HashMap<>();
-            newState.put("micOn", dto.micOn());
-            newState.put("screenSharing", dto.screenSharing());
-            redisStorage.updateHashField(key, dto.participantId(), newState);
+        if (TrackSource.MICROPHONE.equals(dto.trackSource())) {
+            redisStorage.updateHashField(key, "audioSharing", dto.isPublish());
+        } else if (TrackSource.SCREEN_SHARE.equals(dto.trackSource())) {
+            redisStorage.updateHashField(key, "screenSharing", dto.isPublish());
         }
     }
 }
