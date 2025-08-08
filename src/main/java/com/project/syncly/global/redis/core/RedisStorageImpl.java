@@ -18,7 +18,7 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "redis.mode", havingValue = "on")//env에서 바로 읽어옴
+//@ConditionalOnProperty(name = "redis.mode", havingValue = "on")//env에서 바로 읽어옴
 public class RedisStorageImpl implements RedisStorage {
 
     private final RedisTemplate<String, Object> redisTemplate;
