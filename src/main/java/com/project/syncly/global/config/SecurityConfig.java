@@ -48,6 +48,8 @@ public class SecurityConfig {
             "/api/member/register",
             "/api/auth/social/**",
             "/login/oauth2/**",
+            "/api/livekit/webhook",
+            "/login/oauth2/**",
             "/ws-stomp",
             "/ws-stomp/**",
             "/api/workspaces/notifications",
