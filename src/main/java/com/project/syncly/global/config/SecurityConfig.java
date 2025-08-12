@@ -51,7 +51,9 @@ public class SecurityConfig {
             "/api/livekit/webhook",
             "/login/oauth2/**",
             "/ws-stomp",
-            "/ws-stomp/**"
+            "/ws-stomp/**",
+            "/api/workspaces/notifications",
+            "/api/workspaces/notifications/**"
     };
 
     @Bean
