@@ -17,7 +17,7 @@ public abstract class BaseTimeDeletedEntity extends BaseTimeEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isDeleted = false;
 
     public void markAsDeleted() {

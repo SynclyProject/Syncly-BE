@@ -135,7 +135,7 @@ public class JwtProvider {
     // HttpOnly Secure 쿠키 생성
     public ResponseCookie createCookie(String name, String value) {
         return ResponseCookie.from(name, value)
-                .httpOnly(true)
+                .httpOnly(true)//JavaScript에서 쿠키 접근 금지
                 .secure(true) // https 환경에서만 쿠키 전송
                 .sameSite("None") // 크로스 도메인 허용
                 .path("/")

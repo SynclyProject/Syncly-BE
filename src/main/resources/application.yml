@@ -4,7 +4,9 @@ spring:
   application:
     name: syncly
   profiles:
-    default: local
+    default: ${SPRING_PROFILE}
+  cache:
+    type: redis
 
 
   mail:
