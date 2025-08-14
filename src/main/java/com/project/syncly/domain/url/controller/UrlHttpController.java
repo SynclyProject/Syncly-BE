@@ -26,7 +26,7 @@ import java.security.Principal;
 @Tag(name = "URL 관련 API(탭리스트 조회&개인워크스페이스)(해당 API는 http요청의 API로 웹소켓 관련 API는 별도 분리)")
 public class UrlHttpController {
     private final UrlHttpServiceImpl urlHttpService;
-
+    //refactor
     @GetMapping("/{workspaceId}/tabs-with-urls")
     @Operation(summary = "워크스페이스 내 모든 탭 및 URL 리스트 조회 (초기 렌더링 + 구독 대상)")
     public ResponseEntity<CustomResponse<UrlHttpResponseDto.TabsWithUrlsResponseDto>> getTabsWithUrls(
