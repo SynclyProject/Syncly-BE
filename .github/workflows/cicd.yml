@@ -46,27 +46,19 @@ jobs:
           source: "build/libs/*SNAPSHOT.jar"
           target: "/home/ubuntu/app"
 
-      - name: Restart Spring Boot app with PM2
+      - name: Restart Spring Boot app with PM2 (ecosystem.config.js 사용)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: SPRING_PROFILE,DDL_TYPE,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,JWT_SECRET_KEY,MAIL_USER_NAME,MAIL_APP_PASSWORD,REDIS_HOST,REDIS_PORT,SYNCLY_LINK,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME,DB_HOST,DB_USERNAME,DB_PASSWORD,AWS_CLOUDFRONT_DOMAIN,AWS_CLOUDFRONT_KEY_PAIR_ID,AWS_CLOUDFRONT_PRIVATE_KEY_PATH,LIVEKIT_INGRESS_API_KEY,LIVEKIT_INGRESS_API_SECRET,LIVEKIT_ADMIN_API_KEY,LIVEKIT_ADMIN_API_SECRET,LIVEKIT_WEBHOOK_KEY,LIVEKIT_WEBHOOK_SECRET,LIVEKIT_URL,LIVEKIT_TURN_ENABLED,LIVEKIT_TURN_UDP_PORT,LIVEKIT_TURN_TLS_PORT,LIVEKIT_TURN_DOMAIN,LIVEKIT_TURN_USERNAME,LIVEKIT_TURN_PASSWORD
           script: |
             if ! command -v pm2 &> /dev/null; then
               npm install -g pm2
             fi
-
-            JAR_FILE=$(ls -t /home/ubuntu/app/build/libs/*SNAPSHOT.jar | head -n 1)
-            echo "🚀 Restarting Spring Boot with PM2 ($JAR_FILE)"
-
-            pm2 delete syncly-backend || true
-            pm2 start "java" \
-              --name syncly-backend \
-              --interpreter none \
-              -- \
-              -jar "$JAR_FILE" --server.port=8080
+            
+            echo "🚀 Restarting Spring Boot with PM2 (ecosystem.config.js)"
+            pm2 startOrRestart /home/ubuntu/app/ecosystem.config.js
             pm2 save
   
 
