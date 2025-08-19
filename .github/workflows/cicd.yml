@@ -1,0 +1,108 @@
+name: Backend - CI/CD (JAR Deploy)
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+    paths-ignore:
+      - '**.md'
+      - '**/README*'
+
+jobs:
+  ci:
+    name: CI (Build JAR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+  cd:
+    name: CD (Deploy to EC2)
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      # JAR 파일 복사
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "/home/ubuntu/app"
+
+      # PM2로 Spring Boot 실행
+      - name: Restart Spring Boot app with PM2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: SPRING_PROFILE,DDL_TYPE,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,JWT_SECRET_KEY,MAIL_USER_NAME,MAIL_APP_PASSWORD,REDIS_HOST,REDIS_PORT,SYNCLY_LINK,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME,DB_HOST,DB_USERNAME,DB_PASSWORD,AWS_CLOUDFRONT_DOMAIN,AWS_CLOUDFRONT_KEY_PAIR_ID,AWS_CLOUDFRONT_PRIVATE_KEY_PATH,LIVEKIT_INGRESS_API_KEY,LIVEKIT_INGRESS_API_SECRET,LIVEKIT_ADMIN_API_KEY,LIVEKIT_ADMIN_API_SECRET,LIVEKIT_WEBHOOK_KEY,LIVEKIT_WEBHOOK_SECRET,LIVEKIT_URL,LIVEKIT_TURN_ENABLED,LIVEKIT_TURN_UDP_PORT,LIVEKIT_TURN_TLS_PORT,LIVEKIT_TURN_DOMAIN,LIVEKIT_TURN_USERNAME,LIVEKIT_TURN_PASSWORD
+          script: |
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+
+            JAR_FILE=$(ls -t /home/ubuntu/app/*.jar | head -n 1)
+            echo "🚀 Restarting Spring Boot with PM2 ($JAR_FILE)"
+
+            pm2 delete syncly-backend || true
+            pm2 start "java" \
+              --name syncly-backend \
+              --interpreter none \
+              -- \
+              -jar "$JAR_FILE" --server.port=8080
+            pm2 save
+  
+
+  notify:
+    name: Discord Notification
+    runs-on: ubuntu-latest
+    needs: [ci, cd]
+    if: always()
+    steps:
+      - name: Send Discord Notification
+        run: |
+          CI_RESULT="${{ needs.ci.result || 'skipped' }}"
+          CD_RESULT="${{ needs.cd.result || 'skipped' }}"
+
+          COLOR="8359053"
+          STATUS="⚪ CI/CD 실행됨"
+
+          if [ "$CI_RESULT" = "success" ]; then
+            STATUS="✅ CI 성공"
+            COLOR="5763719"
+          elif [ "$CI_RESULT" = "failure" ]; then
+            STATUS="❌ CI 실패"
+            COLOR="15158332"
+          fi
+
+          if [ "$CD_RESULT" = "success" ]; then
+            STATUS="✅ CD 성공 (PM2 배포 완료)"
+            COLOR="3066993"
+          elif [ "$CD_RESULT" = "failure" ]; then
+            STATUS="❌ CD 실패 (PM2 배포 오류)"
+            COLOR="15158332"
+          fi
+
+          curl -X POST -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"🔔 GitHub Actions 결과: ${{ github.workflow }}\",
+                \"description\": \"$STATUS\n브랜치: \`${{ github.ref_name }}\`\n커밋: \`${{ github.actor }}\`\n[👉 실행 로그 보기](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",
+                \"color\": $COLOR
+              }]
+            }" \
+            ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL }}
