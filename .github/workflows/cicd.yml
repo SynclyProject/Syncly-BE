@@ -46,7 +46,7 @@ jobs:
           source: "build/libs/*SNAPSHOT.jar"
           target: "/home/ubuntu/app"
 
-      - name: Restart Spring Boot app with PM2 (ecosystem.config.js 사용)
+      - name: Restart Spring Boot app with PM2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -57,7 +57,7 @@ jobs:
               npm install -g pm2
             fi
             
-            echo "🚀 Restarting Spring Boot with PM2 (ecosystem.config.js)"
+            echo "🚀 Restarting Spring Boot with PM2"
             pm2 startOrRestart /home/ubuntu/app/ecosystem.config.js
             pm2 save
   
