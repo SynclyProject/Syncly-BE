@@ -357,7 +357,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 
         // 추방하고자 하는 멤버 조회
-        WorkspaceMember targetMember = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, targetMemberId)
+        WorkspaceMember targetMember = workspaceMemberRepository.findByWorkspaceIdAndId(workspaceId, targetMemberId)
                 .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
 
         // 본인 추방 불가
