@@ -58,7 +58,7 @@ jobs:
               npm install -g pm2
             fi
 
-            JAR_FILE=$(ls -t /home/ubuntu/app/*.jar | head -n 1)
+            JAR_FILE=$(ls -t /home/ubuntu/app/build/libs/*SNAPSHOT.jar | head -n 1)
             echo "🚀 Restarting Spring Boot with PM2 ($JAR_FILE)"
 
             pm2 delete syncly-backend || true
