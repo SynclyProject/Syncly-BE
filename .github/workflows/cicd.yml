@@ -52,14 +52,32 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+
+          envs: SPRING_PROFILE,DDL_TYPE,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,JWT_SECRET_KEY,MAIL_USER_NAME,MAIL_APP_PASSWORD,REDIS_HOST,REDIS_PORT,SYNCLY_LINK,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME,DB_HOST,DB_USERNAME,DB_PASSWORD,AWS_CLOUDFRONT_DOMAIN,AWS_CLOUDFRONT_KEY_PAIR_ID,AWS_CLOUDFRONT_PRIVATE_KEY_PATH,LIVEKIT_INGRESS_API_KEY,LIVEKIT_INGRESS_API_SECRET,LIVEKIT_ADMIN_API_KEY,LIVEKIT_ADMIN_API_SECRET,LIVEKIT_WEBHOOK_KEY,LIVEKIT_WEBHOOK_SECRET,LIVEKIT_URL,LIVEKIT_TURN_ENABLED,LIVEKIT_TURN_UDP_PORT,LIVEKIT_TURN_TLS_PORT,LIVEKIT_TURN_DOMAIN,LIVEKIT_TURN_USERNAME,LIVEKIT_TURN_PASSWORD
           script: |
-            if ! command -v pm2 &> /dev/null; then
+            set -e
+            cd /home/ubuntu/app
+            
+            # 1) 주입된 환경변수를 파일로 저장 (로그에 값 노출 안 됨)
+            : > runtime.env
+            for v in SPRING_PROFILE DDL_TYPE GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET JWT_SECRET_KEY MAIL_USER_NAME MAIL_APP_PASSWORD REDIS_HOST REDIS_PORT SYNCLY_LINK AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET_NAME DB_HOST DB_USERNAME DB_PASSWORD AWS_CLOUDFRONT_DOMAIN AWS_CLOUDFRONT_KEY_PAIR_ID AWS_CLOUDFRONT_PRIVATE_KEY_PATH LIVEKIT_INGRESS_API_KEY LIVEKIT_INGRESS_API_SECRET LIVEKIT_ADMIN_API_KEY LIVEKIT_ADMIN_API_SECRET LIVEKIT_WEBHOOK_KEY LIVEKIT_WEBHOOK_SECRET LIVEKIT_URL LIVEKIT_TURN_ENABLED LIVEKIT_TURN_UDP_PORT LIVEKIT_TURN_TLS_PORT LIVEKIT_TURN_DOMAIN LIVEKIT_TURN_USERNAME LIVEKIT_TURN_PASSWORD; do
+              printf '%s=%s\n' "$v" "$(printenv "$v")" >> runtime.env
+            done
+            chmod 600 runtime.env
+            
+            # 2) 현재 셸로도 로드해서 pm2 --update-env로 넘김
+            set -a
+            . /home/ubuntu/app/runtime.env
+            set +a
+            
+            # 3) PM2 설치/재시작
+            if ! command -v pm2 >/dev/null 2>&1; then
               npm install -g pm2
             fi
             
-            echo "🚀 Restarting Spring Boot with PM2"
-            pm2 startOrRestart /home/ubuntu/app/ecosystem.config.js
+            pm2 startOrRestart /home/ubuntu/app/ecosystem.config.js --update-env
             pm2 save
+
   
 
   notify:
