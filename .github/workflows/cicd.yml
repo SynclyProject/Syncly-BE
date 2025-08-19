@@ -34,17 +34,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # JAR 파일 복사
+      - name: Build with Gradle
+        run: ./gradlew clean bootJar -x test
+
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/*.jar"
+          source: "build/libs/*SNAPSHOT.jar"
           target: "/home/ubuntu/app"
 
-      # PM2로 Spring Boot 실행
       - name: Restart Spring Boot app with PM2
         uses: appleboy/ssh-action@v1.0.3
         with:
