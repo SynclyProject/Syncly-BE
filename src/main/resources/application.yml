@@ -59,7 +59,9 @@ redis:
     login-ttl-seconds: 1800     # 30분 == access token TTL
     member-ttl-seconds: 259200   # 3일
 
-
+logging:
+  discord:
+    webhook-url: ${DISCORD_ERROR_WEBHOOK_URL}
 
 
 

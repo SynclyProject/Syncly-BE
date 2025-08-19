@@ -1,0 +1,41 @@
+<included>
+    <!-- 에러 메시지를 디스코드 코드블럭으로 깔끔하게 포맷 -->
+    <appender name="DISCORD" class="com.github.napstr.logback.DiscordAppender">
+        <!-- Spring 환경변수/설정에서 주입 -->
+        <webhookUri>${DISCORD_ERROR_WEBHOOK_URL}</webhookUri>
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <!-- CDATA 안에 백틱/개행 그대로 유지 -->
+            <pattern><![CDATA[
+:rotating_light: **[${springAppName:-syncly-backend}] PROD ERROR**
+
+*time* `%d{yyyy-MM-dd HH:mm:ss.SSS}` • *thread* `%thread` • *level* `%level`
+*logger* `%logger{2}.%M:%L` • *host* `${HOSTNAME:-unknown}`
+
+```log
+[ERROR MESSAGE]
+%msg
+
+[STACKTRACE - top 20 lines]
+%ex{20}
+```        ]]></pattern>
+        </layout>
+
+        <!-- 디스코드 표시용 -->
+        <username>🚨PROD-BE-ERROR-bot</username>
+        <tts>false</tts>
+    </appender>
+
+    <!-- 비동기로 보내서 앱 성능/지연 보호 -->
+    <appender name="ASYNC_DISCORD" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="DISCORD"/>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <!-- 트래픽 방어 옵션 -->
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+    </appender>
+</included>
