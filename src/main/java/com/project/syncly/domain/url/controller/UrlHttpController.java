@@ -27,8 +27,9 @@ import java.security.Principal;
 public class UrlHttpController {
     private final UrlHttpServiceImpl urlHttpService;
 
+
     @GetMapping("/{workspaceId}/tabs-with-urls")
-    @Operation(summary = "워크스페이스 내 모든 탭 및 URL 리스트 조회 (초기 렌더링 + 구독 대상)")
+    @Operation(summary = "워크스페이스 내 모든 탭 및 URL 리스트 조회 (초기 렌더링 + 구독 대상) : 개인/팀 공용")
     public ResponseEntity<CustomResponse<UrlHttpResponseDto.TabsWithUrlsResponseDto>> getTabsWithUrls(
             @PathVariable Long workspaceId,
             @AuthenticationPrincipal PrincipalDetails userDetails
@@ -41,45 +42,42 @@ public class UrlHttpController {
     }
 
     //URL 탭 생성 API
-    @PostMapping("/{workspaceId}/tabs")
+    @PostMapping("/tabs")
     @Operation(summary = "URL 탭 생성 API")
     public ResponseEntity<CustomResponse<UrlHttpResponseDto.CreateUrlTabResponseDto>> createUrlTab(
-            @PathVariable Long workspaceId,
             @RequestBody @Valid UrlHttpRequestDto.CreateUrlTabRequestDto request,
             @AuthenticationPrincipal PrincipalDetails userDetails) {
         Long memberId = Long.valueOf(userDetails.getName());
 
-        UrlHttpResponseDto.CreateUrlTabResponseDto response = urlHttpService.createUrlTab(memberId, workspaceId, request);
+        UrlHttpResponseDto.CreateUrlTabResponseDto response = urlHttpService.createUrlTab(memberId, request);
 
         // 생성 시
         return ResponseEntity.status(HttpStatus.CREATED).body(CustomResponse.success(HttpStatus.CREATED, response));
     }
 
     //URL 탭 삭제 API
-    @DeleteMapping("/{workspaceId}/tabs/{tabId}")
+    @DeleteMapping("/tabs/{tabId}")
     @Operation(summary = "URL 탭 삭제 API")
     public ResponseEntity<CustomResponse<UrlHttpResponseDto.DeleteUrlTabResponseDto>> deleteUrlTab(
-            @PathVariable Long workspaceId,
             @PathVariable Long tabId,
             @AuthenticationPrincipal PrincipalDetails userDetails) {
         Long memberId = Long.valueOf(userDetails.getName());
 
-        UrlHttpResponseDto.DeleteUrlTabResponseDto response = urlHttpService.deleteUrlTab(memberId, workspaceId, tabId);
+        UrlHttpResponseDto.DeleteUrlTabResponseDto response = urlHttpService.deleteUrlTab(memberId, tabId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
 
     //URL 탭 이름 변경 API
-    @PatchMapping("/{workspaceId}/tabs/{tabId}")
+    @PatchMapping("/tabs/{tabId}")
     @Operation(summary = "URL 탭 이름 변경 API")
     public ResponseEntity<CustomResponse<UrlHttpResponseDto.UpdateUrlTabNameResponseDto>> updateUrlTabName(
-            @PathVariable Long workspaceId,
             @PathVariable Long tabId,
             @RequestBody @Valid UrlHttpRequestDto.UpdateUrlTabNameRequestDto request,
             @AuthenticationPrincipal PrincipalDetails userDetails) {
         Long memberId = Long.valueOf(userDetails.getName());
 
-        UrlHttpResponseDto.UpdateUrlTabNameResponseDto response = urlHttpService.updateUrlTabName(memberId, workspaceId, tabId, request);
+        UrlHttpResponseDto.UpdateUrlTabNameResponseDto response = urlHttpService.updateUrlTabName(memberId, tabId, request);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
