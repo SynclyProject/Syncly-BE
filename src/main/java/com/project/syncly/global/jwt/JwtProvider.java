@@ -21,7 +21,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -30,23 +29,18 @@ import java.util.UUID;
 public class JwtProvider {
 
     private final PrincipalDetailsService principalDetailsService;
-
+    private final TokenProperties props;
+    private final SecretKey signingKey;
 
     private static final String CLAIM_TYP = "typ"; // TokenType.name()
     private static final String CLAIM_DID = "did"; // deviceId
     private static final String CLAIM_JTI = "jti"; // refresh 회전용
 
-    private final TokenProperties props;
-
-    private SecretKey key() {
-        byte[] raw = Base64.getDecoder().decode(props.getHmacSecretBase64());
-        return Keys.hmacShaKeyFor(raw);
-    }
     // Claim 추출
     private Claims parse(String jwt) {
         try {
             return Jwts.parser()
-                    .verifyWith(key())
+                    .verifyWith(signingKey)
                     .build()
                     .parseSignedClaims(jwt)
                     .getPayload();
@@ -113,7 +107,7 @@ public class JwtProvider {
                 .expiration(Date.from(atExp))
                 .claim(CLAIM_TYP, TokenType.ACCESS.name())
                 .claim(CLAIM_DID, deviceId)
-                .signWith(key(), Jwts.SIG.HS256)
+                .signWith(signingKey, Jwts.SIG.HS256)
                 .compact();
 
         // Refresh Token
@@ -125,7 +119,7 @@ public class JwtProvider {
                 .claim(CLAIM_TYP, TokenType.REFRESH.name())
                 .claim(CLAIM_DID, deviceId)
                 .claim(CLAIM_JTI, newJti)
-                .signWith(key(), Jwts.SIG.HS256)
+                .signWith(signingKey, Jwts.SIG.HS256)
                 .compact();
 
         long atTtl = props.getAccessTtlSec();
