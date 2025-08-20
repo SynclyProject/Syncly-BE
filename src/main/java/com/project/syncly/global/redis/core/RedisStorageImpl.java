@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 import org.springframework.data.redis.core.HashOperations;
 
@@ -30,29 +31,24 @@ public class RedisStorageImpl implements RedisStorage {
         System.out.println("Redis 사용중");
     }
 
-    @Override
-    public void set(String key, String value, Duration ttl) {
-        redisTemplate.opsForValue().set(key, value, ttl);
-    }
 
     @Override
-    public String get(String key) {
-        Object value = redisTemplate.opsForValue().get(key);
-        return value instanceof String ? (String) value : null;
+    public void setValueAsString(String key, String value, Duration ttl) {
+        stringRedisTemplate.opsForValue().set(key, value, ttl);
     }
-
-    @Override
-    public void delete(String key) {
-        redisTemplate.delete(key);
-    }
-
     @Override
     public <T> void set(String key, T value, Duration ttl) {
         redisTemplate.opsForValue().set(key, value, ttl);
     }
 
+
     @Override
-    public <T> T get(String key, Class<T> clazz) {
+    public String getValueAsString(String key) {
+        return stringRedisTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public <T> T getValueAsString(String key, Class<T> clazz) {
         Object value = redisTemplate.opsForValue().get(key);
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
@@ -64,6 +60,13 @@ public class RedisStorageImpl implements RedisStorage {
             throw new RedisException(RedisErrorCode.CONVERT_FAIL_REDIS_TO_OBJECT);
         }
     }
+
+    @Override
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
+
+
 
     @Override
     public Long addToSet(String key, String value) {
@@ -112,5 +115,11 @@ public class RedisStorageImpl implements RedisStorage {
     public Map<String, Object> getHash(String key) {
         HashOperations<String, String, Object> ops = redisTemplate.opsForHash();
         return ops.entries(key);
+    }
+
+    //원자 단위로 실행하기 위함
+    @Override
+    public <T> T executeScript(DefaultRedisScript<T> script, List<String> keys, Object... args) {
+        return stringRedisTemplate.execute(script, keys, args);
     }
 }
