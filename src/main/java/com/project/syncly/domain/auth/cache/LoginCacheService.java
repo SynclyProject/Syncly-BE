@@ -22,32 +22,13 @@ public class LoginCacheService {
     @Value("${redis.cache.member-ttl-seconds}")
     private long memberTtlSeconds;
 
-    @Value("${redis.cache.login-ttl-seconds}")
-    private long loginTtlSeconds;
-
-
-    public void saveLoginStatus(Long memberId) {
-        String key = RedisKeyPrefix.LOGIN_CACHE.get(memberId);
-        redisStorage.set(key, "true", Duration.ofSeconds(loginTtlSeconds));
-    }
-
-    public boolean isLoggedIn(Long memberId) {
-        String key = RedisKeyPrefix.LOGIN_CACHE.get(memberId);
-        return "true".equals(redisStorage.get(key));
-    }
-
-    public void removeLoginStatus(Long memberId) {
-        String key = RedisKeyPrefix.LOGIN_CACHE.get(memberId);
-        redisStorage.delete(key);
-    }
-
     public void cacheMember(Member member) {
         String key = RedisKeyPrefix.MEMBER_CACHE.get(member.getId());
         redisStorage.set(key, member, Duration.ofSeconds(memberTtlSeconds));
     }
     public Member getCachedMember(Long memberId) {
         String key = RedisKeyPrefix.MEMBER_CACHE.get(memberId);
-        Member member = redisStorage.get(key, Member.class);
+        Member member = redisStorage.getValueAsString(key, Member.class);
 
         if (member == null) {
             member = memberRepository.findById(memberId)
