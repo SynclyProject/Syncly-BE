@@ -26,7 +26,8 @@ public enum UrlErrorCode implements BaseErrorCode {
     URL_ITEM_LINK_REQUIRED(HttpStatus.BAD_REQUEST, "Url400_3", "URL 링크는 필수 입력값입니다."),
 
     // URL 탭-워크스페이스 관계 오류
-    URL_TAB_NOT_BELONG_TO_WORKSPACE(HttpStatus.BAD_REQUEST, "Url400_4", "해당 URL 탭은 요청한 워크스페이스에 속하지 않습니다.");
+    URL_TAB_NOT_BELONG_TO_WORKSPACE(HttpStatus.BAD_REQUEST, "Url400_4", "해당 URL 탭은 요청한 워크스페이스에 속하지 않습니다."),
+    URL_ITEM_NOT_BELONG_TO_TAB(HttpStatus.BAD_REQUEST, "Url400_5", "해당 URL 아이템은 요청한 탭에 속하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

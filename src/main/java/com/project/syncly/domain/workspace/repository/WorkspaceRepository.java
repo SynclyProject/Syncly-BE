@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
@@ -35,6 +36,29 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
       ws.createdAt DESC
     """)
     List<Workspace> findAllByMemberId(@Param("memberId") Long memberId);
+
+
+    //멤버 ID를 통해 개인 워크스페이스 ID 조회
+    @Query("""
+    SELECT w.id
+    FROM Workspace w
+    JOIN w.workspaceMembers wm
+    JOIN wm.member m
+    WHERE m.id = :memberId
+      AND w.workspaceType = 'PERSONAL'
+    """)
+    Optional<Long> findPersonalWorkspaceIdByMemberId(@Param("memberId") Long memberId);
+
+
+    //멤버 ID를 통해 개인 워크스페이스 조회
+    @Query("""
+    SELECT w
+    FROM Workspace w
+    JOIN w.workspaceMembers wm
+    WHERE wm.member.id = :memberId
+      AND w.workspaceType = 'PERSONAL'
+    """)
+    Optional<Workspace> findPersonalWorkspaceByMemberId(@Param("memberId") Long memberId);
 
 
 

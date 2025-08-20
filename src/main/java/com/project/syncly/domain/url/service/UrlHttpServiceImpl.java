@@ -15,11 +15,13 @@ import com.project.syncly.domain.url.repository.UrlTabRepository;
 import com.project.syncly.domain.workspace.entity.Workspace;
 import com.project.syncly.domain.workspace.entity.enums.WorkspaceType;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
+import com.project.syncly.domain.workspace.exception.WorkspaceException;
 import com.project.syncly.domain.workspace.repository.WorkspaceRepository;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,15 +30,16 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UrlHttpServiceImpl implements UrlHttpService {
 
     private final WorkspaceRepository workspaceRepository;
-    private final MemberRepository memberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UrlTabRepository urlTabRepository;
     private final UrlItemRepository urlItemRepository;
+    private final MemberRepository memberRepository;
 
-    @Override
+    @Transactional(readOnly = true)
     public UrlHttpResponseDto.TabsWithUrlsResponseDto getTabsWithUrls(Long workspaceId, Long memberId) {
         // 멤버 존재 확인
         Member member = memberRepository.findById(memberId)
@@ -57,19 +60,11 @@ public class UrlHttpServiceImpl implements UrlHttpService {
     }
 
     @Override
-    public UrlHttpResponseDto.CreateUrlTabResponseDto createUrlTab(Long memberId, Long workspaceId, UrlHttpRequestDto.CreateUrlTabRequestDto request) {
-        // 워크스페이스 조회
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+    public UrlHttpResponseDto.CreateUrlTabResponseDto createUrlTab(Long memberId, UrlHttpRequestDto.CreateUrlTabRequestDto request) {
+        // 개인 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findPersonalWorkspaceByMemberId(memberId)
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 
-        // 개인워크스페이스인지 확인
-        if (workspace.getWorkspaceType() != WorkspaceType.PERSONAL) {
-            throw new CustomException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
-        }
-
-        // 워크스페이스 멤버 확인
-        workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
 
         // URL 탭 생성 및 저장
         UrlTab urlTab = UrlTabConverter.toUrlTab(workspace, request.urlTabName());
@@ -80,19 +75,11 @@ public class UrlHttpServiceImpl implements UrlHttpService {
     }
 
     @Override
-    public UrlHttpResponseDto.DeleteUrlTabResponseDto deleteUrlTab(Long memberId, Long workspaceId, Long tabId) {
-        // 워크스페이스 조회
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+    public UrlHttpResponseDto.DeleteUrlTabResponseDto deleteUrlTab(Long memberId, Long tabId) {
+        // 개인 워크스페이스 ID 조회
+        Long workspaceId = workspaceRepository.findPersonalWorkspaceIdByMemberId(memberId)
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 
-        // 개인워크스페이스인지 확인
-        if (workspace.getWorkspaceType() != WorkspaceType.PERSONAL) {
-            throw new CustomException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
-        }
-
-        // 워크스페이스 멤버 확인
-        workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
 
         // URL 탭 조회
         UrlTab urlTab = urlTabRepository.findById(tabId)
@@ -110,20 +97,10 @@ public class UrlHttpServiceImpl implements UrlHttpService {
     }
 
     @Override
-    public UrlHttpResponseDto.UpdateUrlTabNameResponseDto updateUrlTabName(Long memberId, Long workspaceId, Long tabId, UrlHttpRequestDto.UpdateUrlTabNameRequestDto request) {
-        // 워크스페이스 조회
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
-
-        // 개인워크스페이스인지 확인
-        if (workspace.getWorkspaceType() != WorkspaceType.PERSONAL) {
-            throw new CustomException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
-        }
-
-
-        // 워크스페이스 멤버 확인
-        workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+    public UrlHttpResponseDto.UpdateUrlTabNameResponseDto updateUrlTabName(Long memberId, Long tabId, UrlHttpRequestDto.UpdateUrlTabNameRequestDto request) {
+        // 개인 워크스페이스 ID 조회
+        Long workspaceId = workspaceRepository.findPersonalWorkspaceIdByMemberId(memberId)
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 
         // URL 탭 조회
         UrlTab urlTab = urlTabRepository.findById(tabId)
@@ -150,12 +127,12 @@ public class UrlHttpServiceImpl implements UrlHttpService {
 
         // 개인 워크스페이스인지 확인
         if (workspace.getWorkspaceType() != WorkspaceType.PERSONAL) {
-            throw new CustomException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
+            throw new WorkspaceException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
         }
 
         // 워크스페이스 멤버 확인
         workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
 
         // URL 유효성 검사
         try {
@@ -183,12 +160,12 @@ public class UrlHttpServiceImpl implements UrlHttpService {
 
         // 개인 워크스페이스인지 확인
         if (workspace.getWorkspaceType() != WorkspaceType.PERSONAL) {
-            throw new CustomException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
+            throw new WorkspaceException(WorkspaceErrorCode.NOT_PERSONAL_WORKSPACE);
         }
 
         // 워크스페이스 멤버 확인
         workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
-                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
 
         // URL 아이템 조회
         UrlItem urlItem = urlItemRepository.findById(itemId)
@@ -196,7 +173,7 @@ public class UrlHttpServiceImpl implements UrlHttpService {
 
         // 탭 ID 불일치 확인
         if (!urlItem.getUrlTab().getId().equals(tabId)) {
-            throw new UrlException(UrlErrorCode.URL_TAB_NOT_BELONG_TO_WORKSPACE);
+            throw new UrlException(UrlErrorCode.URL_ITEM_NOT_BELONG_TO_TAB);
         }
 
         // 삭제
