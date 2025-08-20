@@ -1,30 +1,36 @@
-<configuration>
-    <!-- 앱/호스트 식별 -->
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <!-- 식별/공통 속성 -->
     <contextName>syncly-backend</contextName>
     <property name="HOSTNAME" value="${HOSTNAME:-unknown}"/>
     <springProperty name="springAppName" source="spring.application.name"/>
+    <!-- ↓ 환경변수 없을 때도 죽지 않도록 기본값 제공 -->
+    <springProperty name="DISCORD_ERROR_WEBHOOK_URL"
+                    source="logging.discord.webhook-url"
+                    defaultValue=""/>
 
-    <!-- 패턴/공통 appender -->
     <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
     <property name="LOG_PATTERN"
               value="[%d{yyyy-MM-dd HH:mm:ss}:%-4relative] %green([%thread]) %highlight(%-5level) %boldWhite([%C.%M:%yellow(%L)]) - %msg%n"/>
 
     <include resource="console-appender.xml"/>
 
-    <!-- 디스코드 웹훅 URL: Spring 설정에서 꺼내옴 -->
-    <springProperty name="DISCORD_ERROR_WEBHOOK_URL" source="logging.discord.webhook-url"/>
-
-    <!-- 콘솔은 항상 -->
+    <!-- 기본 root (dev/local 공통) -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <!-- prod에서만 디스코드 추가 부착 -->
-        <springProfile name="prod">
-            <include resource="discord-error-appender.xml"/>
-            <appender-ref ref="ASYNC_DISCORD"/>
-        </springProfile>
     </root>
 
-    <!-- (선택) 노이즈 감소 -->
-    <logger name="org.springframework" level="WARN"/>
+    <!-- 패키지 레벨 (Started..., Tomcat started... 보려면 INFO로) -->
+    <logger name="org.springframework" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>
+
+    <!-- prod 전용: 여기서만 디스코드 붙임 -->
+    <springProfile name="prod">
+        <include resource="discord-error-appender.xml"/>
+        <!-- prod에선 root를 재정의해서 디스코드 추가 -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_DISCORD"/>
+        </root>
+    </springProfile>
 </configuration>
