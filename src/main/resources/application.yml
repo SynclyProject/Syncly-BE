@@ -50,15 +50,15 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
-Jwt:
-  secret: ${JWT_SECRET_KEY}
-  token:
-    access-expiration-time: 1800000 # 30분
-    refresh-expiration-time: 259200000 # 3일
 
+auth:
+  token:
+    issuer: https://syncly-io.com
+    hmacSecretBase64: ${JWT_SECRET_KEY} #토큰 서명키
+    accessTtlSec: 1200 #20분 배포후 10분으로 변경가능
+    refreshTtlSec: 604800 #7일
 redis:
   cache:
-    login-ttl-seconds: 1800     # 30분 == access token TTL
     member-ttl-seconds: 259200   # 3일
 
 
