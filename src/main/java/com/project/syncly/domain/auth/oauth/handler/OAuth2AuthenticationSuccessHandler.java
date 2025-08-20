@@ -1,14 +1,17 @@
 package com.project.syncly.domain.auth.oauth.handler;
 
 
+import com.project.syncly.domain.auth.service.AuthService;
 import com.project.syncly.global.jwt.JwtProvider;
 import com.project.syncly.domain.auth.oauth.dto.TokenResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.syncly.global.jwt.PrincipalDetails;
+import com.project.syncly.global.jwt.dto.IssuedTokens;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -21,6 +24,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
+    private final AuthService authService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -28,19 +32,17 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             throws IOException, ServletException {
 
         PrincipalDetails user = (PrincipalDetails) authentication.getPrincipal();
-        String accessToken = jwtProvider.createAccessToken(user.getMember());
-        String refreshToken = jwtProvider.createRefreshToken(user.getMember());
+        Long userId = user.getMember().getId();
+        String deviceId = authService.extractDeviceIdFromCookie(request);
+        IssuedTokens issued = authService.issueNewTokens(userId,deviceId);
 
-        // accessToken은 Authorization 헤더에 추가
-        response.setHeader("Authorization", "Bearer " + accessToken);
+        ResponseCookie refreshCookie = authService.buildRefreshCookie(
+                issued.refreshToken(), issued.refreshExpiresInSec()
+        );
+        response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        // refreshToken은 HttpOnly + Secure 쿠키로 설정
-        response.setHeader("Set-Cookie", jwtProvider.createCookie("refreshToken", refreshToken).toString());
-
-        // 클라이언트가 accessToken 만료 시간 등 필요한 추가 정보가 있다면 바디에도 전달
-        TokenResponse tokenResponse = new TokenResponse(accessToken);
         response.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(response.getWriter(), tokenResponse);
+        objectMapper.writeValue(response.getWriter(), issued.accessToken());
     }
 
 }

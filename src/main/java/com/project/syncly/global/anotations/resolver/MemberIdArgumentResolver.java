@@ -30,7 +30,7 @@ public class MemberIdArgumentResolver implements HandlerMethodArgumentResolver {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
             TokenType tokenType = jwtProvider.getTokenType(token);
-            Long memberId = jwtProvider.getMemberIdWithBlacklistCheck(token, tokenType);
+            Long memberId = jwtProvider.getMemberId(token);
             return memberId;
         }
         return null;

@@ -16,6 +16,11 @@ public enum RedisKeyPrefix {
     //WebSocket 관련 키
     WS_SESSIONS("WS:SESSIONS:"),
     WS_ONLINE_USERS("WS:ONLINE_USERS"),
+
+    // Refresh Whitelist
+    REFRESH_CURRENT("refresh:current:%s:%s"),
+    CASHED_UA_HASH("CASHED:UA_HASH:%s:%s"),
+    REFRESH_USED("rt:used:%s"),
     ;
 
     private final String prefix;
