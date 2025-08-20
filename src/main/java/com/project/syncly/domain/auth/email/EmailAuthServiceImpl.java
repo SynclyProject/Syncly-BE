@@ -62,7 +62,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     @Override
     public String getCode(String email) {
         String key = RedisKeyPrefix.EMAIL_AUTH_CODE.get(email);
-        return redisStorage.get(key);
+        return redisStorage.getValueAsString(key);
     }
 
     @Override
@@ -78,11 +78,10 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     }
 
 
-
     @Override
     public boolean isVerified(String email) {
         String key = RedisKeyPrefix.EMAIL_AUTH_VERIFIED.get(email);
-        return "true".equals(redisStorage.get(key));
+        return "true".equals(redisStorage.getValueAsString(key));
     }
 
     @Override
