@@ -23,10 +23,10 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
     private final RequestMatcher skipMatcher = new OrRequestMatcher(
-            new AntPathRequestMatcher("/api/auth/reissue"),
+            new AntPathRequestMatcher("/api/auth/**"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/login/oauth2/**"),
-            new AntPathRequestMatcher("/api/livekit/webhook") // 필요 시
+            new AntPathRequestMatcher("/api/livekit/webhook")
     );
 
     @Override
