@@ -16,8 +16,11 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     //이미 워크 스페이스 멤버인지 확인
     boolean existsByWorkspaceIdAndMemberId(Long workspaceId, Long memberId);
 
-    //워크스페이스 멤버 조회
+    //memberId로 워크스페이스 멤버 조회
     Optional<WorkspaceMember> findByWorkspaceIdAndMemberId(Long workspaceId, Long memberId);
+
+    //workspaceMemberId로 워크스페이스 멤버 조회
+    Optional<WorkspaceMember> findByWorkspaceIdAndId(Long workspaceId, Long id);
 
     //워크스페이스 멤버 수 조회
     long countByWorkspaceId(Long workspaceId);

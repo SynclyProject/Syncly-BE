@@ -19,7 +19,9 @@ configurations {
     }
 }
 
+
 repositories {
+    maven { url 'https://jitpack.io' }
     mavenCentral()
 }
 
@@ -81,6 +83,9 @@ dependencies {
 
     // WebSocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // error discord webhook
+    implementation "com.github.napstr:logback-discord-appender:1.0.0"
+
 }
 
 tasks.named('test') {

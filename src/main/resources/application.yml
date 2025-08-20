@@ -61,7 +61,10 @@ redis:
   cache:
     member-ttl-seconds: 259200   # 3일
 
-
+logging:
+  discord:
+    webhook-url: ${DISCORD_ERROR_WEBHOOK_URL:}
+    config: classpath:logback-spring.xml
 
 
 
