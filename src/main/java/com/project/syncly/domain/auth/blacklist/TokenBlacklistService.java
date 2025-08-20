@@ -1,7 +1,6 @@
 package com.project.syncly.domain.auth.blacklist;
 
 
-import com.project.syncly.global.jwt.JwtProvider;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
 import com.project.syncly.global.redis.core.RedisStorage;
@@ -12,7 +11,6 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -42,7 +40,7 @@ public class TokenBlacklistService {
 
     public boolean isRefreshTokenBlacklisted(String token) {
         String key = RedisKeyPrefix.BLACKLIST_REFRESH.get(token);
-        return "true".equals(redisStorage.get(key));
+        return "true".equals(redisStorage.getValueAsString(key));
     }
 
     private Duration getValidTtlOrNull(String token) {

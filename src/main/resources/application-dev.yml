@@ -13,9 +13,38 @@ spring:
       hibernate:
         format_sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: ${DDL_TYPE}
     show-sql: true
 
-  mail:
-    invitation:
-      link: ${SYNCLY_LINK}
+#  mail:
+#    invitation:
+#      link: ${SYNCLY_LINK}
+
+aws:
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID}
+    secret-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ap-northeast-2
+  s3:
+    bucket: ${AWS_S3_BUCKET_NAME}
+  cloudfront:
+    domain: ${AWS_CLOUDFRONT_DOMAIN}
+    key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
+    private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
+
+
+livekit:
+  ingress:
+    api-key: ${LIVEKIT_INGRESS_API_KEY}      # 사용자 입장용 JWT 발급용
+    api-secret: ${LIVEKIT_INGRESS_API_SECRET}
+  admin:
+    api-key: ${LIVEKIT_ADMIN_API_KEY}        # 서버 제어용 JWT (방 삭제 등)
+    api-secret: ${LIVEKIT_ADMIN_API_SECRET}
+  webhook:
+    key: ${LIVEKIT_WEBHOOK_KEY}              # Webhook 검증용
+    secret: ${LIVEKIT_WEBHOOK_SECRET}
+  api-url: ${LIVEKIT_URL}
+
+server:
+  address: 0.0.0.0
+  port: 8080

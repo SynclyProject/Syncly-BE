@@ -1,5 +1,6 @@
 package com.project.syncly.domain.member.service.impl;
 
+import com.project.syncly.domain.auth.service.AuthService;
 import com.project.syncly.domain.member.converter.MemberConverter;
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
 import com.project.syncly.domain.member.entity.Member;
@@ -14,7 +15,6 @@ import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
 import com.project.syncly.domain.s3.exception.S3Exception;
 import com.project.syncly.domain.s3.util.S3Util;
-import com.project.syncly.global.jwt.service.TokenService;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     private final PasswordEncoder passwordEncoder;
     private final LoginCacheService loginCacheService;
     private final EmailAuthService emailAuthService;
-    private final TokenService tokenService;
+    private final AuthService authService;
     private final S3Util s3Util;
     private final RedisStorage redisStorage;
 
@@ -78,7 +78,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(
                 memberId.toString() + ':' + request.fileName() + ':' + request.objectKey());
 
-        S3RequestDTO.ProfileImageUploadPreSignedUrl saved = redisStorage.get(
+        S3RequestDTO.ProfileImageUploadPreSignedUrl saved = redisStorage.getValueAsString(
                 redisKey, S3RequestDTO.ProfileImageUploadPreSignedUrl.class
         );
 
@@ -141,7 +141,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
             throw new MemberException(MemberErrorCode.PASSWORD_NOT_MATCHED);
         }
         member.markAsDeleted(toDelete.leaveReasonType(), toDelete.leaveReason());
-        tokenService.logout(request, response);
+        authService.logout(request, response);
         loginCacheService.removeMemberCache(member.getId());
     }
 }
