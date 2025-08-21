@@ -55,7 +55,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     @Override
     public void saveCode(String email, String code) {
         String key = RedisKeyPrefix.EMAIL_AUTH_CODE.get(email);
-        redisStorage.set(key, code, Duration.ofSeconds(codeTtlSeconds));
+        redisStorage.setValueAsString(key, code, Duration.ofSeconds(codeTtlSeconds));
     }
 
 
@@ -74,7 +74,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     @Override
     public void markVerified(String email) {
         String key = RedisKeyPrefix.EMAIL_AUTH_VERIFIED.get(email);
-        redisStorage.set(key, "true", Duration.ofSeconds(verifiedTtlSeconds));
+        redisStorage.setValueAsString(key, "true", Duration.ofSeconds(verifiedTtlSeconds));
     }
 
 
