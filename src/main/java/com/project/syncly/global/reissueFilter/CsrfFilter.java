@@ -1,7 +1,9 @@
 package com.project.syncly.global.reissueFilter;
 
+import com.project.syncly.global.jwt.enums.TokenType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -15,23 +17,36 @@ import java.util.Set;
 @Component
 public class CsrfFilter extends OncePerRequestFilter {
     private static final Set<String> TRUSTED_ORIGINS = Set.of(
-            "https://turn.syncly-io.com",
-            "https://livekit.syncly-io.com",
-            "https://syncly-io.com",
-            "http://localhost:5173",   // dev
-            "http://localhost:8080"
+            "https://syncly-io.com",//프론트엔드 도메인(https://app.syncly-io.com 이런식일수도)
+            "http://52.79.102.15:8080/",//배포스웨거,
+            "http://localhost:5173",   // 프론트 dev
+            "http://localhost:8080"//스웨거
+
     );
+
+    private boolean hasCookie(HttpServletRequest req, String name) {
+        Cookie[] cookies = req.getCookies();
+        if (cookies == null) return false;
+        for (Cookie c : cookies) {
+            if (name.equals(c.getName())) return true;
+        }
+        return false;
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest req) {
+        //제일 먼저, 쓰는 path만 검사해서 걸러내기
+        if (!(req.getRequestURI().startsWith("/api/auth/reissue")
+                ||req.getRequestURI().startsWith("/api/auth/logout"))) return true;
+
         final String m = req.getMethod();
         // 프리플라이트/안전메서드 스킵
         if ("OPTIONS".equalsIgnoreCase(m)) return true;
         if ("GET".equalsIgnoreCase(m) || "HEAD".equalsIgnoreCase(m)) return true;
 
-        // 쿠키가 없으면 스킵 (stateless 요청은 CSRF 검사 안 함)
-        // 헤더 체크가 가장 간단: Cookie 헤더 존재 여부
-        return req.getHeader("Cookie") == null;
+
+        // RT 쿠키가 있을 때만 CSRF 검사. (JSESSIONID, signed cookie 무시)
+        return !hasCookie(req, TokenType.REFRESH.toString());
     }
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)

@@ -10,6 +10,7 @@ import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.global.jwt.JwtProvider;
 import com.project.syncly.global.jwt.dto.IssuedTokens;
 import com.project.syncly.global.jwt.dto.RefreshClaims;
+import com.project.syncly.global.jwt.enums.TokenType;
 import com.project.syncly.global.jwt.exception.JwtErrorCode;
 import com.project.syncly.global.jwt.exception.JwtException;
 import jakarta.servlet.http.Cookie;
@@ -38,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshWhitelistService whitelist;
 
-    private static final String REFRESH_COOKIE = "REFRESH";
+    private static final String REFRESH_COOKIE = TokenType.REFRESH.toString();
     private static final String REFRESH_COOKIE_PATH = "/api/auth";
 
 
