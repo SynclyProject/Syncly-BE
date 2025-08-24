@@ -3,7 +3,6 @@ package com.project.syncly.domain.auth.oauth.handler;
 
 import com.project.syncly.domain.auth.service.AuthService;
 import com.project.syncly.global.jwt.JwtProvider;
-import com.project.syncly.domain.auth.oauth.dto.TokenResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.syncly.global.jwt.PrincipalDetails;
 import com.project.syncly.global.jwt.dto.IssuedTokens;
