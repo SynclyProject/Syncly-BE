@@ -1,5 +1,6 @@
 package com.project.syncly.domain.auth.controller;
 
+import com.project.syncly.domain.auth.oauth.dto.AccessTokenResponse;
 import com.project.syncly.domain.auth.service.AuthService;
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
 import com.project.syncly.global.apiPayload.CustomResponse;
@@ -30,7 +31,7 @@ public class AuthController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<CustomResponse<String>> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<CustomResponse<AccessTokenResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
         IssuedTokens issued = authService.reissue(request);
 
         // REFRESH 쿠키 세팅
@@ -39,7 +40,12 @@ public class AuthController {
         );
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, issued.accessToken()));
+        AccessTokenResponse accessTokenResponse = AccessTokenResponse.builder()
+                .accessToken(issued.accessToken())
+                .accessExpiresInSec(issued.accessExpiresInSec())
+                .build();
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, accessTokenResponse));
     }
 
     @PostMapping("/logout")

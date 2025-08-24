@@ -96,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
         // refresh token 추출
         String refreshJwt = extractRefreshFromCookie(request);
         if (refreshJwt == null) {
-            throw new JwtException(JwtErrorCode.UNAUTHORIZED);
+            throw new JwtException(JwtErrorCode.EMPTY_REFRESH_TOKEN);
         }
         //uaHash 추출
         String ua = request.getHeader("User-Agent");
