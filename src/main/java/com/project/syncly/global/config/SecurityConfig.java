@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -114,7 +113,7 @@ public class SecurityConfig {
                 )
                 // 필터 순서: CORS → (조건부) CSRF → JWT
                 .addFilterAfter(csrfFilter, org.springframework.web.filter.CorsFilter.class)
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(jwtFilter, CsrfFilter.class);
 
         return http.build();
     }
