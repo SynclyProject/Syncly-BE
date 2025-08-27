@@ -132,6 +132,26 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     }
 
     @Override
+    public void updatePasswordWithEmail(MemberRequestDTO.UpdatePasswordWithEmail updatePassword, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getSocialLoginProvider() != SocialLoginProvider.LOCAL) {
+            throw new MemberException(MemberErrorCode.SOCIAL_MEMBER_CANNOT_USE_THIS_FEATURE);
+        }
+        // 이메일 인증여부 확인
+        boolean isVerified = emailAuthService.isVerifiedBeforeChangePassword(member.getEmail());
+
+        if (!isVerified) {
+            throw new MemberException(MemberErrorCode.EMAIL_NOT_VERIFIED);
+        }
+        String encodedNewPassword = passwordEncoder.encode(updatePassword.newPassword());
+        member.updatePassword(encodedNewPassword);
+
+        loginCacheService.cacheMember(member);
+    }
+
+    @Override
     public void deleteMember(HttpServletRequest request, HttpServletResponse response,
                              Long memberId, MemberRequestDTO.DeleteMember toDelete) {
         //삭제전엔 안전하게 db에서 조회
