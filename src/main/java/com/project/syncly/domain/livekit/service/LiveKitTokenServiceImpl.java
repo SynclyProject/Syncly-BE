@@ -23,7 +23,7 @@ public class LiveKitTokenServiceImpl implements LiveKitTokenService {
     }
     @Override
     public String issueToken(Member member, Long workspaceId) {
-        if (!isMemberIncludeWorkspace(workspaceId, member.getId())) {
+        if (!isMemberIncludeWorkspace(member.getId(), workspaceId)) {
             throw new LiveKitException(LiveKitErrorCode.MEMBER_NOT_INCLUDE_WORKSPACE);
         }
 
