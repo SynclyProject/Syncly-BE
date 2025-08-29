@@ -21,6 +21,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
@@ -32,38 +34,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # JAR 파일 복사
+      - name: Build with Gradle
+        run: ./gradlew clean bootJar -x test
+
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/*.jar"
-          target: "/home/ubuntu/app"
+          source: "build/libs/*SNAPSHOT.jar"
+          target: "/home/ubuntu/app/"
 
-      # PM2로 Spring Boot 실행
-      - name: Restart Spring Boot app with PM2
+      - name: Restart via PM2 (SSM inject)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: SPRING_PROFILE,DDL_TYPE,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,JWT_SECRET_KEY,MAIL_USER_NAME,MAIL_APP_PASSWORD,REDIS_HOST,REDIS_PORT,SYNCLY_LINK,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME,DB_HOST,DB_USERNAME,DB_PASSWORD,AWS_CLOUDFRONT_DOMAIN,AWS_CLOUDFRONT_KEY_PAIR_ID,AWS_CLOUDFRONT_PRIVATE_KEY,LIVEKIT_INGRESS_API_KEY,LIVEKIT_INGRESS_API_SECRET,LIVEKIT_ADMIN_API_KEY,LIVEKIT_ADMIN_API_SECRET,LIVEKIT_WEBHOOK_KEY,LIVEKIT_WEBHOOK_SECRET,LIVEKIT_URL,LIVEKIT_TURN_ENABLED,LIVEKIT_TURN_UDP_PORT,LIVEKIT_TURN_TLS_PORT,LIVEKIT_TURN_DOMAIN,LIVEKIT_TURN_USERNAME,LIVEKIT_TURN_PASSWORD
           script: |
-            if ! command -v pm2 &> /dev/null; then
-              npm install -g pm2
+            if ! command -v pm2 >/dev/null 2>&1; then
+              npm i -g pm2
             fi
-
-            JAR_FILE=$(ls -t /home/ubuntu/app/*.jar | head -n 1)
-            echo "🚀 Restarting Spring Boot with PM2 ($JAR_FILE)"
-
-            pm2 delete syncly-backend || true
-            pm2 start "java" \
-              --name syncly-backend \
-              --interpreter none \
-              -- \
-              -jar "$JAR_FILE" --server.port=8080
+            # 스크립트/PM2 설정이 없다면 최초 1회만 업로드 or 여기서 생성
+            pm2 startOrRestart /home/ubuntu/app/ecosystem.config.js --update-env
             pm2 save
   
 
