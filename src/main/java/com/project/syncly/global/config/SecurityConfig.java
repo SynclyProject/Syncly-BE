@@ -69,8 +69,8 @@ public class SecurityConfig {
     @Order(1)
     SecurityFilterChain oauth2Chain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/oauth2/**",//클라이언트 초기 접속 api (GET /oauth2/authorization/{registrationId})
-                        "/login/oauth2/**")//구글에서 우리서버 redirect url (GET /login/oauth2/code/{registrationId})
+                .securityMatcher("/api/oauth2/**",//클라이언트 초기 접속 api (GET /oauth2/authorization/{registrationId})
+                        "/api/login/oauth2/**")//구글에서 우리서버 redirect url (GET /login/oauth2/code/{registrationId})
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -79,6 +79,8 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(a -> a.anyRequest().permitAll())
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(a -> a.baseUri("/api/oauth2/authorization"))  // 시작 URL 변경
+                        .redirectionEndpoint(r -> r.baseUri("/api/login/oauth2/code/*"))     // 콜백 URL 변경
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oauth2SuccessHandler)
                         .failureHandler(oauth2FailureHandler)
