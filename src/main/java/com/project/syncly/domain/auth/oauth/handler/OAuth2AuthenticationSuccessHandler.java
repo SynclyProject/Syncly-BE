@@ -40,8 +40,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         );
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        response.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(response.getWriter(), issued.accessToken());
+        //response.sendRedirect("https://www.syncly-io.com/oauth2/success");
+        //프론트 코드 배포 시 위 주소로 변경
+        response.sendRedirect("http://localhost:5173/oauth2/success");
     }
 
 }
