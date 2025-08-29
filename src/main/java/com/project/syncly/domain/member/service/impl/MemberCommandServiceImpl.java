@@ -56,17 +56,18 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = MemberConverter.toLocalMember(dto.email(), encodedPassword, dto.name());
 
         memberRepository.save(member);
+        workspaceService.createPersonalWorkspace(member.getId());
         emailAuthService.clearVerified(dto.email());
     }
 
 
     @Override
     public Member findOrCreateSocialMember(String email, String name, SocialLoginProvider provider) {
-
-        Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(
-                        MemberConverter.toSocialMember(email, name, provider)
-                ));
+        Member member = memberRepository.findByEmail(email).orElse(null);
+        if (member == null) {
+            member  = memberRepository.save(MemberConverter.toSocialMember(email, name, provider));
+            workspaceService.createPersonalWorkspace(member .getId());
+        }
         loginCacheService.cacheMember(member);
         return member;
     }
