@@ -27,7 +27,7 @@ aws:
   cloudfront:
     domain: ${AWS_CLOUDFRONT_DOMAIN}
     key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
-    private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
+    private-key: ${AWS_CLOUDFRONT_PRIVATE_KEY}
 
 
 livekit:
