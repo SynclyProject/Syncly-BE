@@ -29,8 +29,8 @@ public class CloudFrontUtil {
     @Value("${aws.cloudfront.key-pair-id}")
     private String keyPairId;
 
-    @Value("${aws.cloudfront.private-key-path}")
-    private String privateKeyPath;
+    @Value("${aws.cloudfront.private-key}")
+    private String privateKeyPem;
 
     public Map<String, String> generateSignedCookies(String resourcePath, Duration duration) {
         try {
@@ -52,7 +52,7 @@ public class CloudFrontUtil {
                 """, cloudFrontDomain, resourcePath, expiresAt.getTime() / 1000);
 
             // 정책을 RSA로 서명
-            PrivateKey privateKey = loadPrivateKey(privateKeyPath);
+            PrivateKey privateKey = loadPrivateKey(privateKeyPem);
             String signature = signWithPrivateKey(policy, privateKey);
 
             // 쿠키 생성
@@ -67,9 +67,9 @@ public class CloudFrontUtil {
         }
     }
 
-    private PrivateKey loadPrivateKey(String path) throws Exception {
+    private PrivateKey loadPrivateKey(String privateKeyPem) throws Exception {
         // PEM 포맷 private key 읽기
-        String key = Files.readString(Paths.get(path))
+        String key = privateKeyPem
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s", "");
