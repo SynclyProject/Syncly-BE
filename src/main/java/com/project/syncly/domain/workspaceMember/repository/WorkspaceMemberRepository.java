@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspaceMember.repository;
 
+import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.workspace.dto.WorkspaceMemberInfoResponseDto;
 import com.project.syncly.domain.workspace.dto.WorkspaceResponseDto;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
@@ -54,6 +55,6 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     """)
     List<WorkspaceMemberInfoResponseDto> findAllMembersByWorkspaceIdOrdered(@Param("workspaceId") Long workspaceId);
 
-
+    List<WorkspaceMember> findAllByMember(Member member);
 
 }

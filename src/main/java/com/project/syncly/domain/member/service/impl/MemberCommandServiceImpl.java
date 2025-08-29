@@ -15,6 +15,9 @@ import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
 import com.project.syncly.domain.s3.exception.S3Exception;
 import com.project.syncly.domain.s3.util.S3Util;
+import com.project.syncly.domain.workspace.service.WorkspaceService;
+import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
+import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +26,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +40,8 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     private final AuthService authService;
     private final S3Util s3Util;
     private final RedisStorage redisStorage;
+    private final WorkspaceService workspaceService;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
 
 
@@ -69,8 +76,13 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         member.updateName(updateName.newName());
-        loginCacheService.cacheMember(member);
 
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findAllByMember(member);
+        workspaceMembers.forEach(workspaceMember -> {
+            workspaceMember.updateName(updateName.newName());
+        });
+
+        loginCacheService.cacheMember(member);
     }
 
     @Override
