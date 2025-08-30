@@ -30,7 +30,7 @@ public class CloudFrontUtil {
     private String keyPairId;
 
     @Value("${aws.cloudfront.private-key}")
-    private String privateKeyPem;
+    private String privateKeyBase64;
 
     public Map<String, String> generateSignedCookies(String resourcePath, Duration duration) {
         try {
@@ -52,7 +52,7 @@ public class CloudFrontUtil {
                 """, cloudFrontDomain, resourcePath, expiresAt.getTime() / 1000);
 
             // 정책을 RSA로 서명
-            PrivateKey privateKey = loadPrivateKey(privateKeyPem);
+            PrivateKey privateKey = loadPrivateKey(privateKeyBase64);
             String signature = signWithPrivateKey(policy, privateKey);
 
             // 쿠키 생성
@@ -67,18 +67,30 @@ public class CloudFrontUtil {
         }
     }
 
-    private PrivateKey loadPrivateKey(String privateKeyPem) throws Exception {
-        // PEM 포맷 private key 읽기
-        String key = privateKeyPem
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s", "");
-        byte[] keyBytes = Base64.getDecoder().decode(key);
+    private PrivateKey loadPrivateKey(String privateKeyBase64) throws Exception {
+        byte[] firstDecode = Base64.getDecoder().decode(privateKeyBase64);
 
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        return factory.generatePrivate(spec);
+        // 디코딩 결과를 문자열로 변환
+        String asText = new String(firstDecode, StandardCharsets.UTF_8);
+
+        byte[] derBytes;
+
+        if (asText.startsWith("-----BEGIN")) {
+            // PEM 텍스트일 경우 → 헤더/푸터 제거 후 다시 디코딩
+            String inner = asText
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replaceAll("\\s", "");
+            derBytes = Base64.getMimeDecoder().decode(inner);
+        } else {
+            // DER 바이트를 바로 Base64 인코딩한 경우 → 그대로 사용
+            derBytes = firstDecode;
+        }
+
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(derBytes);
+        return KeyFactory.getInstance("RSA").generatePrivate(spec);
     }
+
 
     private String signWithPrivateKey(String data, PrivateKey privateKey) throws Exception {
         Signature rsa = Signature.getInstance("SHA256withRSA");
