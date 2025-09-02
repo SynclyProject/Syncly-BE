@@ -50,7 +50,7 @@ public class RoomStateService {
     }
 
     public ParticipantInfoListDTO getParticipantInfoList(Long workspaceId, Long memberId) {
-        if (!liveKitTokenService.isMemberIncludeWorkspace(workspaceId, memberId)) {
+        if (!liveKitTokenService.isMemberIncludeWorkspace(memberId, workspaceId)) {
             throw new LiveKitException(LiveKitErrorCode.MEMBER_NOT_INCLUDE_WORKSPACE);
         }
         String roomId = LiveKitConverter.getRoomId(workspaceId);
