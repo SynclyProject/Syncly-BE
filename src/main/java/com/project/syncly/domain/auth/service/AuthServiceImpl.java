@@ -156,6 +156,7 @@ public class AuthServiceImpl implements AuthService {
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("None")
+                .domain(".syncly-io.com")
                 .path(REFRESH_COOKIE_PATH)
                 .maxAge(Duration.ofSeconds(ttlSec))
                 .build();
