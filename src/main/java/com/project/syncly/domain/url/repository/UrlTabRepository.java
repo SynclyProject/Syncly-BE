@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UrlTabRepository extends JpaRepository<UrlTab, Long> {
@@ -15,5 +16,9 @@ public interface UrlTabRepository extends JpaRepository<UrlTab, Long> {
             "WHERE t.workspace.id = :workspaceId " +
             "ORDER BY t.createdAt ASC, i.createdAt ASC")
     List<UrlTab> findAllWithUrlItemsByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
+    @Query("select ut from UrlTab ut join fetch ut.workspace where ut.id = :id")
+    Optional<UrlTab> findByIdWithWorkspace(Long id);
+
 
 }
