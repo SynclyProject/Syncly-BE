@@ -189,7 +189,7 @@ public class UrlWebSocketServiceImpl implements UrlWebSocketService {
         Long tabId = request.tabId();
 
         // URL 탭 조회
-        UrlTab urlTab = urlTabRepository.findById(tabId)
+        UrlTab urlTab = urlTabRepository.findByIdWithWorkspace(tabId)
                 .orElseThrow(() -> new UrlException(UrlErrorCode.URL_TAB_NOT_FOUND));
 
         Workspace workspace = urlTab.getWorkspace();
@@ -236,7 +236,7 @@ public class UrlWebSocketServiceImpl implements UrlWebSocketService {
         Long itemId = request.urlItemId();
 
         // URL 탭 조회
-        UrlTab urlTab = urlTabRepository.findById(tabId)
+        UrlTab urlTab = urlTabRepository.findByIdWithWorkspace(tabId)
                 .orElseThrow(() -> new UrlException(UrlErrorCode.URL_TAB_NOT_FOUND));
 
         Workspace workspace = urlTab.getWorkspace();
