@@ -28,7 +28,10 @@ public class CorsConfig {//cross-origin 응답을 JS에서 읽을 수 있는지 
         List<String> CRED_PATHS = List.of(
                 "/api/auth/**",
                 "/api/livekit/**",
-                "/api/s3/view-cookie"
+                "/api/s3/view-cookie",
+                //oauth2
+                "/api/oauth2/**",
+                "/api/login/oauth2/**"
         );
         CorsConfiguration cred = new CorsConfiguration();
         cred.setAllowedOriginPatterns(PROD_ORIGINS);
