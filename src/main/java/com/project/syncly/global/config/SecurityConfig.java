@@ -37,7 +37,7 @@ public class SecurityConfig {
             "/api/auth/logout",
             //소셜
             "/api/auth/social/**",
-            "/login/oauth2/**",
+            "/api/login/oauth2/**",
             //회원가입
             "/api/member/email/send",
             "/api/member/email/verify",
