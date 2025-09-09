@@ -145,8 +145,8 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     }
 
     @Override
-    public void updatePasswordWithEmail(MemberRequestDTO.UpdatePasswordWithEmail updatePassword, Long memberId) {
-        Member member = memberRepository.findById(memberId)
+    public void updatePasswordWithEmail(MemberRequestDTO.UpdatePasswordWithEmail updatePassword) {
+        Member member = memberRepository.findByEmail(updatePassword.email())
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (member.getSocialLoginProvider() != SocialLoginProvider.LOCAL) {
