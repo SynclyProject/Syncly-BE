@@ -26,7 +26,8 @@ public class JwtFilter extends OncePerRequestFilter {
             new AntPathRequestMatcher("/api/auth/**"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/login/oauth2/**"),
-            new AntPathRequestMatcher("/api/livekit/webhook")
+            new AntPathRequestMatcher("/api/livekit/webhook"),
+            new AntPathRequestMatcher("/api/member/password/**")
     );
 
     @Override
