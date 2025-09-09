@@ -47,7 +47,9 @@ public class SecurityConfig {
             "/ws-stomp",
             "/ws-stomp/**",
             "/api/workspaces/notifications",
-            "/api/workspaces/notifications/**"
+            "/api/workspaces/notifications/**",
+            //비밀번호
+            "/api/member/password/**"
     };
 
     @Bean
