@@ -131,9 +131,8 @@ public class MemberController {
             description = "이메일 인증을 통해 비밀번호를 변경하는 API입니다."
     )
     @PatchMapping("/password/email")
-    public ResponseEntity<CustomResponse<Void>> updatePasswordWithEmail(@RequestBody @Valid MemberRequestDTO.UpdatePasswordWithEmail updatePassword,
-                                                               @MemberIdInfo Long memberId) {
-        memberCommandService.updatePasswordWithEmail(updatePassword, memberId);
+    public ResponseEntity<CustomResponse<Void>> updatePasswordWithEmail(@RequestBody @Valid MemberRequestDTO.UpdatePasswordWithEmail updatePassword) {
+        memberCommandService.updatePasswordWithEmail(updatePassword);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 

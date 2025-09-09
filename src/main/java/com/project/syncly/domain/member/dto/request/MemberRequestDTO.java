@@ -38,6 +38,7 @@ public class MemberRequestDTO {
 
     @PasswordMatch
     public record UpdatePasswordWithEmail(
+            @Email @NotBlank String email,
             @ValidPassword String newPassword,
             @NotBlank String confirmPassword
     )implements PasswordPair {}
