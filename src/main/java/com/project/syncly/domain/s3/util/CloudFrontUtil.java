@@ -18,7 +18,8 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+/// signed cookie 공식문서
+/// https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-setting-signed-cookie-custom-policy.html?utm_source=chatgpt.com
 @Component
 @RequiredArgsConstructor
 public class CloudFrontUtil {
@@ -32,11 +33,22 @@ public class CloudFrontUtil {
     @Value("${aws.cloudfront.private-key}")
     private String privateKeyBase64;
 
+    private static String toUrlSafe(String b64) {
+        return b64.replace('+','-').replace('=','_').replace('/','~');
+    }
+
+    // 1) MIME Base64 인코딩(개행 제거) + URL-safe
+    private static String mimeBase64UrlSafe(byte[] bytes) {
+        String b64 = Base64.getMimeEncoder().encodeToString(bytes);
+        // 혹시 들어간 줄바꿈 제거
+        b64 = b64.replace("\n","").replace("\r","");
+        return toUrlSafe(b64);
+    }
     public Map<String, String> generateSignedCookies(String resourcePath, Duration duration) {
         try {
             Date expiresAt = new Date(System.currentTimeMillis() + duration.toMillis());
 
-            String policy = String.format("""
+            String policyPretty  = String.format("""
                 {
                   "Statement": [
                     {
@@ -50,14 +62,15 @@ public class CloudFrontUtil {
                   ]
                 }
                 """, cloudFrontDomain, resourcePath, expiresAt.getTime() / 1000);
-
+            //공백제거
+            String policy = policyPretty.replaceAll("\\s+", "");
             // 정책을 RSA로 서명
             PrivateKey privateKey = loadPrivateKey(privateKeyBase64);
             String signature = signWithPrivateKey(policy, privateKey);
 
             // 쿠키 생성
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("CloudFront-Policy", Base64.getEncoder().encodeToString(policy.getBytes(StandardCharsets.UTF_8)));
+            cookies.put("CloudFront-Policy", mimeBase64UrlSafe(policy.getBytes(StandardCharsets.UTF_8)));
             cookies.put("CloudFront-Signature", signature);
             cookies.put("CloudFront-Key-Pair-Id", keyPairId);
 
@@ -93,10 +106,10 @@ public class CloudFrontUtil {
 
 
     private String signWithPrivateKey(String data, PrivateKey privateKey) throws Exception {
-        Signature rsa = Signature.getInstance("SHA256withRSA");
+        Signature rsa = Signature.getInstance("SHA1withRSA");
         rsa.initSign(privateKey);
         rsa.update(data.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(rsa.sign());
+        return mimeBase64UrlSafe(rsa.sign());
     }
 }
 
