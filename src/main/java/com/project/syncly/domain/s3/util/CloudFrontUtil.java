@@ -3,6 +3,7 @@ package com.project.syncly.domain.s3.util;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
 import com.project.syncly.domain.s3.exception.S3Exception;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 /// signed cookie 공식문서
 /// https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-setting-signed-cookie-custom-policy.html?utm_source=chatgpt.com
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CloudFrontUtil {
@@ -76,6 +78,7 @@ public class CloudFrontUtil {
 
             return cookies;
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             throw new S3Exception(S3ErrorCode.CLOUDFRONT_COOKIE_FAIL);
         }
     }
