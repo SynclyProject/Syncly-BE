@@ -35,22 +35,15 @@ public class CloudFrontUtil {
     @Value("${aws.cloudfront.private-key}")
     private String privateKeyBase64;
 
-    private static String toUrlSafe(String b64) {
-        return b64.replace('+','-').replace('=','_').replace('/','~');
-    }
-
-    // 1) MIME Base64 인코딩(개행 제거) + URL-safe
-    private static String mimeBase64UrlSafe(byte[] bytes) {
-        String b64 = Base64.getMimeEncoder().encodeToString(bytes);
-        // 혹시 들어간 줄바꿈 제거
-        b64 = b64.replace("\n","").replace("\r","");
-        return toUrlSafe(b64);
+    private static String encodingToMimeBase64(String policy) {
+        byte[] bytes = policy.getBytes(StandardCharsets.UTF_8);
+        return Base64.getMimeEncoder().encodeToString(bytes);
     }
     public Map<String, String> generateSignedCookies(String resourcePath, Duration duration) {
         try {
             Date expiresAt = new Date(System.currentTimeMillis() + duration.toMillis());
 
-            String policyPretty  = String.format("""
+            String policyPretty = String.format("""
                 {
                   "Statement": [
                     {
@@ -64,15 +57,17 @@ public class CloudFrontUtil {
                   ]
                 }
                 """, cloudFrontDomain, resourcePath, expiresAt.getTime() / 1000);
-            //공백제거
+
+            // 공백, 탭, 줄바꿈 제거
             String policy = policyPretty.replaceAll("\\s+", "");
+
             // 정책을 RSA로 서명
             PrivateKey privateKey = loadPrivateKey(privateKeyBase64);
             String signature = signWithPrivateKey(policy, privateKey);
 
             // 쿠키 생성
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("CloudFront-Policy", mimeBase64UrlSafe(policy.getBytes(StandardCharsets.UTF_8)));
+            cookies.put("CloudFront-Policy", encodingToMimeBase64(policy));
             cookies.put("CloudFront-Signature", signature);
             cookies.put("CloudFront-Key-Pair-Id", keyPairId);
 
@@ -85,7 +80,6 @@ public class CloudFrontUtil {
 
     private PrivateKey loadPrivateKey(String privateKeyBase64) throws Exception {
         byte[] firstDecode = Base64.getDecoder().decode(privateKeyBase64);
-
         // 디코딩 결과를 문자열로 변환
         String asText = new String(firstDecode, StandardCharsets.UTF_8);
 
@@ -112,7 +106,12 @@ public class CloudFrontUtil {
         Signature rsa = Signature.getInstance("SHA1withRSA");
         rsa.initSign(privateKey);
         rsa.update(data.getBytes(StandardCharsets.UTF_8));
-        return mimeBase64UrlSafe(rsa.sign());
+        byte[] signatureBytes = rsa.sign();
+        // 줄바꿈 제거하는 이유 : mime base64는 76자마다 \r\n 를 넣는다고 한다. 왜그러는거지?
+        return Base64.getMimeEncoder()
+                .encodeToString(signatureBytes)
+                .replace("\n", "")
+                .replace("\r", "");
     }
 }
 
