@@ -37,7 +37,10 @@ public class CloudFrontUtil {
 
     private static String encodingToMimeBase64(String policy) {
         byte[] bytes = policy.getBytes(StandardCharsets.UTF_8);
-        return Base64.getMimeEncoder().encodeToString(bytes);
+        return Base64.getMimeEncoder()
+                .encodeToString(bytes)
+                .replace("\n", "")
+                .replace("\r", "");
     }
     public Map<String, String> generateSignedCookies(String resourcePath, Duration duration) {
         try {
