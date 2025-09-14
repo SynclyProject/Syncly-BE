@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<CustomResponse<Map<String, String>>> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException ex) {
         // 검사에 실패한 필드와 그에 대한 메시지를 저장하는 Map
-        Map<String, String> errors = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();//이렇게 두면 에러 여러개가 들어왔을때 마지막 것만 찍히므로 MultiValueMap로 리팩토링 필요
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
         CustomResponse<String> errorResponse = CustomResponse.failure(
                 errorCode.getCode(),
                 errorCode.getMessage(),
-                ex.getMessage()
+                ex.getMessage()//실제 예외의 메시지를 전달하면, 실제로는 위험할 수 있다.(DB 커넥션 URL, 테이블/컬럼명 노출 등) 프론트 연결 끝나고 빼면 될 듯?
         );
         return ResponseEntity
                 .status(errorCode.getStatus())
