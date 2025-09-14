@@ -18,7 +18,8 @@ public record RoomRealtimeEventDTO(
     public record ParticipantEvent(
             boolean isJoined,
             String participantId,
-            String memberName
+            String memberName,
+            String memberProfileObjectKey
     ) {}
     @Builder
     public record RoomEvent(

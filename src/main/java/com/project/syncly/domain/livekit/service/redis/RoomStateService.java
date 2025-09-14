@@ -58,7 +58,7 @@ public class RoomStateService {
         Set<String> participantIds = redisStorage.getSetValues(key);
 
         if (participantIds == null || participantIds.isEmpty()) {
-            return LiveKitConverter.toParticipantInfoListDTO(List.of());
+            return LiveKitConverter.toParticipantInfoListDTO(roomId, List.of());
         }
 
         List<ParticipantInfoDTO> list = participantIds.stream()
@@ -66,7 +66,7 @@ public class RoomStateService {
                 .filter(Objects::nonNull)
                 .toList();
 
-        return LiveKitConverter.toParticipantInfoListDTO(list);
+        return LiveKitConverter.toParticipantInfoListDTO(roomId, list);
     }
 //방삭제 테스트
     public void deleteRoomTester(String roomId){

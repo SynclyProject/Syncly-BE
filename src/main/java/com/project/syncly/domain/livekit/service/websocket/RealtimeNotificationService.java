@@ -44,7 +44,9 @@ public class RealtimeNotificationService {
         Member member = memberQueryService.getMemberByIdWithRedis(Long.parseLong(participantId));
         RoomRealtimeEventDTO.ParticipantEvent detail = RoomRealtimeEventDTO.ParticipantEvent.builder()
                 .isJoined(true)
+                .participantId(participantId)
                 .memberName(member.getName())
+                .memberProfileObjectKey(member.getProfileImage())
                 .build();
         RoomRealtimeEventDTO dto = RoomRealtimeEventDTO.builder()
                                         .type(LiveKitWebhookType.PARTICIPANT_JOINED)
@@ -56,10 +58,9 @@ public class RealtimeNotificationService {
     }
     public void participantLeft(String roomId, String participantId) {
 
-        Member member = memberQueryService.getMemberByIdWithRedis(Long.parseLong(participantId));
         RoomRealtimeEventDTO.ParticipantEvent detail = RoomRealtimeEventDTO.ParticipantEvent.builder()
                 .isJoined(false)
-                .memberName(member.getName())
+                .participantId(participantId)
                 .build();
         RoomRealtimeEventDTO dto = RoomRealtimeEventDTO.builder()
                 .type(LiveKitWebhookType.PARTICIPANT_LEFT)

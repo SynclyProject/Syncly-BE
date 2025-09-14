@@ -9,15 +9,17 @@ public class LiveKitConverter {
     public static String getRoomId(Long workspaceId) {
         return "workspace-" + workspaceId;
     }
-    public static ParticipantInfoDTO toParticipantInfoDTO(String participantId, boolean audioSharing, boolean screenSharing) {
+    public static ParticipantInfoDTO toParticipantInfoDTO(String participantId,String profileImageObjectKey, boolean audioSharing, boolean screenSharing) {
         return ParticipantInfoDTO.builder()
                 .participantId(participantId)
+                .profileImageObjectKey(profileImageObjectKey)
                 .audioSharing(audioSharing)
                 .screenSharing(screenSharing)
                 .build();
     }
-    public static ParticipantInfoListDTO toParticipantInfoListDTO(List<ParticipantInfoDTO> list) {
+    public static ParticipantInfoListDTO toParticipantInfoListDTO(String roomId, List<ParticipantInfoDTO> list) {
         return ParticipantInfoListDTO.builder()
+                .roomId(roomId)
                 .participants(list)
                 .build();
     }
