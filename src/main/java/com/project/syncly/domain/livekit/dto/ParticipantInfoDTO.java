@@ -6,6 +6,7 @@ import lombok.Builder;
 @Builder
 public record ParticipantInfoDTO(
         String participantId,
+        String participantName,
         String profileImageObjectKey,
         boolean audioSharing,
         boolean screenSharing

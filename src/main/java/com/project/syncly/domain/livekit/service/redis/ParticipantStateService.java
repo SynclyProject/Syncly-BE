@@ -33,6 +33,7 @@ public class ParticipantStateService {
         Member member = memberQueryService.getMemberByIdWithRedis(Long.parseLong(participantId));
         return LiveKitConverter.toParticipantInfoDTO(
                 participantId,
+                member.getName(),
                 member.getProfileImage(),
                 Boolean.parseBoolean(String.valueOf(data.getOrDefault("audioSharing", false))),
                 Boolean.parseBoolean(String.valueOf(data.getOrDefault("screenSharing", false)))

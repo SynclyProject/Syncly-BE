@@ -9,9 +9,10 @@ public class LiveKitConverter {
     public static String getRoomId(Long workspaceId) {
         return "workspace-" + workspaceId;
     }
-    public static ParticipantInfoDTO toParticipantInfoDTO(String participantId,String profileImageObjectKey, boolean audioSharing, boolean screenSharing) {
+    public static ParticipantInfoDTO toParticipantInfoDTO(String participantId,String participantName ,String profileImageObjectKey, boolean audioSharing, boolean screenSharing) {
         return ParticipantInfoDTO.builder()
                 .participantId(participantId)
+                .participantName(participantName)
                 .profileImageObjectKey(profileImageObjectKey)
                 .audioSharing(audioSharing)
                 .screenSharing(screenSharing)
