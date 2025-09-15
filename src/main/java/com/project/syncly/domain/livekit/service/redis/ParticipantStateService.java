@@ -4,6 +4,8 @@ import com.project.syncly.domain.livekit.converter.LiveKitConverter;
 import com.project.syncly.domain.livekit.dto.ParticipantInfoDTO;
 import com.project.syncly.domain.livekit.dto.TrackUpdateDTO;
 import com.project.syncly.domain.livekit.enums.TrackSource;
+import com.project.syncly.domain.member.entity.Member;
+import com.project.syncly.domain.member.service.MemberQueryService;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.*;
 public class ParticipantStateService {
 
     private final RedisStorage redisStorage;
+    private final MemberQueryService memberQueryService;
 
     private static final Duration TTL = Duration.ofMinutes(60); // 1시간
 
@@ -27,8 +30,10 @@ public class ParticipantStateService {
         if (data == null || data.isEmpty()) {
             return null;
         }
+        Member member = memberQueryService.getMemberByIdWithRedis(Long.parseLong(participantId));
         return LiveKitConverter.toParticipantInfoDTO(
                 participantId,
+                member.getProfileImage(),
                 Boolean.parseBoolean(String.valueOf(data.getOrDefault("audioSharing", false))),
                 Boolean.parseBoolean(String.valueOf(data.getOrDefault("screenSharing", false)))
         );
