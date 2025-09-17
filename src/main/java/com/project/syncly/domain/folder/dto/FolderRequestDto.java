@@ -8,8 +8,6 @@ public class FolderRequestDto {
 
     @Schema(description = "폴더 생성 요청 DTO")
     public record Create(
-            @NotNull(message = "워크스페이스 ID는 필수입니다.")
-            Long workspaceId,
             Long parentId,
             @NotNull(message = "폴더 이름은 필수입니다.")
             @Pattern(
