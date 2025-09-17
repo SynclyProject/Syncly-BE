@@ -43,6 +43,26 @@ public class FolderResponseDto {
     @Schema(description = "폴더/파일 목록 조회 응답 DTO")
     public record ItemList(
             List<ListingDto.Item> items,
-            String nextCursor
+            String nextCursor,
+            PermissionDto permissions
+    ){}
+
+    @Schema(description = "폴더 상세 정보 응답 DTO")
+    public record Detail(
+            Long id,
+            String name,
+            Long workspaceId,
+            Long parentId,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            PermissionDto permissions
+    ){}
+
+    @Schema(description = "워크스페이스 루트 폴더 정보 응답 DTO")
+    public record Root(
+            Long rootFolderId,
+            Long workspaceId,
+            String name,
+            LocalDateTime createdAt
     ){}
 }
