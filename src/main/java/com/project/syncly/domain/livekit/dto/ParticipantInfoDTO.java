@@ -9,6 +9,7 @@ public record ParticipantInfoDTO(
         String participantName,
         String profileImageObjectKey,
         boolean audioSharing,
-        boolean screenSharing
+        boolean screenSharing,
+        boolean isMe
 ) {}
 

@@ -31,7 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
     );
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest req) {
+    protected boolean shouldNotFilter(HttpServletRequest req) {//사실 정상적이라면 corsFilter 단에서 프리플라이트는 반환해야하므로 shouldNotFilter 할 이유가 없다.
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) return true;
         return skipMatcher.matches(req);
     }
