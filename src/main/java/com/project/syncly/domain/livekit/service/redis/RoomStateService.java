@@ -49,8 +49,8 @@ public class RoomStateService {
         roomExpirationProducer.deleteRoomExpiration(roomId);
     }
 
-    public ParticipantInfoListDTO getParticipantInfoList(Long workspaceId, Long memberId) {
-        if (!liveKitTokenService.isMemberIncludeWorkspace(memberId, workspaceId)) {
+    public ParticipantInfoListDTO getParticipantInfoList(Long workspaceId, Long requesterId) {
+        if (!liveKitTokenService.isMemberIncludeWorkspace(requesterId, workspaceId)) {
             throw new LiveKitException(LiveKitErrorCode.MEMBER_NOT_INCLUDE_WORKSPACE);
         }
         String roomId = LiveKitConverter.getRoomId(workspaceId);
@@ -62,7 +62,7 @@ public class RoomStateService {
         }
 
         List<ParticipantInfoDTO> list = participantIds.stream()
-                .map(id -> participantStateService.getParticipantInfo(roomId, id))
+                .map(participantId -> participantStateService.getParticipantInfo(roomId, participantId, requesterId))
                 .filter(Objects::nonNull)
                 .toList();
 

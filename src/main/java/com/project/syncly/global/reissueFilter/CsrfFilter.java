@@ -52,7 +52,7 @@ public class CsrfFilter extends OncePerRequestFilter {
                 ||req.getRequestURI().startsWith("/api/auth/logout"))) return true;
 
         final String method  = req.getMethod();
-        // 프리플라이트/안전메서드 스킵
+        // 프리플라이트/안전메서드 스킵 /사실 정상적이라면 corsFilter 단에서 프리플라이트는 반환하므로 shouldNotFilter 할 이유가 없다.
         if ("OPTIONS".equalsIgnoreCase(method) || "GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method)) {
             return true;
         }

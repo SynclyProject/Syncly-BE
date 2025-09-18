@@ -23,7 +23,7 @@ public class ParticipantStateService {
 
     private static final Duration TTL = Duration.ofMinutes(60); // 1시간
 
-    public ParticipantInfoDTO getParticipantInfo(String roomId, String participantId) {
+    public ParticipantInfoDTO getParticipantInfo(String roomId, String participantId, Long requesterId) {
         String key = RedisKeyPrefix.CALL_PARTICIPANT.format(roomId, participantId);
         Map<String, Object> data = redisStorage.getHash(key);
 
@@ -36,7 +36,8 @@ public class ParticipantStateService {
                 member.getName(),
                 member.getProfileImage(),
                 Boolean.parseBoolean(String.valueOf(data.getOrDefault("audioSharing", false))),
-                Boolean.parseBoolean(String.valueOf(data.getOrDefault("screenSharing", false)))
+                Boolean.parseBoolean(String.valueOf(data.getOrDefault("screenSharing", false))),
+                member.getId().equals(requesterId)
         );
     }
 
