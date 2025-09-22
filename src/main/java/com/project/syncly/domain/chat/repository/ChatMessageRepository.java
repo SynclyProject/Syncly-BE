@@ -17,7 +17,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     Optional<ChatMessage> findByWorkspaceIdAndSeq(Long workspaceId, Long seq);
 
-    // 최신 N개 (내부적으로 DESC로 가져와서 서비스에서 ASC로 뒤집어도 됨)
+    // 최신 N개
     @Query("""
     SELECT m FROM ChatMessage m
     WHERE m.workspace.id = :ws

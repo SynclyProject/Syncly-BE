@@ -67,7 +67,7 @@ public class ChatWebSocketServiceImpl implements ChatWebSocketService {
         WorkspaceMember sender = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
                 .orElseThrow(() -> new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER));
 
-        // 멱등 처리 - 이미 존재하면 그대로 반환
+        // 멱등 처리 - 이미 존재하면 그대로 반환(네트워크 오류로 인해 같은 메시지가 여러번 재전송 되었을 경우)
         var dup = chatRepository.findByWorkspaceIdAndMsgId(workspaceId, request.msgId());
         if (dup.isPresent()) return ChatConverter.toChatMessageResponse(dup.get());
 
