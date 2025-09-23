@@ -105,8 +105,12 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         if (member.getProfileImage() != null) {
             s3Util.delete(member.getProfileImage());
         }
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findAllByMember(member);
 
         member.updateProfileImage(request.objectKey());
+        workspaceMembers.forEach(workspaceMember ->
+                workspaceMember.updateProfileImage(request.objectKey())
+        );
         redisStorage.delete(redisKey);
         loginCacheService.cacheMember(member);
     }
