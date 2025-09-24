@@ -2,15 +2,12 @@ package com.project.syncly.domain.file.controller;
 
 import com.project.syncly.domain.file.dto.FileRequestDto;
 import com.project.syncly.domain.file.dto.FileResponseDto;
-import com.project.syncly.domain.file.enums.FileType;
+import com.project.syncly.domain.file.service.FileCommandService;
+import com.project.syncly.domain.file.service.FileQueryService;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
-import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
-import com.project.syncly.domain.workspace.exception.WorkspaceException;
 import com.project.syncly.global.apiPayload.CustomResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +19,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/workspaces")
 @Tag(name = "File API", description = "파일 관리 API")
 public class FileController {
 
-    private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final FileCommandService fileCommandService;
+    private final FileQueryService fileQueryService;
 
     @PostMapping(value = "/{workspaceId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "파일 업로드", description = "워크스페이스에 새로운 파일을 업로드합니다.")
@@ -44,21 +40,8 @@ public class FileController {
         // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
         Long currentMemberId = 1L; // 임시값
 
-        // 워크스페이스 멤버십 확인
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
-            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
-        }
-        String fileName = file.getOriginalFilename();
-        FileType fileType = FileType.fromExtension(fileName);
-
-        FileResponseDto.Upload responseDto = new FileResponseDto.Upload(
-                5001L,
-                folderId,
-                fileName,
-                fileType.getKey(),
-                "https://s3.amazonaws.com/syncly-bucket/" + fileName,
-                LocalDateTime.now()
-        );
+        FileResponseDto.Upload responseDto = fileCommandService.uploadFile(
+                workspaceId, folderId, currentMemberId, file);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.success(HttpStatus.CREATED, responseDto));
@@ -73,17 +56,11 @@ public class FileController {
         // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
         Long currentMemberId = 1L; // 임시값
 
-        // 워크스페이스 멤버십 확인
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
-            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
-        }
-        byte[] fileContent = "This is sample file content for file ID: ".concat(fileId.toString()).getBytes();
-        ByteArrayResource resource = new ByteArrayResource(fileContent);
+        ByteArrayResource resource = fileQueryService.downloadFile(workspaceId, fileId, currentMemberId);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"sample-file.txt\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .contentLength(fileContent.length)
                 .body(resource);
     }
 
@@ -97,15 +74,8 @@ public class FileController {
         // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
         Long currentMemberId = 1L; // 임시값
 
-        // 워크스페이스 멤버십 확인
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
-            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
-        }
-        FileResponseDto.Update responseDto = new FileResponseDto.Update(
-                fileId,
-                requestDto.name(),
-                LocalDateTime.now()
-        );
+        FileResponseDto.Update responseDto = fileCommandService.updateFileName(
+                workspaceId, fileId, currentMemberId, requestDto);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -119,13 +89,8 @@ public class FileController {
         // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
         Long currentMemberId = 1L; // 임시값
 
-        // 워크스페이스 멤버십 확인
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
-            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
-        }
-        FileResponseDto.Message responseDto = new FileResponseDto.Message(
-                "파일이 휴지통으로 이동되었습니다."
-        );
+        FileResponseDto.Message responseDto = fileCommandService.deleteFile(
+                workspaceId, fileId, currentMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -136,9 +101,11 @@ public class FileController {
             @PathVariable Long workspaceId,
             @PathVariable Long fileId
     ) {
-        FileResponseDto.Message responseDto = new FileResponseDto.Message(
-                "파일이 복원되었습니다."
-        );
+        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
+        Long currentMemberId = 1L; // 임시값
+
+        FileResponseDto.Message responseDto = fileCommandService.restoreFile(
+                workspaceId, fileId, currentMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
