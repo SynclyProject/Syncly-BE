@@ -83,4 +83,31 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         folderClosureCommandService.updateOnCreate(requestDto.parentId(), folder.getId());
         return FolderConverter.toFolderResponse(folder);
     }
+
+    @Override
+    public FolderResponseDto.Create createRootFolder(Long workspaceId) {
+        // 이미 루트 폴더가 있으면 예외 처리
+        if (folderRepository.existsByWorkspaceIdAndParentIdIsNull(workspaceId)) {
+            throw new FolderException(FolderErrorCode.ROOT_FOLDER_ALREADY_EXISTS);
+        }
+
+        // 워크스페이스 유효성 검증
+        if (!workspaceRepository.existsById(workspaceId)) {
+            throw new FolderException(FolderErrorCode.WORKSPACE_NOT_FOUND);
+        }
+
+        // 루트 폴더 생성 (parentId는 null, name은 "root")
+        Folder rootFolder = Folder.builder()
+                .workspaceId(workspaceId)
+                .parentId(null)
+                .name("root")
+                .build();
+
+        Folder savedFolder = folderRepository.save(rootFolder);
+
+        // FolderClosure 테이블에 자기 자신에 대한 경로(depth=0) 추가
+        folderClosureCommandService.updateOnCreate(null, savedFolder.getId());
+
+        return FolderConverter.toFolderResponse(savedFolder);
+    }
 }
