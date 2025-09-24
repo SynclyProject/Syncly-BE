@@ -6,7 +6,8 @@ import com.project.syncly.domain.file.exception.FileException;
 import com.project.syncly.domain.file.repository.FileRepository;
 import com.project.syncly.domain.folder.entity.Folder;
 import com.project.syncly.domain.folder.repository.FolderRepository;
-import com.project.syncly.domain.s3.service.S3Service;
+import com.project.syncly.domain.s3.util.S3Util;
+import com.project.syncly.domain.file.dto.FileResponseDto;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
 import com.project.syncly.domain.workspace.exception.WorkspaceException;
@@ -25,7 +26,7 @@ public class FileQueryService {
     private final FileRepository fileRepository;
     private final FolderRepository folderRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
-    private final S3Service s3Service;
+    private final S3Util s3Util;
 
     // ID로 파일 조회
     public File getFileById(Long workspaceId, Long fileId, Long workspaceMemberId) {
@@ -61,14 +62,13 @@ public class FileQueryService {
         return fileRepository.findAllByWorkspaceIdThroughFolder(workspaceId);
     }
 
-    // 파일 다운로드
-    public ByteArrayResource downloadFile(Long workspaceId, Long fileId, Long workspaceMemberId) {
+    // 파일 다운로드 URL 생성
+    public FileResponseDto.DownloadUrl getFileDownloadUrl(Long workspaceId, Long fileId, Long workspaceMemberId) {
         File file = getFileById(workspaceId, fileId, workspaceMemberId);
 
         try {
-            // TODO: S3Service를 통한 실제 파일 다운로드 구현
-            String sampleContent = "Sample file content for file: " + file.getName();
-            return new ByteArrayResource(sampleContent.getBytes());
+            String downloadUrl = s3Util.createPresignedGetUrlForDownload(file.getObjectKey(), file.getName());
+            return new FileResponseDto.DownloadUrl(downloadUrl, file.getName());
         } catch (Exception e) {
             throw new FileException(FileErrorCode.FILE_DOWNLOAD_FAILED);
         }

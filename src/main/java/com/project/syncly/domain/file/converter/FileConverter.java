@@ -11,13 +11,13 @@ public class FileConverter {
 
     // 메타데이터로 File 엔티티 생성
     public static File toFileEntity(Long folderId, Long workspaceMemberId, String uniqueFileName,
-                                   FileType fileType, String fileUrl, MultipartFile multipartFile) {
+                                   FileType fileType, String objectKey, MultipartFile multipartFile) {
         return File.builder()
                 .folderId(folderId)
                 .workspaceMemberId(workspaceMemberId)
                 .name(uniqueFileName)
                 .type(fileType)
-                .fileUrl(fileUrl)
+                .objectKey(objectKey)
                 .size(multipartFile.getSize())
                 .build();
     }
@@ -30,7 +30,7 @@ public class FileConverter {
                 .workspaceMemberId(originalFile.getWorkspaceMemberId())
                 .name(newName)
                 .type(originalFile.getType())
-                .fileUrl(originalFile.getFileUrl())
+                .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
                 .deletedAt(originalFile.getDeletedAt())
                 .build();
@@ -44,7 +44,7 @@ public class FileConverter {
                 .workspaceMemberId(originalFile.getWorkspaceMemberId())
                 .name(originalFile.getName())
                 .type(originalFile.getType())
-                .fileUrl(originalFile.getFileUrl())
+                .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
                 .deletedAt(LocalDateTime.now())
                 .build();
@@ -58,7 +58,7 @@ public class FileConverter {
                 .workspaceMemberId(originalFile.getWorkspaceMemberId())
                 .name(originalFile.getName())
                 .type(originalFile.getType())
-                .fileUrl(originalFile.getFileUrl())
+                .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
                 .deletedAt(null)
                 .build();
@@ -72,7 +72,7 @@ public class FileConverter {
                 .workspaceMemberId(originalFile.getWorkspaceMemberId())
                 .name(uniqueName)
                 .type(originalFile.getType())
-                .fileUrl(originalFile.getFileUrl())
+                .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
                 .deletedAt(null)
                 .build();
@@ -85,7 +85,7 @@ public class FileConverter {
                 file.getFolderId(),
                 file.getName(),
                 file.getType().getKey(),
-                file.getFileUrl(),
+                file.getObjectKey(),
                 file.getCreatedAt()
         );
     }
@@ -97,6 +97,19 @@ public class FileConverter {
                 file.getName(),
                 file.getUpdatedAt()
         );
+    }
+
+    // Presigned URL로 업로드된 파일을 위한 File 엔티티 생성
+    public static File toFileEntityFromPresigned(Long folderId, Long workspaceMemberId, String fileName,
+                                               FileType fileType, String objectKey, Long fileSize) {
+        return File.builder()
+                .folderId(folderId)
+                .workspaceMemberId(workspaceMemberId)
+                .name(fileName)
+                .type(fileType)
+                .objectKey(objectKey)
+                .size(fileSize != null ? fileSize : 0L)
+                .build();
     }
 
     // 메시지 응답 DTO 생성
