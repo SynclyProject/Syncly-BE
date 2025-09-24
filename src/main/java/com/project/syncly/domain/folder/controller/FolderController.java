@@ -209,6 +209,45 @@ public class FolderController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
 
+    @GetMapping("/{workspaceId}/trash")
+    @Operation(summary = "휴지통 조회", description = "워크스페이스의 휴지통에 있는 폴더와 파일 목록을 조회합니다.")
+    public ResponseEntity<CustomResponse<FolderResponseDto.ItemList>> getTrashItems(
+            @PathVariable Long workspaceId,
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") Integer limit
+    ) {
+        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
+        Long currentMemberId = 1L; // 임시값
+
+        // 워크스페이스 멤버십 확인
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
+            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
+        }
+
+        // TODO: 통합 휴지통 서비스 구현 필요
+        // 1. 휴지통 파일 조회 (이미 구현됨)
+        // 2. 휴지통 폴더 조회 (폴더 soft delete 구현 후)
+        // 3. 두 결과를 ListingDto.Item 형태로 변환하여 통합
+
+        // 현재는 빈 리스트와 더미 권한 반환
+        List<ListingDto.Item> trashItems = java.util.Collections.emptyList();
+        String nextCursor = null;
+
+        // 현재 사용자의 워크스페이스 권한 정보 생성
+        boolean isMember = workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId);
+        PermissionDto permissions = new PermissionDto(
+                isMember, // canRead
+                isMember, // canWrite
+                isMember, // canDelete
+                isMember  // canAdmin
+        );
+
+        FolderResponseDto.ItemList responseDto = new FolderResponseDto.ItemList(trashItems, nextCursor, permissions);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
+    }
+
     @GetMapping("/{workspaceId}/folders/{folderId}/items")
     @Operation(summary = "폴더/파일 목록 조회", description = "워크스페이스 폴더 내의 파일과 하위 폴더 목록을 조회합니다.")
     public ResponseEntity<CustomResponse<FolderResponseDto.ItemList>> getFolderItems(
