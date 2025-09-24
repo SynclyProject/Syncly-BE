@@ -29,8 +29,8 @@ public class File extends BaseTimeEntity {
     @Column(name = "type", nullable = false)
     private FileType type;
 
-    @Column(name = "file_url", nullable = false, columnDefinition = "TEXT")
-    private String fileUrl;
+    @Column(name = "object_key", nullable = false, columnDefinition = "TEXT")
+    private String objectKey;
 
     @Column(name = "size", nullable = false)
     private Long size;
