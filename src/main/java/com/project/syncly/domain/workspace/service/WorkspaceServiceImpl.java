@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspace.service;
 
+import com.project.syncly.domain.folder.service.FolderCommandService;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
 import com.project.syncly.domain.sse.service.SseServiceImpl;
@@ -38,6 +39,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final WorkspaceInvitationRepository workspaceInvitationRepository;
     private final InvitationMailServiceImpl invitationMailService;
     private final SseServiceImpl sseService;
+    private final FolderCommandService folderCommandService;
 
 
     @Value("${spring.mail.invitation.link}")
@@ -66,6 +68,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         WorkspaceMember workspaceMember = WorkspaceMemberConverter.toWorkspaceManager(member, workspace, member.getName());
         workspaceMemberRepository.save(workspaceMember);
 
+        //루트 폴더 생성
+        folderCommandService.createRootFolder(workspace.getId());
+
         //응답
         return WorkspaceConverter.toWorkspaceResponse(workspace);
     }
@@ -85,6 +90,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         //워크스페이스 매니저로 등록
         WorkspaceMember workspaceMember = WorkspaceMemberConverter.toWorkspaceManager(member, workspace, member.getName());
         workspaceMemberRepository.save(workspaceMember);
+
+        //루트 폴더 생성
+        folderCommandService.createRootFolder(workspace.getId());
 
         //응답
         return WorkspaceConverter.toWorkspaceResponse(workspace);

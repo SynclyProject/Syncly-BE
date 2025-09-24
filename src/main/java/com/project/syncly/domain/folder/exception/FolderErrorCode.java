@@ -17,6 +17,7 @@ public enum FolderErrorCode implements BaseErrorCode {
     EMPTY_NAME(HttpStatus.BAD_REQUEST, "Folder400_1", "폴더 이름은 비워둘 수 없습니다."),
     INVALID_NAME(HttpStatus.BAD_REQUEST, "Folder400_1", "폴더 이름은 1~50자의 한글, 영문, 숫자, '-', '_'만 사용할 수 있으며 공백이나 특수문자는 허용되지 않습니다."),
     FOLDER_DEPTH_EXCEEDED(HttpStatus.BAD_REQUEST, "Folder400_2", "폴더 최대 깊이를 초과했습니다. 최대 깊이: 5단계"),
+    ROOT_FOLDER_ALREADY_EXISTS(HttpStatus.CONFLICT, "Folder409_1", "루트 폴더가 이미 존재합니다."),
     ;
 
     private final HttpStatus status;
