@@ -31,4 +31,10 @@ public class File extends BaseTimeEntity {
 
     @Column(name = "file_url", nullable = false, columnDefinition = "TEXT")
     private String fileUrl;
+
+    @Column(name = "size", nullable = false)
+    private Long size;
+
+    @Column(name = "deleted_at")
+    private java.time.LocalDateTime deletedAt;
 }
