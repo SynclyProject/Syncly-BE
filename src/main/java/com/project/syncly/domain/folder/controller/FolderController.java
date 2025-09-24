@@ -4,16 +4,19 @@ import com.project.syncly.domain.folder.dto.FolderRequestDto;
 import com.project.syncly.domain.folder.dto.FolderResponseDto;
 import com.project.syncly.domain.folder.dto.ListingDto;
 import com.project.syncly.domain.folder.dto.PermissionDto;
+import com.project.syncly.domain.folder.service.FolderQueryService;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
 import com.project.syncly.domain.workspace.exception.WorkspaceException;
 import com.project.syncly.global.apiPayload.CustomResponse;
+import com.project.syncly.global.jwt.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -27,6 +30,7 @@ import java.util.List;
 public class FolderController {
 
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final FolderQueryService folderQueryService;
 
     @PostMapping("/{workspaceId}/folders")
     @Operation(summary = "폴더 생성", description
@@ -189,22 +193,18 @@ public class FolderController {
     @GetMapping("/{workspaceId}/root")
     @Operation(summary = "워크스페이스 루트 폴더 정보", description = "워크스페이스의 루트 폴더 ID와 기본 정보를 조회합니다.")
     public ResponseEntity<CustomResponse<FolderResponseDto.Root>> getWorkspaceRoot(
-            @PathVariable Long workspaceId
+            @PathVariable Long workspaceId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
         // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
 
-        FolderResponseDto.Root responseDto = new FolderResponseDto.Root(
-                1L,
-                workspaceId,
-                "Root",
-                LocalDateTime.of(2025, 9, 1, 10, 0, 0)
-        );
+        // 실제 루트 폴더 조회
+        FolderResponseDto.Root responseDto = folderQueryService.getRootFolder(workspaceId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
