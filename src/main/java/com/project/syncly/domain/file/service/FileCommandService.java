@@ -10,14 +10,18 @@ import com.project.syncly.domain.file.exception.FileException;
 import com.project.syncly.domain.file.repository.FileRepository;
 import com.project.syncly.domain.folder.entity.Folder;
 import com.project.syncly.domain.folder.repository.FolderRepository;
-import com.project.syncly.domain.s3.service.S3Service;
+import com.project.syncly.domain.s3.util.S3Util;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
 import com.project.syncly.domain.workspace.exception.WorkspaceException;
+import com.project.syncly.global.redis.core.RedisStorage;
+import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.Duration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,33 +34,59 @@ public class FileCommandService {
     private final FileRepository fileRepository;
     private final FolderRepository folderRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
-    private final S3Service s3Service;
+    private final S3Util s3Util;
+    private final RedisStorage redisStorage;
 
-    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    private static final long MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(
             "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp",
             "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm",
             "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"
     );
 
-    // 파일 업로드
-    public FileResponseDto.Upload uploadFile(Long workspaceId, Long folderId, Long workspaceMemberId, MultipartFile multipartFile) {
+    // Presigned URL 생성
+    public FileResponseDto.PresignedUrl generatePresignedUrl(Long workspaceId, Long folderId, Long workspaceMemberId, FileRequestDto.UploadPresignedUrl requestDto) {
         validateWorkspaceMembership(workspaceId, workspaceMemberId);
         validateFolder(folderId, workspaceId);
-        validateFile(multipartFile);
+        validateFileRequest(requestDto);
 
-        String originalFileName = multipartFile.getOriginalFilename();
-        if (originalFileName == null || originalFileName.trim().isEmpty()) {
-            throw new FileException(FileErrorCode.EMPTY_FILE_NAME);
+        String uniqueFileName = generateUniqueFileName(folderId, requestDto.fileName());
+        String objectKey = "uploads/" + java.util.UUID.randomUUID() + "_" + uniqueFileName;
+
+        String presignedUrl = s3Util.createPresignedUrl(objectKey, requestDto.mimeType());
+
+        // Redis에 업로드 권한 정보 저장 (보안 검증용)
+        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(workspaceMemberId + ":" + uniqueFileName + ":" + objectKey);
+        FileRequestDto.UploadPresignedUrl uploadInfo = new FileRequestDto.UploadPresignedUrl(
+                folderId, uniqueFileName, requestDto.mimeType(), requestDto.fileSize()
+        );
+        redisStorage.set(redisKey, uploadInfo, Duration.ofMinutes(10));
+
+        return new FileResponseDto.PresignedUrl(uniqueFileName, presignedUrl, objectKey);
+    }
+
+    // 파일 업로드 완료 확인 및 DB 저장
+    public FileResponseDto.Upload confirmFileUpload(Long workspaceId, Long workspaceMemberId, FileRequestDto.ConfirmUpload requestDto) {
+        validateWorkspaceMembership(workspaceId, workspaceMemberId);
+
+        // Redis에서 업로드 권한 검증
+        String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(workspaceMemberId + ":" + requestDto.fileName() + ":" + requestDto.objectKey());
+        FileRequestDto.UploadPresignedUrl uploadInfo = redisStorage.getValueAsString(redisKey, FileRequestDto.UploadPresignedUrl.class);
+        if (uploadInfo == null) {
+            throw new FileException(FileErrorCode.INVALID_UPLOAD_REQUEST);
         }
 
-        String uniqueFileName = generateUniqueFileName(folderId, originalFileName);
-        FileType fileType = FileType.fromExtension(originalFileName);
+        // Redis 키 삭제 (한 번만 사용 가능)
+        redisStorage.delete(redisKey);
 
-        // TODO: S3에 파일 업로드 로직 구현
-        String fileUrl = "https://s3.amazonaws.com/syncly-bucket/" + uniqueFileName;
+        validateFolder(uploadInfo.folderId(), workspaceId);
 
-        File file = FileConverter.toFileEntity(folderId, workspaceMemberId, uniqueFileName, fileType, fileUrl, multipartFile);
+        FileType fileType = FileType.fromExtension(requestDto.fileName());
+
+        File file = FileConverter.toFileEntityFromPresigned(
+                uploadInfo.folderId(), workspaceMemberId, requestDto.fileName(),
+                fileType, requestDto.objectKey(), uploadInfo.fileSize()
+        );
         File savedFile = fileRepository.save(file);
         return FileConverter.toUploadResponse(savedFile);
     }
@@ -142,19 +172,18 @@ public class FileCommandService {
     }
 
 
-    // 업로드 파일 유효성 검증 (크기, 확장자 등)
-    private void validateFile(MultipartFile file) {
-        if (file.isEmpty()) {
+    // 파일 요청 정보 유효성 검증
+    private void validateFileRequest(FileRequestDto.UploadPresignedUrl request) {
+        if (request.fileName() == null || request.fileName().trim().isEmpty()) {
             throw new FileException(FileErrorCode.EMPTY_FILE_NAME);
         }
 
-        if (file.getSize() > MAX_FILE_SIZE) {
+        if (request.fileSize() != null && request.fileSize() > MAX_FILE_SIZE) {
             throw new FileException(FileErrorCode.FILE_SIZE_EXCEEDED);
         }
 
-        String fileName = file.getOriginalFilename();
-        if (fileName != null && fileName.contains(".")) {
-            String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        if (request.fileName().contains(".")) {
+            String extension = request.fileName().substring(request.fileName().lastIndexOf('.') + 1).toLowerCase();
             if (!ALLOWED_EXTENSIONS.contains(extension)) {
                 throw new FileException(FileErrorCode.INVALID_FILE_FORMAT);
             }

@@ -13,7 +13,7 @@ public class FileResponseDto {
             Long folderId,
             String name,
             String type,
-            String fileUrl,
+            String objectKey,
             LocalDateTime createdAt
     ){}
 
@@ -29,11 +29,12 @@ public class FileResponseDto {
             String message
     ){}
 
-    @Schema(description = "파일 다운로드 응답 DTO")
-    public record Download(
-            Long id,
-            String name,
-            String downloadUrl
+    @Schema(description = "파일 다운로드 URL 응답 DTO")
+    public record DownloadUrl(
+            @Schema(description = "임시 다운로드 URL (5분 유효)")
+            String downloadUrl,
+            @Schema(description = "파일 이름")
+            String fileName
     ){}
 
     @Schema(description = "파일 상세 정보 응답 DTO")
@@ -43,9 +44,21 @@ public class FileResponseDto {
             Long folderId,
             Long workspaceId,
             String type,
-            String fileUrl,
+            String objectKey,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             PermissionDto permissions
+    ){}
+
+    @Schema(description = "파일 업로드 Presigned URL 응답 DTO")
+    public record PresignedUrl(
+            @Schema(description = "파일 이름")
+            String fileName,
+
+            @Schema(description = "S3 업로드용 Presigned URL")
+            String presignedUrl,
+
+            @Schema(description = "S3 오브젝트 키")
+            String objectKey
     ){}
 }
