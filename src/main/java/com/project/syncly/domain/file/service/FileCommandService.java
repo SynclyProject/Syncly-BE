@@ -10,6 +10,7 @@ import com.project.syncly.domain.file.exception.FileException;
 import com.project.syncly.domain.file.repository.FileRepository;
 import com.project.syncly.domain.folder.entity.Folder;
 import com.project.syncly.domain.folder.repository.FolderRepository;
+import com.project.syncly.domain.s3.enums.FileMimeType;
 import com.project.syncly.domain.s3.util.S3Util;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
@@ -49,16 +50,20 @@ public class FileCommandService {
         validateWorkspaceMembership(workspaceId, workspaceMemberId);
         validateFolder(folderId, workspaceId);
         validateFileRequest(requestDto);
+        validateFileNameHasExtension(requestDto.fileName());
 
         String uniqueFileName = generateUniqueFileName(folderId, requestDto.fileName());
         String objectKey = "uploads/" + java.util.UUID.randomUUID() + "_" + uniqueFileName;
 
-        String presignedUrl = s3Util.createPresignedUrl(objectKey, requestDto.mimeType());
+        // 파일명에서 mimeType 자동 추출
+        FileMimeType mimeType = FileMimeType.extractMimeType(uniqueFileName);
+
+        String presignedUrl = s3Util.createPresignedUrl(objectKey, mimeType);
 
         // Redis에 업로드 권한 정보 저장 (보안 검증용)
         String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(workspaceMemberId + ":" + uniqueFileName + ":" + objectKey);
         FileRequestDto.UploadPresignedUrl uploadInfo = new FileRequestDto.UploadPresignedUrl(
-                folderId, uniqueFileName, requestDto.mimeType(), requestDto.fileSize()
+                folderId, uniqueFileName, requestDto.fileSize()
         );
         redisStorage.set(redisKey, uploadInfo, Duration.ofMinutes(10));
 
@@ -68,6 +73,7 @@ public class FileCommandService {
     // 파일 업로드 완료 확인 및 DB 저장
     public FileResponseDto.Upload confirmFileUpload(Long workspaceId, Long workspaceMemberId, FileRequestDto.ConfirmUpload requestDto) {
         validateWorkspaceMembership(workspaceId, workspaceMemberId);
+        validateFileNameHasExtension(requestDto.fileName());
 
         // Redis에서 업로드 권한 검증
         String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(workspaceMemberId + ":" + requestDto.fileName() + ":" + requestDto.objectKey());
@@ -105,6 +111,11 @@ public class FileCommandService {
             throw new FileException(FileErrorCode.EMPTY_FILE_NAME);
         }
 
+        // 확장자 필수 검증
+        if (!newName.contains(".") || newName.lastIndexOf('.') == newName.length() - 1) {
+            throw new FileException(FileErrorCode.MISSING_FILE_EXTENSION);
+        }
+
         if (fileRepository.existsByFolderIdAndNameAndDeletedAtIsNull(file.getFolderId(), newName)
             && !file.getName().equals(newName)) {
             throw new FileException(FileErrorCode.DUPLICATE_FILE_NAME);
@@ -136,17 +147,35 @@ public class FileCommandService {
         File file = fileRepository.findByIdAndDeletedAtIsNotNull(fileId)
                 .orElseThrow(() -> new FileException(FileErrorCode.FILE_NOT_FOUND));
 
-        validateFolder(file.getFolderId(), workspaceId);
+        // 원래 폴더가 존재하고 해당 워크스페이스에 속하는지 확인
+        Long targetFolderId = file.getFolderId();
+        try {
+            validateFolder(file.getFolderId(), workspaceId);
+        } catch (FileException e) {
+            // 원래 폴더가 삭제되었거나 존재하지 않는 경우 루트 폴더로 복원
+            Folder rootFolder = folderRepository.findByWorkspaceIdAndParentIdIsNull(workspaceId)
+                    .orElseThrow(() -> new FileException(FileErrorCode.FORBIDDEN_ACCESS));
+            targetFolderId = rootFolder.getId();
+        }
 
         // 복원 시 파일명 중복 확인 및 고유한 이름 생성
-        String uniqueName = generateUniqueFileName(file.getFolderId(), file.getName());
+        String uniqueName = generateUniqueFileName(targetFolderId, file.getName());
 
-        File restoredFile = FileConverter.toRestoredFileEntity(file, uniqueName);
+        File restoredFile = FileConverter.toRestoredFileEntity(file, uniqueName, targetFolderId);
         fileRepository.save(restoredFile);
 
-        String message = uniqueName.equals(file.getName()) ?
-                "파일이 복원되었습니다." :
-                "파일이 복원되었습니다. 중복으로 인해 파일명이 '" + uniqueName + "'으로 변경되었습니다.";
+        String message;
+        if (targetFolderId.equals(file.getFolderId())) {
+            // 원래 폴더로 복원
+            message = uniqueName.equals(file.getName()) ?
+                    "파일이 복원되었습니다." :
+                    "파일이 복원되었습니다. 중복으로 인해 파일명이 '" + uniqueName + "'으로 변경되었습니다.";
+        } else {
+            // 루트 폴더로 복원
+            message = uniqueName.equals(file.getName()) ?
+                    "원래 폴더가 삭제되어 루트 폴더로 파일이 복원되었습니다." :
+                    "원래 폴더가 삭제되어 루트 폴더로 파일이 복원되었습니다. 중복으로 인해 파일명이 '" + uniqueName + "'으로 변경되었습니다.";
+        }
 
         return FileConverter.toMessageResponse(message);
     }
@@ -210,5 +239,17 @@ public class FileCommandService {
         }
 
         return uniqueName;
+    }
+
+    // 파일명 확장자 검증
+    private void validateFileNameHasExtension(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            throw new FileException(FileErrorCode.EMPTY_FILE_NAME);
+        }
+
+        // 확장자 필수 검증
+        if (!fileName.contains(".") || fileName.lastIndexOf('.') == fileName.length() - 1) {
+            throw new FileException(FileErrorCode.MISSING_FILE_EXTENSION);
+        }
     }
 }
