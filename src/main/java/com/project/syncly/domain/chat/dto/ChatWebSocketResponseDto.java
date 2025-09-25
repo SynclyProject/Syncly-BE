@@ -21,8 +21,8 @@ public class ChatWebSocketResponseDto {
             @Schema(description = "보낸 멤버 이름", example = "강바다")
             String senderName,
 
-            @Schema(description = "자신이 보낸 메시지 여부 확인", example = "true")
-            Boolean isSelf,
+            @Schema(description = "멤버 프로필", example = "강바다")
+            String senderProfileImage,
 
             @Schema(description = "클라이언트에서 보낸 msgId(UUID)", example = "550e8400-e29b-41d4-a716-446655440000")
             String msgId,
