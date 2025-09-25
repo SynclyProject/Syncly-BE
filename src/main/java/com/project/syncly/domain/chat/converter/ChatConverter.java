@@ -26,6 +26,7 @@ public class ChatConverter {
                 .id(chatMessage.getId())
                 .workspaceId(chatMessage.getWorkspace().getId())
                 .senderId(chatMessage.getSender().getId())
+                .senderName(chatMessage.getSender().getName())
                 .msgId(chatMessage.getMsgId())
                 .seq(chatMessage.getSeq())
                 .content(chatMessage.getContent())
