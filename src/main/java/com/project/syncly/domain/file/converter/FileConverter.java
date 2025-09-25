@@ -19,6 +19,7 @@ public class FileConverter {
                 .type(fileType)
                 .objectKey(objectKey)
                 .size(multipartFile.getSize())
+                .fileUrl(null)
                 .build();
     }
 
@@ -32,6 +33,7 @@ public class FileConverter {
                 .type(originalFile.getType())
                 .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
+                .fileUrl(originalFile.getFileUrl())
                 .deletedAt(originalFile.getDeletedAt())
                 .build();
     }
@@ -46,6 +48,7 @@ public class FileConverter {
                 .type(originalFile.getType())
                 .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
+                .fileUrl(originalFile.getFileUrl())
                 .deletedAt(LocalDateTime.now())
                 .build();
     }
@@ -60,6 +63,7 @@ public class FileConverter {
                 .type(originalFile.getType())
                 .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
+                .fileUrl(originalFile.getFileUrl())
                 .deletedAt(null)
                 .build();
     }
@@ -74,6 +78,22 @@ public class FileConverter {
                 .type(originalFile.getType())
                 .objectKey(originalFile.getObjectKey())
                 .size(originalFile.getSize())
+                .fileUrl(originalFile.getFileUrl())
+                .deletedAt(null)
+                .build();
+    }
+
+    // 파일 복원을 위한 File 엔티티 생성 (고유한 이름 및 폴더ID로)
+    public static File toRestoredFileEntity(File originalFile, String uniqueName, Long targetFolderId) {
+        return File.builder()
+                .id(originalFile.getId())
+                .folderId(targetFolderId)
+                .workspaceMemberId(originalFile.getWorkspaceMemberId())
+                .name(uniqueName)
+                .type(originalFile.getType())
+                .objectKey(originalFile.getObjectKey())
+                .size(originalFile.getSize())
+                .fileUrl(originalFile.getFileUrl())
                 .deletedAt(null)
                 .build();
     }
@@ -82,10 +102,9 @@ public class FileConverter {
     public static FileResponseDto.Upload toUploadResponse(File file) {
         return new FileResponseDto.Upload(
                 file.getId(),
-                file.getFolderId(),
                 file.getName(),
                 file.getType().getKey(),
-                file.getObjectKey(),
+                file.getSize(),
                 file.getCreatedAt()
         );
     }
@@ -109,6 +128,7 @@ public class FileConverter {
                 .type(fileType)
                 .objectKey(objectKey)
                 .size(fileSize != null ? fileSize : 0L)
+                .fileUrl(null)
                 .build();
     }
 

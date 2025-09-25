@@ -20,7 +20,8 @@ public enum FileErrorCode implements BaseErrorCode {
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "File400_4", "파일 크기가 50MB를 초과했습니다."),
     UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "File400_5", "지원하지 않는 파일 형식입니다."),
     FOLDER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "File403_1", "해당 폴더에 접근할 수 없습니다."),
-    INVALID_UPLOAD_REQUEST(HttpStatus.BAD_REQUEST, "File400_6", "유효하지 않은 업로드 요청입니다. 업로드 권한이 없거나 만료되었습니다.");
+    INVALID_UPLOAD_REQUEST(HttpStatus.BAD_REQUEST, "File400_6", "유효하지 않은 업로드 요청입니다. 업로드 권한이 없거나 만료되었습니다."),
+    MISSING_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "File400_7", "파일명에 확장자가 포함되어야 합니다. (예: 파일명.jpg)");
 
     private final HttpStatus status;
     private final String code;

@@ -11,9 +11,33 @@ import java.util.Arrays;
 
 @Getter
 public enum FileMimeType implements BaseEnum {
-    JPG("image/jpg", "jpg"),
+    // 이미지 파일
+    JPG("image/jpeg", "jpg"),
     JPEG("image/jpeg", "jpeg"),
     PNG("image/png", "png"),
+    GIF("image/gif", "gif"),
+    BMP("image/bmp", "bmp"),
+    SVG("image/svg+xml", "svg"),
+    WEBP("image/webp", "webp"),
+
+    // 동영상 파일
+    MP4("video/mp4", "mp4"),
+    AVI("video/x-msvideo", "avi"),
+    MKV("video/x-matroska", "mkv"),
+    MOV("video/quicktime", "mov"),
+    WMV("video/x-ms-wmv", "wmv"),
+    FLV("video/x-flv", "flv"),
+    WEBM("video/webm", "webm"),
+
+    // 문서 파일
+    PDF("application/pdf", "pdf"),
+    DOC("application/msword", "doc"),
+    DOCX("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"),
+    XLS("application/vnd.ms-excel", "xls"),
+    XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
+    PPT("application/vnd.ms-powerpoint", "ppt"),
+    PPTX("application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx"),
+    TXT("text/plain", "txt"),
     ;
 
     private final String key;
@@ -33,9 +57,34 @@ public enum FileMimeType implements BaseEnum {
     // 확장자 -> mime
     public static FileMimeType fromExtension(String ext) {
         return switch (ext.toLowerCase()) {
+            // 이미지 파일
             case "jpg" -> JPG;
             case "jpeg" -> JPEG;
             case "png" -> PNG;
+            case "gif" -> GIF;
+            case "bmp" -> BMP;
+            case "svg" -> SVG;
+            case "webp" -> WEBP;
+
+            // 동영상 파일
+            case "mp4" -> MP4;
+            case "avi" -> AVI;
+            case "mkv" -> MKV;
+            case "mov" -> MOV;
+            case "wmv" -> WMV;
+            case "flv" -> FLV;
+            case "webm" -> WEBM;
+
+            // 문서 파일
+            case "pdf" -> PDF;
+            case "doc" -> DOC;
+            case "docx" -> DOCX;
+            case "xls" -> XLS;
+            case "xlsx" -> XLSX;
+            case "ppt" -> PPT;
+            case "pptx" -> PPTX;
+            case "txt" -> TXT;
+
             default -> throw new S3Exception(S3ErrorCode.UNSUPPORTED_FILE_EXTENSION);
         };
     }
