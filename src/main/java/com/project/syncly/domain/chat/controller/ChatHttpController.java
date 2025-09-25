@@ -77,4 +77,18 @@ public class ChatHttpController {
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
+
+    //4. 자신의 workspaceMemberId 조회 API (채팅에서 본인 메시지 확인용)
+    @GetMapping("/{workspaceId}/me")
+    @Operation(summary = "자신의 workspaceMemberId 조회")
+    public ResponseEntity<CustomResponse<Long>> getMyWorkspaceMemberId(
+            @PathVariable Long workspaceId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        Long workspaceMemberId = chatHttpService.getMyWorkspaceMemberId(workspaceId, memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, workspaceMemberId));
+    }
 }
