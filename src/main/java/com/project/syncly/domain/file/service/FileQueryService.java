@@ -68,7 +68,17 @@ public class FileQueryService {
 
         try {
             String downloadUrl = s3Util.createPresignedGetUrlForDownload(file.getObjectKey(), file.getName());
-            return new FileResponseDto.DownloadUrl(downloadUrl, file.getName());
+
+            // 파일 상세 정보 생성 (보안을 고려하여 필요한 정보만)
+            FileResponseDto.FileInfo fileInfo = new FileResponseDto.FileInfo(
+                    file.getId(),
+                    file.getName(),
+                    file.getType().getKey(),
+                    file.getSize(),
+                    file.getCreatedAt()
+            );
+
+            return new FileResponseDto.DownloadUrl(downloadUrl, file.getName(), fileInfo);
         } catch (Exception e) {
             throw new FileException(FileErrorCode.FILE_DOWNLOAD_FAILED);
         }
