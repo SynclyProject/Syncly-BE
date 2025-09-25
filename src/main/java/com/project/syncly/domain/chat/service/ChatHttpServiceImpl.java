@@ -117,4 +117,21 @@ public class ChatHttpServiceImpl implements ChatHttpService {
 
         return ChatConverter.toChatResponseDto(messages, nextBeforeSeq, latestSeq);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getMyWorkspaceMemberId(Long workspaceId, Long memberId) {
+        // 멤버 존재 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ChatErrorCode.MEMBER_NOT_FOUND));
+
+        // 워크스페이스 존재 여부 확인
+        workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new CustomException(ChatErrorCode.WORKSPACE_NOT_FOUND));
+
+        // 워크스페이스 멤버 조회
+        return workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, member.getId())
+                .orElseThrow(() -> new CustomException(ChatErrorCode.NOT_WORKSPACE_MEMBER))
+                .getId();  // PK(workspaceMemberId) 반환
+    }
 }
