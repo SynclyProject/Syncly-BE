@@ -82,7 +82,6 @@ public class FolderController {
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
 
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
@@ -101,7 +100,6 @@ public class FolderController {
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
 
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
@@ -120,67 +118,11 @@ public class FolderController {
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
 
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
 
-        // 폴더 ID에 따른 다양한 경로 반환 (실제로는 DB에서 부모 폴더들을 재귀적으로 조회)
-        List<FolderResponseDto.PathItem> pathItems;
-
-        if (folderId.equals(1L)) {
-            // 루트 폴더
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root")
-            );
-        } else if (folderId.equals(101L)) {
-            // Documents 폴더
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(101L, "Documents")
-            );
-        } else if (folderId.equals(102L)) {
-            // Images 폴더
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(102L, "Images")
-            );
-        } else if (folderId.equals(103L)) {
-            // Archives 폴더
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(103L, "Archives")
-            );
-        } else if (folderId.equals(104L)) {
-            // Backup 폴더
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(104L, "Backup")
-            );
-        } else if (folderId.equals(105L)) {
-            // Resources 폴더
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(105L, "Resources")
-            );
-        } else if (folderId.equals(201L)) {
-            // 깊은 폴더 구조 예시: Root > Documents > Projects > 2025
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(101L, "Documents"),
-                    new FolderResponseDto.PathItem(200L, "Projects"),
-                    new FolderResponseDto.PathItem(201L, "2025")
-            );
-        } else {
-            // 기본적으로 루트 하위 폴더로 처리
-            String folderName = "Folder_" + folderId;
-            pathItems = List.of(
-                    new FolderResponseDto.PathItem(1L, "Root"),
-                    new FolderResponseDto.PathItem(folderId, folderName)
-            );
-        }
-
-        FolderResponseDto.Path responseDto = new FolderResponseDto.Path(pathItems);
+        FolderResponseDto.Path responseDto = folderQueryService.getFolderPath(workspaceId, folderId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -193,12 +135,10 @@ public class FolderController {
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
 
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
 
-        // 실제 루트 폴더 조회
         FolderResponseDto.Root responseDto = folderQueryService.getRootFolder(workspaceId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
@@ -215,7 +155,6 @@ public class FolderController {
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
 
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
