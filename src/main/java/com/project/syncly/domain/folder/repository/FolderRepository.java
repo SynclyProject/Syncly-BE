@@ -17,4 +17,10 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     // 루트 폴더 조회
     Optional<Folder> findByWorkspaceIdAndParentIdIsNull(Long workspaceId);
+
+    // 폴더가 특정 워크스페이스에 속하는지 확인
+    boolean existsByWorkspaceIdAndId(Long workspaceId, Long folderId);
+
+    // 특정 워크스페이스의 폴더 조회
+    Optional<Folder> findByIdAndWorkspaceId(Long folderId, Long workspaceId);
 }

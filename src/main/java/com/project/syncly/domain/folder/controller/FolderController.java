@@ -5,6 +5,7 @@ import com.project.syncly.domain.folder.dto.FolderResponseDto;
 import com.project.syncly.domain.folder.dto.ListingDto;
 import com.project.syncly.domain.folder.dto.PermissionDto;
 import com.project.syncly.domain.folder.service.FolderQueryService;
+import com.project.syncly.domain.folder.service.FolderCommandService;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.domain.workspace.exception.WorkspaceErrorCode;
 import com.project.syncly.domain.workspace.exception.WorkspaceException;
@@ -31,29 +32,23 @@ public class FolderController {
 
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final FolderQueryService folderQueryService;
+    private final FolderCommandService folderCommandService;
 
     @PostMapping("/{workspaceId}/folders")
     @Operation(summary = "폴더 생성", description
         = "워크스페이스에서 새로운 폴더를 생성합니다.")
     public ResponseEntity<CustomResponse<FolderResponseDto.Create>> createFolder(
             @PathVariable Long workspaceId,
-            @RequestBody @Valid FolderRequestDto.Create requestDto
+            @RequestBody @Valid FolderRequestDto.Create requestDto,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
-        FolderResponseDto.Create responseDto = new FolderResponseDto.Create(
-                101L,
-                requestDto.name(),
-                workspaceId,
-                requestDto.parentId(),
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+
+        FolderResponseDto.Create responseDto = folderCommandService.create(workspaceId, requestDto, currentMemberId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.success(HttpStatus.CREATED, responseDto));
@@ -64,21 +59,16 @@ public class FolderController {
     public ResponseEntity<CustomResponse<FolderResponseDto.Update>> updateFolder(
             @PathVariable Long workspaceId,
             @PathVariable Long folderId,
-            @RequestBody @Valid FolderRequestDto.Update requestDto
+            @RequestBody @Valid FolderRequestDto.Update requestDto,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
-
-        // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
-        FolderResponseDto.Update responseDto = new FolderResponseDto.Update(
-                folderId,
-                requestDto.name(),
-                LocalDateTime.now()
-        );
+
+        FolderResponseDto.Update responseDto = folderCommandService.updateFolderName(workspaceId, folderId, requestDto, currentMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -87,10 +77,10 @@ public class FolderController {
     @Operation(summary = "폴더 휴지통 이동", description = "워크스페이스의 폴더를 휴지통으로 이동시킵니다.")
     public ResponseEntity<CustomResponse<FolderResponseDto.Message>> deleteFolder(
             @PathVariable Long workspaceId,
-            @PathVariable Long folderId
+            @PathVariable Long folderId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
         // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
@@ -107,7 +97,8 @@ public class FolderController {
     @Operation(summary = "폴더 복원", description = "워크스페이스의 휴지통 폴더를 복원합니다.")
     public ResponseEntity<CustomResponse<FolderResponseDto.Message>> restoreFolder(
             @PathVariable Long workspaceId,
-            @PathVariable Long folderId
+            @PathVariable Long folderId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         FolderResponseDto.Message responseDto = new FolderResponseDto.Message(
                 "폴더가 복원되었습니다."
@@ -120,10 +111,10 @@ public class FolderController {
     @Operation(summary = "폴더 경로 조회", description = "워크스페이스 폴더의 breadcrumb 경로를 조회합니다.")
     public ResponseEntity<CustomResponse<FolderResponseDto.Path>> getFolderPath(
             @PathVariable Long workspaceId,
-            @PathVariable Long folderId
+            @PathVariable Long folderId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
         // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
@@ -215,10 +206,10 @@ public class FolderController {
             @PathVariable Long workspaceId,
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") Integer limit
+            @RequestParam(defaultValue = "20") Integer limit,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
         // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
@@ -256,10 +247,10 @@ public class FolderController {
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "20") Integer limit,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        // TODO: 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-        Long currentMemberId = 1L; // 임시값
+        Long currentMemberId = Long.valueOf(userDetails.getName());
 
         // 워크스페이스 멤버십 확인
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {

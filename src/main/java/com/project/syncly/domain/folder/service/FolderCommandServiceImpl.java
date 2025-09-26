@@ -57,12 +57,24 @@ public class FolderCommandServiceImpl implements FolderCommandService{
             throw new FolderException(FolderErrorCode.WORKSPACE_NOT_FOUND);
         }
 
-        // [3] 부모 폴더 유효성 검사 & 깊이 제한
-        if (parentId != null) {
-            if (folderRepository.findById(parentId).isEmpty()) {
+        // [3] 부모 폴더 처리 및 유효성 검사
+        if (parentId == null) {
+            // parentId가 null이면 워크스페이스 루트 폴더를 부모로 설정
+            Folder rootFolder = folderRepository.findByWorkspaceIdAndParentIdIsNull(workspaceId)
+                    .orElseThrow(() -> new FolderException(FolderErrorCode.FOLDER_NOT_FOUND));
+            parentId = rootFolder.getId();
+        } else {
+            // 부모 폴더 존재 여부 확인
+            if (!folderRepository.existsById(parentId)) {
+                throw new FolderException(FolderErrorCode.FOLDER_NOT_FOUND);
+            }
+
+            // 부모 폴더가 같은 워크스페이스에 속하는지 확인
+            if (!folderRepository.existsByWorkspaceIdAndId(workspaceId, parentId)) {
                 throw new FolderException(FolderErrorCode.INVALID_PARENT_FOLDER);
             }
 
+            // 깊이 제한 검사
             int parentDepth = folderClosureRepository
                     .findByDescendantId(parentId).stream()
                     .mapToInt(FolderClosure::getDepth)
@@ -75,12 +87,14 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         }
 
         // [4] 같은 부모 안에 동일한 이름의 폴더 존재하는지 확인
-        if (folderRepository.existsByWorkspaceIdAndParentIdAndName(workspaceId, requestDto.parentId(), requestDto.name())) {
+        if (folderRepository.existsByWorkspaceIdAndParentIdAndName(workspaceId, parentId, requestDto.name())) {
             throw new FolderException(FolderErrorCode.DUPLICATE_FOLDER_NAME);
         }
 
-        Folder folder = folderRepository.save(FolderConverter.toFolder(workspaceId, requestDto));
-        folderClosureCommandService.updateOnCreate(requestDto.parentId(), folder.getId());
+        // [5] 폴더 생성 - parentId를 업데이트된 값으로 사용
+        FolderRequestDto.Create updatedRequestDto = new FolderRequestDto.Create(parentId, requestDto.name());
+        Folder folder = folderRepository.save(FolderConverter.toFolder(workspaceId, updatedRequestDto, memberId));
+        folderClosureCommandService.updateOnCreate(parentId, folder.getId());
         return FolderConverter.toFolderResponse(folder);
     }
 
@@ -109,5 +123,46 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         folderClosureCommandService.updateOnCreate(null, savedFolder.getId());
 
         return FolderConverter.toFolderResponse(savedFolder);
+    }
+
+    @Override
+    public FolderResponseDto.Update updateFolderName(Long workspaceId, Long folderId, FolderRequestDto.Update requestDto, Long memberId) {
+
+        // [1] 워크스페이스 회원 여부 검증
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, memberId)) {
+            throw new FolderException(FolderErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        // [2] 이름 검증
+        String newName = requestDto.name();
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new FolderException(FolderErrorCode.EMPTY_NAME);
+        }
+        String nameRegex = "^[a-zA-Z0-9가-힣_-]{1,50}$";
+        if (!Pattern.matches(nameRegex, newName)) {
+            throw new FolderException(FolderErrorCode.INVALID_NAME);
+        }
+
+        // [3] 폴더 존재 여부 및 워크스페이스 소속 확인
+        Folder folder = folderRepository.findByIdAndWorkspaceId(folderId, workspaceId)
+                .orElseThrow(() -> new FolderException(FolderErrorCode.FOLDER_NOT_FOUND));
+
+        // [4] 같은 부모 폴더 하위에서 새 이름 중복 체크 (자기 자신 제외)
+        if (folderRepository.existsByWorkspaceIdAndParentIdAndName(workspaceId, folder.getParentId(), newName)) {
+            // 현재 폴더 이름과 같다면 중복이 아님
+            if (!folder.getName().equals(newName)) {
+                throw new FolderException(FolderErrorCode.DUPLICATE_FOLDER_NAME);
+            }
+        }
+
+        // [5] 폴더 이름 업데이트
+        folder.updateName(newName);
+        Folder updatedFolder = folderRepository.save(folder);
+
+        return new FolderResponseDto.Update(
+                updatedFolder.getId(),
+                updatedFolder.getName(),
+                updatedFolder.getUpdatedAt()
+        );
     }
 }
