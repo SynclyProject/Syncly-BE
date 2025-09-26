@@ -2,6 +2,7 @@ package com.project.syncly.domain.file.repository;
 
 import com.project.syncly.domain.file.entity.File;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -46,4 +47,14 @@ public interface FileRepository extends JpaRepository<File, Long> {
            "JOIN Folder folder ON f.folderId = folder.id " +
            "WHERE folder.workspaceId = :workspaceId AND f.deletedAt IS NOT NULL")
     List<File> findTrashFilesByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
+    // 여러 폴더 ID에 속한 파일들을 일괄 soft delete 처리
+    @Query("UPDATE File f SET f.deletedAt = :deletedAt WHERE f.folderId IN :folderIds AND f.deletedAt IS NULL")
+    @Modifying
+    void updateDeletedAtByFolderIdIn(@Param("folderIds") List<Long> folderIds, @Param("deletedAt") java.time.LocalDateTime deletedAt);
+
+    // 여러 폴더 ID에 속한 파일들을 복원 (deletedAt을 null로 설정)
+    @Query("UPDATE File f SET f.deletedAt = NULL WHERE f.folderId IN :folderIds")
+    @Modifying
+    void restoreByFolderIdIn(@Param("folderIds") List<Long> folderIds);
 }
