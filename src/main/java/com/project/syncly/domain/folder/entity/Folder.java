@@ -27,6 +27,9 @@ public class Folder extends BaseTimeEntity {
     @Column(name = "workspace_member_id", nullable = false)
     private Long workspaceMemberId;
 
+    @Column(name = "deleted_at")
+    private java.time.LocalDateTime deletedAt;
+
     public void updateName(String name) {
         this.name = name;
     }

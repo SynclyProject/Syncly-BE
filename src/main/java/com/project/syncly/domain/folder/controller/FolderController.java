@@ -86,9 +86,8 @@ public class FolderController {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
-        FolderResponseDto.Message responseDto = new FolderResponseDto.Message(
-                "폴더가 휴지통으로 이동되었습니다."
-        );
+
+        FolderResponseDto.Message responseDto = folderCommandService.deleteFolder(workspaceId, folderId, currentMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -100,9 +99,14 @@ public class FolderController {
             @PathVariable Long folderId,
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
-        FolderResponseDto.Message responseDto = new FolderResponseDto.Message(
-                "폴더가 복원되었습니다."
-        );
+        Long currentMemberId = Long.valueOf(userDetails.getName());
+
+        // 워크스페이스 멤버십 확인
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
+            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
+        }
+
+        FolderResponseDto.Message responseDto = folderCommandService.restoreFolder(workspaceId, folderId, currentMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
