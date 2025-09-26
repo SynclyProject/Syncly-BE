@@ -23,4 +23,11 @@ public interface FolderClosureRepository extends JpaRepository<FolderClosure, Fo
     @Modifying
     @Query("DELETE FROM FolderClosure fc WHERE fc.ancestorId = :folderId OR fc.descendantId = :folderId")
     void deleteByAncestorIdOrDescendantId(@Param("folderId") Long folderId);
+
+    // 루트부터 현재 폴더까지의 경로 조회 (depth 역순으로 정렬하여 루트가 첫 번째)
+    @Query("SELECT f.id, f.name FROM Folder f " +
+           "JOIN FolderClosure fc ON f.id = fc.ancestorId " +
+           "WHERE fc.descendantId = :descendantId AND f.deletedAt IS NULL " +
+           "ORDER BY fc.depth DESC")
+    List<Object[]> findPathFromRoot(@Param("descendantId") Long descendantId);
 }
