@@ -6,11 +6,12 @@ import com.project.syncly.domain.folder.entity.Folder;
 import com.project.syncly.domain.folder.entity.FolderClosure;
 
 public class FolderConverter {
-    public static Folder toFolder(Long workspaceId, FolderRequestDto.Create dto) {
+    public static Folder toFolder(Long workspaceId, FolderRequestDto.Create dto, Long workspaceMemberId) {
         return Folder.builder()
                 .workspaceId(workspaceId)
                 .parentId(dto.parentId())
                 .name(dto.name())
+                .workspaceMemberId(workspaceMemberId)
                 .build();
     }
 
