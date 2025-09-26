@@ -23,4 +23,11 @@ public class Folder extends BaseTimeEntity {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "workspace_member_id", nullable = false)
+    private Long workspaceMemberId;
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }
