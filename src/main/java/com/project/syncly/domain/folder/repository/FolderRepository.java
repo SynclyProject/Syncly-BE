@@ -57,4 +57,237 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 삭제된 하위 폴더들 조회
     @Query("SELECT f FROM Folder f WHERE f.parentId = :parentId AND f.deletedAt IS NOT NULL")
     List<Folder> findByParentIdAndDeletedAtIsNotNull(@Param("parentId") Long parentId);
+
+    // 폴더 내 아이템 통합 조회 (폴더 + 파일)를 위한 커스텀 메서드들
+
+    // 특정 폴더의 하위 폴더 목록 조회 (워크스페이스 멤버 정보 포함)
+    @Query("""
+        SELECT f.id, f.name, f.createdAt, f.updatedAt,
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM Folder f
+        JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
+        WHERE f.parentId = :folderId
+        AND f.deletedAt IS NULL
+        AND (:search IS NULL OR f.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        ORDER BY
+            CASE WHEN :sort = 'latest' THEN f.updatedAt END DESC,
+            CASE WHEN :sort = 'alphabet' THEN f.name END ASC
+        """)
+    List<Object[]> findSubFoldersByParentIdWithMember(@Param("folderId") Long folderId,
+                                                      @Param("search") String search,
+                                                      @Param("sort") String sort,
+                                                      @Param("uploaderId") Long uploaderId);
+
+    // 특정 폴더의 파일 목록 조회 (워크스페이스 멤버 정보 포함)
+    @Query("""
+        SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM File fi
+        JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
+        WHERE fi.folderId = :folderId
+        AND fi.deletedAt IS NULL
+        AND (:search IS NULL OR fi.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        ORDER BY
+            CASE WHEN :sort = 'latest' THEN fi.updatedAt END DESC,
+            CASE WHEN :sort = 'alphabet' THEN fi.name END ASC
+        """)
+    List<Object[]> findFilesByFolderIdWithMember(@Param("folderId") Long folderId,
+                                                 @Param("search") String search,
+                                                 @Param("sort") String sort,
+                                                 @Param("uploaderId") Long uploaderId);
+
+    // 커서 기반 페이징을 위한 폴더 조회 (latest 정렬)
+    @Query("""
+        SELECT f.id, f.name, f.createdAt, f.updatedAt,
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM Folder f
+        JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
+        WHERE f.parentId = :folderId
+        AND f.deletedAt IS NULL
+        AND (:search IS NULL OR f.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR f.updatedAt < :cursor)
+        ORDER BY f.updatedAt DESC
+        """)
+    List<Object[]> findSubFoldersByParentIdWithCursorLatest(@Param("folderId") Long folderId,
+                                                           @Param("search") String search,
+                                                           @Param("uploaderId") Long uploaderId,
+                                                           @Param("cursor") java.time.LocalDateTime cursor,
+                                                           org.springframework.data.domain.Pageable pageable);
+
+    // 커서 기반 페이징을 위한 폴더 조회 (alphabet 정렬)
+    @Query("""
+        SELECT f.id, f.name, f.createdAt, f.updatedAt,
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM Folder f
+        JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
+        WHERE f.parentId = :folderId
+        AND f.deletedAt IS NULL
+        AND (:search IS NULL OR f.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR f.name > :cursor)
+        ORDER BY f.name ASC
+        """)
+    List<Object[]> findSubFoldersByParentIdWithCursorAlphabet(@Param("folderId") Long folderId,
+                                                             @Param("search") String search,
+                                                             @Param("uploaderId") Long uploaderId,
+                                                             @Param("cursor") String cursor,
+                                                             org.springframework.data.domain.Pageable pageable);
+
+    // 커서 기반 페이징을 위한 파일 조회 (latest 정렬)
+    @Query("""
+        SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM File fi
+        JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
+        WHERE fi.folderId = :folderId
+        AND fi.deletedAt IS NULL
+        AND (:search IS NULL OR fi.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR fi.updatedAt < :cursor)
+        ORDER BY fi.updatedAt DESC
+        """)
+    List<Object[]> findFilesByFolderIdWithCursorLatest(@Param("folderId") Long folderId,
+                                                      @Param("search") String search,
+                                                      @Param("uploaderId") Long uploaderId,
+                                                      @Param("cursor") java.time.LocalDateTime cursor,
+                                                      org.springframework.data.domain.Pageable pageable);
+
+    // 커서 기반 페이징을 위한 파일 조회 (alphabet 정렬)
+    @Query("""
+        SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM File fi
+        JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
+        WHERE fi.folderId = :folderId
+        AND fi.deletedAt IS NULL
+        AND (:search IS NULL OR fi.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR fi.name > :cursor)
+        ORDER BY fi.name ASC
+        """)
+    List<Object[]> findFilesByFolderIdWithCursorAlphabet(@Param("folderId") Long folderId,
+                                                        @Param("search") String search,
+                                                        @Param("uploaderId") Long uploaderId,
+                                                        @Param("cursor") String cursor,
+                                                        org.springframework.data.domain.Pageable pageable);
+
+    // 워크스페이스 휴지통 - 삭제된 폴더 목록 조회 (워크스페이스 멤버 정보 포함)
+    @Query("""
+        SELECT f.id, f.name, f.createdAt, f.updatedAt,
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM Folder f
+        JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
+        WHERE f.workspaceId = :workspaceId
+        AND f.deletedAt IS NOT NULL
+        AND (:search IS NULL OR f.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        ORDER BY
+            CASE WHEN :sort = 'latest' THEN f.deletedAt END DESC,
+            CASE WHEN :sort = 'alphabet' THEN f.name END ASC
+        """)
+    List<Object[]> findTrashFoldersByWorkspaceIdWithMember(@Param("workspaceId") Long workspaceId,
+                                                           @Param("search") String search,
+                                                           @Param("sort") String sort,
+                                                           @Param("uploaderId") Long uploaderId);
+
+    // 워크스페이스 휴지통 - 삭제된 파일 목록 조회 (워크스페이스 멤버 정보 포함)
+    @Query("""
+        SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM File fi
+        JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
+        JOIN Folder f ON fi.folderId = f.id
+        WHERE f.workspaceId = :workspaceId
+        AND fi.deletedAt IS NOT NULL
+        AND (:search IS NULL OR fi.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        ORDER BY
+            CASE WHEN :sort = 'latest' THEN fi.deletedAt END DESC,
+            CASE WHEN :sort = 'alphabet' THEN fi.name END ASC
+        """)
+    List<Object[]> findTrashFilesByWorkspaceIdWithMember(@Param("workspaceId") Long workspaceId,
+                                                         @Param("search") String search,
+                                                         @Param("sort") String sort,
+                                                         @Param("uploaderId") Long uploaderId);
+
+    // 커서 기반 페이징을 위한 휴지통 폴더 조회 (latest 정렬)
+    @Query("""
+        SELECT f.id, f.name, f.createdAt, f.updatedAt,
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM Folder f
+        JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
+        WHERE f.workspaceId = :workspaceId
+        AND f.deletedAt IS NOT NULL
+        AND (:search IS NULL OR f.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR f.deletedAt < :cursor)
+        ORDER BY f.deletedAt DESC
+        """)
+    List<Object[]> findTrashFoldersByWorkspaceIdWithCursorLatest(@Param("workspaceId") Long workspaceId,
+                                                                @Param("search") String search,
+                                                                @Param("uploaderId") Long uploaderId,
+                                                                @Param("cursor") java.time.LocalDateTime cursor,
+                                                                org.springframework.data.domain.Pageable pageable);
+
+    // 커서 기반 페이징을 위한 휴지통 폴더 조회 (alphabet 정렬)
+    @Query("""
+        SELECT f.id, f.name, f.createdAt, f.updatedAt,
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM Folder f
+        JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
+        WHERE f.workspaceId = :workspaceId
+        AND f.deletedAt IS NOT NULL
+        AND (:search IS NULL OR f.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR f.name > :cursor)
+        ORDER BY f.name ASC
+        """)
+    List<Object[]> findTrashFoldersByWorkspaceIdWithCursorAlphabet(@Param("workspaceId") Long workspaceId,
+                                                                  @Param("search") String search,
+                                                                  @Param("uploaderId") Long uploaderId,
+                                                                  @Param("cursor") String cursor,
+                                                                  org.springframework.data.domain.Pageable pageable);
+
+    // 커서 기반 페이징을 위한 휴지통 파일 조회 (latest 정렬)
+    @Query("""
+        SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM File fi
+        JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
+        JOIN Folder f ON fi.folderId = f.id
+        WHERE f.workspaceId = :workspaceId
+        AND fi.deletedAt IS NOT NULL
+        AND (:search IS NULL OR fi.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR fi.deletedAt < :cursor)
+        ORDER BY fi.deletedAt DESC
+        """)
+    List<Object[]> findTrashFilesByWorkspaceIdWithCursorLatest(@Param("workspaceId") Long workspaceId,
+                                                              @Param("search") String search,
+                                                              @Param("uploaderId") Long uploaderId,
+                                                              @Param("cursor") java.time.LocalDateTime cursor,
+                                                              org.springframework.data.domain.Pageable pageable);
+
+    // 커서 기반 페이징을 위한 휴지통 파일 조회 (alphabet 정렬)
+    @Query("""
+        SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
+               wm.id as wmId, wm.name as wmName, wm.profileImage as wmProfileImage
+        FROM File fi
+        JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
+        JOIN Folder f ON fi.folderId = f.id
+        WHERE f.workspaceId = :workspaceId
+        AND fi.deletedAt IS NOT NULL
+        AND (:search IS NULL OR fi.name LIKE %:search%)
+        AND (:uploaderId IS NULL OR wm.id = :uploaderId)
+        AND (:cursor IS NULL OR fi.name > :cursor)
+        ORDER BY fi.name ASC
+        """)
+    List<Object[]> findTrashFilesByWorkspaceIdWithCursorAlphabet(@Param("workspaceId") Long workspaceId,
+                                                                @Param("search") String search,
+                                                                @Param("uploaderId") Long uploaderId,
+                                                                @Param("cursor") String cursor,
+                                                                org.springframework.data.domain.Pageable pageable);
 }
