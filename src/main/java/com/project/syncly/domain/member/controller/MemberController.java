@@ -1,6 +1,7 @@
 package com.project.syncly.domain.member.controller;
 
 
+import com.project.syncly.domain.auth.email.EmailAuthService;
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
 import com.project.syncly.domain.member.dto.response.MemberResponseDTO;
 import com.project.syncly.domain.member.entity.Member;
@@ -11,6 +12,7 @@ import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import com.project.syncly.global.anotations.MemberIdInfo;
 import com.project.syncly.global.anotations.MemberInfo;
 import com.project.syncly.global.apiPayload.CustomResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,6 +32,7 @@ public class MemberController {
 
     private final MemberQueryService memberQueryService;
     private final MemberCommandService memberCommandService;
+    private final EmailAuthService emailAuthService;
 
 
     // 1. 이메일 전송
@@ -86,10 +89,50 @@ public class MemberController {
         memberCommandService.deleteProfileImage(memberId);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));    }
 
+    // 기존 비밀번호 검증으로 비밀번호 변경
+    @Operation(
+            summary = "비밀번호 변경 (기존 비밀번호 확인)",
+            description = "회원이 기존 비밀번호를 입력하고 새로운 비밀번호로 변경하는 API입니다."
+    )
     @PatchMapping("/password")
     public ResponseEntity<CustomResponse<Void>> updatePassword(@RequestBody @Valid MemberRequestDTO.UpdatePassword updatePassword,
                                                            @MemberIdInfo Long memberId) {
         memberCommandService.updatePassword(updatePassword, memberId);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
+    }
+    //  이메일 인증코드 발송 (비번 변경용)
+    @Operation(
+            summary = "비밀번호 변경용 이메일 인증코드 발송",
+            description = "이메일 인증으로 비밀번호를 변경하기 위해 인증 코드를 발송하는 API입니다.")
+    @PostMapping("/password/email/send")
+    public ResponseEntity<CustomResponse<Void>> sendPasswordChangeEmailCode(
+            @RequestParam @Email @NotBlank String email) {
+
+        emailAuthService.sendAuthCodeBeforeChangePassword(email);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
+    }
+
+    // 인증코드 검증(비번 변경용)
+    @Operation(
+            summary = "비밀번호 변경용 이메일 인증코드 검증",
+            description = "발송된 인증 코드를 검증하는 API입니다."
+    )
+    @PostMapping("/password/email/verify")
+    public ResponseEntity<CustomResponse<Boolean>> verifyPasswordChangeEmailCode(
+            @RequestParam @Email @NotBlank String email,
+            @RequestParam @NotBlank String code) {
+
+        boolean verified = emailAuthService.verifyCodeAndMarkVerifiedBeforeChangePassword(email, code);
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, verified));
+    }
+    //이메일 인증으로 비밀번호 변경
+    @Operation(
+            summary = "비밀번호 변경 (이메일 인증 기반)",
+            description = "이메일 인증을 통해 비밀번호를 변경하는 API입니다."
+    )
+    @PatchMapping("/password/email")
+    public ResponseEntity<CustomResponse<Void>> updatePasswordWithEmail(@RequestBody @Valid MemberRequestDTO.UpdatePasswordWithEmail updatePassword) {
+        memberCommandService.updatePasswordWithEmail(updatePassword);
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK));
     }
 

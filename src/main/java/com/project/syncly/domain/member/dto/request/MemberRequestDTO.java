@@ -24,12 +24,24 @@ public class MemberRequestDTO {
             @ValidName String newName
     ){}
 
+    public interface PasswordPair {
+        String newPassword();
+        String confirmPassword();
+    }
+
     @PasswordMatch
     public record UpdatePassword(
             @NotBlank String currentPassword,
             @ValidPassword String newPassword,
             @NotBlank String confirmPassword
-    ){}
+    )implements PasswordPair {}
+
+    @PasswordMatch
+    public record UpdatePasswordWithEmail(
+            @Email @NotBlank String email,
+            @ValidPassword String newPassword,
+            @NotBlank String confirmPassword
+    )implements PasswordPair {}
 
     @ValidLeaveReason//LeaveReasonType.ETC 일 경우에만 leaveReason null, 공백문자체크
     public record DeleteMember(

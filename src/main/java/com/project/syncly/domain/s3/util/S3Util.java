@@ -15,8 +15,13 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.core.sync.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -50,12 +55,16 @@ public class S3Util {
 
     public String createPresignedGetUrlForDownload(String objectKey, String fileName) {
         try {
+            // 한글 파일명을 RFC 5987 표준에 맞게 인코딩
+            String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
+            String contentDisposition = "attachment; filename*=UTF-8''" + encodedFileName;
+
             //ContentDisposition는 이 파일의 행동을 강제한다(download, view)
             //ContentType는 랜더링 방식을 결정한다. 어떤 뷰어를 쓸 것인지
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(objectKey)
-                    .responseContentDisposition("attachment; filename=\"" + fileName + "\"")//브라우저가 무조건 다운로드 창 띄움
+                    .responseContentDisposition(contentDisposition)//브라우저가 무조건 다운로드 창 띄움
                     .build();
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -82,5 +91,6 @@ public class S3Util {
             throw new S3Exception(S3ErrorCode.DELETE_FAILED);
         }
     }
+
 
 }

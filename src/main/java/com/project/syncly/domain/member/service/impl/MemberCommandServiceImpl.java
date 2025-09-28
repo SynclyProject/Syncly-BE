@@ -1,5 +1,6 @@
 package com.project.syncly.domain.member.service.impl;
 
+import com.project.syncly.domain.auth.service.AuthService;
 import com.project.syncly.domain.member.converter.MemberConverter;
 import com.project.syncly.domain.member.dto.request.MemberRequestDTO;
 import com.project.syncly.domain.member.entity.Member;
@@ -14,7 +15,9 @@ import com.project.syncly.domain.s3.dto.S3RequestDTO;
 import com.project.syncly.domain.s3.exception.S3ErrorCode;
 import com.project.syncly.domain.s3.exception.S3Exception;
 import com.project.syncly.domain.s3.util.S3Util;
-import com.project.syncly.global.jwt.service.TokenService;
+import com.project.syncly.domain.workspace.service.WorkspaceService;
+import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
+import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.global.redis.core.RedisStorage;
 import com.project.syncly.global.redis.enums.RedisKeyPrefix;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -32,9 +37,11 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     private final PasswordEncoder passwordEncoder;
     private final LoginCacheService loginCacheService;
     private final EmailAuthService emailAuthService;
-    private final TokenService tokenService;
+    private final AuthService authService;
     private final S3Util s3Util;
     private final RedisStorage redisStorage;
+    private final WorkspaceService workspaceService;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
 
 
@@ -49,17 +56,18 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = MemberConverter.toLocalMember(dto.email(), encodedPassword, dto.name());
 
         memberRepository.save(member);
+        workspaceService.createPersonalWorkspace(member.getId());
         emailAuthService.clearVerified(dto.email());
     }
 
 
     @Override
     public Member findOrCreateSocialMember(String email, String name, SocialLoginProvider provider) {
-
-        Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(
-                        MemberConverter.toSocialMember(email, name, provider)
-                ));
+        Member member = memberRepository.findByEmail(email).orElse(null);
+        if (member == null) {
+            member  = memberRepository.save(MemberConverter.toSocialMember(email, name, provider));
+            workspaceService.createPersonalWorkspace(member .getId());
+        }
         loginCacheService.cacheMember(member);
         return member;
     }
@@ -69,8 +77,13 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         member.updateName(updateName.newName());
-        loginCacheService.cacheMember(member);
 
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findAllByMember(member);
+        workspaceMembers.forEach(workspaceMember -> {
+            workspaceMember.updateName(updateName.newName());
+        });
+
+        loginCacheService.cacheMember(member);
     }
 
     @Override
@@ -78,7 +91,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(
                 memberId.toString() + ':' + request.fileName() + ':' + request.objectKey());
 
-        S3RequestDTO.ProfileImageUploadPreSignedUrl saved = redisStorage.get(
+        S3RequestDTO.ProfileImageUploadPreSignedUrl saved = redisStorage.getValueAsString(
                 redisKey, S3RequestDTO.ProfileImageUploadPreSignedUrl.class
         );
 
@@ -92,8 +105,12 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         if (member.getProfileImage() != null) {
             s3Util.delete(member.getProfileImage());
         }
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findAllByMember(member);
 
         member.updateProfileImage(request.objectKey());
+        workspaceMembers.forEach(workspaceMember ->
+                workspaceMember.updateProfileImage(request.objectKey())
+        );
         redisStorage.delete(redisKey);
         loginCacheService.cacheMember(member);
     }
@@ -132,6 +149,26 @@ public class MemberCommandServiceImpl implements MemberCommandService {
     }
 
     @Override
+    public void updatePasswordWithEmail(MemberRequestDTO.UpdatePasswordWithEmail updatePassword) {
+        Member member = memberRepository.findByEmail(updatePassword.email())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getSocialLoginProvider() != SocialLoginProvider.LOCAL) {
+            throw new MemberException(MemberErrorCode.SOCIAL_MEMBER_CANNOT_USE_THIS_FEATURE);
+        }
+        // 이메일 인증여부 확인
+        boolean isVerified = emailAuthService.isVerifiedBeforeChangePassword(member.getEmail());
+
+        if (!isVerified) {
+            throw new MemberException(MemberErrorCode.EMAIL_NOT_VERIFIED);
+        }
+        String encodedNewPassword = passwordEncoder.encode(updatePassword.newPassword());
+        member.updatePassword(encodedNewPassword);
+
+        loginCacheService.cacheMember(member);
+    }
+
+    @Override
     public void deleteMember(HttpServletRequest request, HttpServletResponse response,
                              Long memberId, MemberRequestDTO.DeleteMember toDelete) {
         //삭제전엔 안전하게 db에서 조회
@@ -141,7 +178,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
             throw new MemberException(MemberErrorCode.PASSWORD_NOT_MATCHED);
         }
         member.markAsDeleted(toDelete.leaveReasonType(), toDelete.leaveReason());
-        tokenService.logout(request, response);
+        authService.logout(request, response);
         loginCacheService.removeMemberCache(member.getId());
     }
 }

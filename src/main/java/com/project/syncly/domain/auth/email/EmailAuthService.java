@@ -10,4 +10,8 @@ public interface EmailAuthService {
     void markVerified(String email);
     boolean isVerified(String email);
     void clearVerified(String email);
+
+    void sendAuthCodeBeforeChangePassword(String email);
+    boolean verifyCodeAndMarkVerifiedBeforeChangePassword(String email, String inputCode);
+    boolean isVerifiedBeforeChangePassword(String email);
 }

@@ -19,7 +19,9 @@ configurations {
     }
 }
 
+
 repositories {
+    maven { url 'https://jitpack.io' }
     mavenCentral()
 }
 
@@ -33,7 +35,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
     //runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
@@ -54,6 +56,8 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+    implementation "com.auth0:java-jwt:4.4.0"//liveKit 토큰 생성용 (Map 직접 삽입가능)
+
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
@@ -70,6 +74,17 @@ dependencies {
 
     // S3
     implementation "software.amazon.awssdk:s3:2.25.11"
+
+    //liveKit
+    implementation("io.livekit:livekit-server:0.10.0")
+
+    //webflux(livekit api요청)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // error discord webhook
+    implementation "com.github.napstr:logback-discord-appender:1.0.0"
 
 }
 

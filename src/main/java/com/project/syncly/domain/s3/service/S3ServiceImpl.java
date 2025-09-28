@@ -44,6 +44,7 @@ public class S3ServiceImpl implements S3Service {
 
         cookies.forEach((name, value) -> {
             ResponseCookie cookie = ResponseCookie.from(name, value)
+                    .domain(".syncly-io.com")//cloudFront 도메인
                     .path("/") // or specific resource
                     .httpOnly(true)
                     .secure(true)
