@@ -2,8 +2,6 @@ package com.project.syncly.domain.folder.controller;
 
 import com.project.syncly.domain.folder.dto.FolderRequestDto;
 import com.project.syncly.domain.folder.dto.FolderResponseDto;
-import com.project.syncly.domain.folder.dto.ListingDto;
-import com.project.syncly.domain.folder.dto.PermissionDto;
 import com.project.syncly.domain.folder.service.FolderQueryService;
 import com.project.syncly.domain.folder.service.FolderCommandService;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
@@ -12,6 +10,9 @@ import com.project.syncly.domain.workspace.exception.WorkspaceException;
 import com.project.syncly.global.apiPayload.CustomResponse;
 import com.project.syncly.global.jwt.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -145,12 +143,62 @@ public class FolderController {
     }
 
     @GetMapping("/{workspaceId}/trash")
-    @Operation(summary = "휴지통 조회", description = "워크스페이스의 휴지통에 있는 폴더와 파일 목록을 조회합니다.")
+    @Operation(
+        summary = "휴지통 조회",
+        description = """
+            워크스페이스의 휴지통에 있는 삭제된 폴더와 파일 목록을 조회합니다.
+
+            **정렬 옵션:**
+            - latest: 최신순 정렬 (삭제일시 기준 내림차순)
+            - alphabet: 가나다순 정렬 (이름 기준 오름차순)
+
+            **커서 기반 페이징:**
+            - latest 정렬시: cursor는 날짜시간 형태 (예: "2025-09-16T23:59:59")
+            - alphabet 정렬시: cursor는 이름 형태 (예: "Documents")
+
+            **검색:**
+            - 폴더명/파일명에서 부분 일치 검색 지원
+
+            **업로더 필터링:**
+            - uploaderId 파라미터로 특정 멤버가 삭제한 파일/폴더만 조회 가능
+            - null이면 모든 업로더의 삭제된 파일/폴더 조회
+
+            **응답 데이터:**
+            - 삭제된 폴더와 파일이 통합되어 반환
+            - 업로더 정보(이름, 프로필 이미지) 포함
+            - 파일의 경우 크기, objectKey, 타입 정보 포함
+            """
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "휴지통 목록 조회 성공"),
+        @ApiResponse(responseCode = "403", description = "워크스페이스 멤버가 아님"),
+        @ApiResponse(responseCode = "404", description = "워크스페이스를 찾을 수 없음")
+    })
     public ResponseEntity<CustomResponse<FolderResponseDto.ItemList>> getTrashItems(
-            @PathVariable Long workspaceId,
-            @RequestParam(defaultValue = "latest") String sort,
-            @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") Integer limit,
+            @Parameter(description = "워크스페이스 ID") @PathVariable Long workspaceId,
+            @Parameter(
+                description = "정렬 방식",
+                example = "latest",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(
+                    allowableValues = {"latest", "alphabet"}
+                )
+            ) @RequestParam(defaultValue = "latest") String sort,
+            @Parameter(
+                description = "커서 (페이징용). latest 정렬시 날짜시간, alphabet 정렬시 이름",
+                example = "2025-09-16T23:59:59"
+            ) @RequestParam(required = false) String cursor,
+            @Parameter(
+                description = "한 페이지당 항목 수 (1-100)",
+                example = "20"
+            ) @RequestParam(defaultValue = "20") Integer limit,
+            @Parameter(
+                description = "검색어 (폴더명/파일명 부분 일치)",
+                example = "회의록"
+            ) @RequestParam(required = false) String search,
+            @Parameter(
+                description = "업로더 ID (특정 멤버가 삭제한 파일/폴더만 조회)",
+                example = "123"
+            ) @RequestParam(required = false) Long uploaderId,
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
@@ -159,38 +207,69 @@ public class FolderController {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
 
-        // TODO: 통합 휴지통 서비스 구현 필요
-        // 1. 휴지통 파일 조회 (이미 구현됨)
-        // 2. 휴지통 폴더 조회 (폴더 soft delete 구현 후)
-        // 3. 두 결과를 ListingDto.Item 형태로 변환하여 통합
-
-        // 현재는 빈 리스트와 더미 권한 반환
-        List<ListingDto.Item> trashItems = java.util.Collections.emptyList();
-        String nextCursor = null;
-
-        // 현재 사용자의 워크스페이스 권한 정보 생성
-        boolean isMember = workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId);
-        PermissionDto permissions = new PermissionDto(
-                isMember, // canRead
-                isMember, // canWrite
-                isMember, // canDelete
-                isMember  // canAdmin
-        );
-
-        FolderResponseDto.ItemList responseDto = new FolderResponseDto.ItemList(trashItems, nextCursor, permissions);
+        FolderResponseDto.ItemList responseDto = folderQueryService.getTrashItems(workspaceId, sort, cursor, limit, search, uploaderId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
 
     @GetMapping("/{workspaceId}/folders/{folderId}/items")
-    @Operation(summary = "폴더/파일 목록 조회", description = "워크스페이스 폴더 내의 파일과 하위 폴더 목록을 조회합니다.")
+    @Operation(
+        summary = "폴더/파일 목록 조회",
+        description = """
+            워크스페이스 폴더 내의 파일과 하위 폴더 목록을 조회합니다.
+
+            **정렬 옵션:**
+            - latest: 최신순 정렬 (수정일시 기준 내림차순)
+            - alphabet: 가나다순 정렬 (이름 기준 오름차순)
+
+            **커서 기반 페이징:**
+            - latest 정렬시: cursor는 날짜시간 형태 (예: "2025-09-16T23:59:59")
+            - alphabet 정렬시: cursor는 이름 형태 (예: "Documents")
+
+            **검색:**
+            - 폴더명/파일명에서 부분 일치 검색 지원
+
+            **업로더 필터링:**
+            - uploaderId 파라미터로 특정 멤버가 업로드한 파일/폴더만 조회 가능
+            - null이면 모든 업로더의 파일/폴더 조회
+
+            **응답 데이터:**
+            - 폴더와 파일이 통합되어 반환
+            - 업로더 정보(이름, 프로필 이미지) 포함
+            - 파일의 경우 크기, objectKey, 타입 정보 포함
+            """
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "폴더/파일 목록 조회 성공"),
+        @ApiResponse(responseCode = "403", description = "워크스페이스 멤버가 아님"),
+        @ApiResponse(responseCode = "404", description = "폴더를 찾을 수 없음")
+    })
     public ResponseEntity<CustomResponse<FolderResponseDto.ItemList>> getFolderItems(
-            @PathVariable Long workspaceId,
-            @PathVariable Long folderId,
-            @RequestParam(defaultValue = "latest") String sort,
-            @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") Integer limit,
-            @RequestParam(required = false) String search,
+            @Parameter(description = "워크스페이스 ID") @PathVariable Long workspaceId,
+            @Parameter(description = "폴더 ID") @PathVariable Long folderId,
+            @Parameter(
+                description = "정렬 방식",
+                example = "latest",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(
+                    allowableValues = {"latest", "alphabet"}
+                )
+            ) @RequestParam(defaultValue = "latest") String sort,
+            @Parameter(
+                description = "커서 (페이징용). latest 정렬시 날짜시간, alphabet 정렬시 이름",
+                example = "2025-09-16T23:59:59"
+            ) @RequestParam(required = false) String cursor,
+            @Parameter(
+                description = "한 페이지당 항목 수 (1-100)",
+                example = "20"
+            ) @RequestParam(defaultValue = "20") Integer limit,
+            @Parameter(
+                description = "검색어 (폴더명/파일명 부분 일치)",
+                example = "회의록"
+            ) @RequestParam(required = false) String search,
+            @Parameter(
+                description = "업로더 ID (특정 멤버가 업로드한 파일/폴더만 조회)",
+                example = "123"
+            ) @RequestParam(required = false) Long uploaderId,
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long currentMemberId = Long.valueOf(userDetails.getName());
@@ -199,268 +278,7 @@ public class FolderController {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-
-        List<ListingDto.Item> items;
-
-        if (search != null && !search.isEmpty()) {
-            items = List.of(
-                    new ListingDto.Item(
-                            5002L,
-                            "FILE",
-                            "회의록.docx",
-                            LocalDateTime.of(2025, 9, 15, 10, 0).format(formatter),
-                            new ListingDto.UserInfo(12L, "이영희", "https://example.com/profile12.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5018L,
-                            "FILE",
-                            "회의록_0901.pdf",
-                            LocalDateTime.of(2025, 9, 1, 14, 30).format(formatter),
-                            new ListingDto.UserInfo(15L, "박회의", "https://example.com/profile15.jpg")
-                    ),
-                    new ListingDto.Item(
-                            108L,
-                            "FOLDER",
-                            "회의자료",
-                            LocalDateTime.of(2025, 8, 28, 16, 20).format(formatter),
-                            new ListingDto.UserInfo(13L, "최회장", "https://example.com/profile13.jpg")
-                    )
-            );
-        } else {
-            items = List.of(
-                    new ListingDto.Item(
-                            5001L,
-                            "FILE",
-                            "design.png",
-                            LocalDateTime.of(2025, 9, 17, 10, 0).format(formatter),
-                            new ListingDto.UserInfo(10L, "홍길동", "https://example.com/profile10.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5002L,
-                            "FILE",
-                            "presentation.pptx",
-                            LocalDateTime.of(2025, 9, 16, 15, 30).format(formatter),
-                            new ListingDto.UserInfo(12L, "이영희", "https://example.com/profile12.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5003L,
-                            "FILE",
-                            "budget.xlsx",
-                            LocalDateTime.of(2025, 9, 16, 9, 15).format(formatter),
-                            new ListingDto.UserInfo(14L, "김예산", "https://example.com/profile14.jpg")
-                    ),
-                    new ListingDto.Item(
-                            101L,
-                            "FOLDER",
-                            "Documents",
-                            LocalDateTime.of(2025, 9, 15, 14, 0).format(formatter),
-                            new ListingDto.UserInfo(11L, "김철수", "https://example.com/profile11.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5004L,
-                            "FILE",
-                            "logo_v2.svg",
-                            LocalDateTime.of(2025, 9, 15, 11, 45).format(formatter),
-                            new ListingDto.UserInfo(16L, "디자이너박", "https://example.com/profile16.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5005L,
-                            "FILE",
-                            "requirements.txt",
-                            LocalDateTime.of(2025, 9, 14, 16, 20).format(formatter),
-                            new ListingDto.UserInfo(17L, "개발자이", "https://example.com/profile17.jpg")
-                    ),
-                    new ListingDto.Item(
-                            102L,
-                            "FOLDER",
-                            "Images",
-                            LocalDateTime.of(2025, 9, 14, 13, 10).format(formatter),
-                            new ListingDto.UserInfo(16L, "디자이너박", "https://example.com/profile16.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5006L,
-                            "FILE",
-                            "database_schema.sql",
-                            LocalDateTime.of(2025, 9, 13, 10, 30).format(formatter),
-                            new ListingDto.UserInfo(18L, "DB관리자정", "https://example.com/profile18.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5007L,
-                            "FILE",
-                            "user_manual.pdf",
-                            LocalDateTime.of(2025, 9, 12, 14, 45).format(formatter),
-                            new ListingDto.UserInfo(19L, "기술작가최", "https://example.com/profile19.jpg")
-                    ),
-                    new ListingDto.Item(
-                            103L,
-                            "FOLDER",
-                            "Archives",
-                            LocalDateTime.of(2025, 9, 11, 16, 0).format(formatter),
-                            new ListingDto.UserInfo(11L, "김철수", "https://example.com/profile11.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5008L,
-                            "FILE",
-                            "api_documentation.md",
-                            LocalDateTime.of(2025, 9, 10, 11, 20).format(formatter),
-                            new ListingDto.UserInfo(20L, "문서화김", "https://example.com/profile20.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5009L,
-                            "FILE",
-                            "test_results.html",
-                            LocalDateTime.of(2025, 9, 9, 15, 10).format(formatter),
-                            new ListingDto.UserInfo(21L, "QA이", "https://example.com/profile21.jpg")
-                    ),
-                    new ListingDto.Item(
-                            104L,
-                            "FOLDER",
-                            "Backup",
-                            LocalDateTime.of(2025, 9, 8, 18, 30).format(formatter),
-                            new ListingDto.UserInfo(18L, "DB관리자정", "https://example.com/profile18.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5010L,
-                            "FILE",
-                            "project_timeline.gantt",
-                            LocalDateTime.of(2025, 9, 7, 9, 0).format(formatter),
-                            new ListingDto.UserInfo(22L, "PM박", "https://example.com/profile22.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5011L,
-                            "FILE",
-                            "wireframe_v3.fig",
-                            LocalDateTime.of(2025, 9, 6, 13, 40).format(formatter),
-                            new ListingDto.UserInfo(23L, "UX디자이너한", "https://example.com/profile23.jpg")
-                    ),
-                    new ListingDto.Item(
-                            105L,
-                            "FOLDER",
-                            "Resources",
-                            LocalDateTime.of(2025, 9, 5, 10, 15).format(formatter),
-                            new ListingDto.UserInfo(24L, "리소스매니저김", "https://example.com/profile24.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5012L,
-                            "FILE",
-                            "performance_report.xlsx",
-                            LocalDateTime.of(2025, 9, 4, 14, 25).format(formatter),
-                            new ListingDto.UserInfo(25L, "분석가이", "https://example.com/profile25.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5013L,
-                            "FILE",
-                            "security_audit.pdf",
-                            LocalDateTime.of(2025, 9, 3, 16, 50).format(formatter),
-                            new ListingDto.UserInfo(26L, "보안전문가최", "https://example.com/profile26.jpg")
-                    ),
-                    new ListingDto.Item(
-                            106L,
-                            "FOLDER",
-                            "Legal",
-                            LocalDateTime.of(2025, 9, 2, 11, 30).format(formatter),
-                            new ListingDto.UserInfo(27L, "법무팀장박", "https://example.com/profile27.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5014L,
-                            "FILE",
-                            "deployment_guide.txt",
-                            LocalDateTime.of(2025, 9, 1, 17, 10).format(formatter),
-                            new ListingDto.UserInfo(28L, "데브옵스정", "https://example.com/profile28.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5015L,
-                            "FILE",
-                            "marketing_strategy.pptx",
-                            LocalDateTime.of(2025, 8, 31, 12, 0).format(formatter),
-                            new ListingDto.UserInfo(29L, "마케터김", "https://example.com/profile29.jpg")
-                    ),
-                    new ListingDto.Item(
-                            107L,
-                            "FOLDER",
-                            "Templates",
-                            LocalDateTime.of(2025, 8, 30, 15, 45).format(formatter),
-                            new ListingDto.UserInfo(30L, "템플릿관리자", "https://example.com/profile30.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5016L,
-                            "FILE",
-                            "client_feedback.docx",
-                            LocalDateTime.of(2025, 8, 29, 10, 20).format(formatter),
-                            new ListingDto.UserInfo(31L, "CS팀장이", "https://example.com/profile31.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5017L,
-                            "FILE",
-                            "financial_report_q3.pdf",
-                            LocalDateTime.of(2025, 8, 28, 16, 30).format(formatter),
-                            new ListingDto.UserInfo(32L, "재무팀최", "https://example.com/profile32.jpg")
-                    ),
-                    new ListingDto.Item(
-                            108L,
-                            "FOLDER",
-                            "Meetings",
-                            LocalDateTime.of(2025, 8, 27, 9, 0).format(formatter),
-                            new ListingDto.UserInfo(33L, "회의실관리자", "https://example.com/profile33.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5018L,
-                            "FILE",
-                            "competitor_analysis.xlsx",
-                            LocalDateTime.of(2025, 8, 26, 14, 15).format(formatter),
-                            new ListingDto.UserInfo(34L, "전략기획박", "https://example.com/profile34.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5019L,
-                            "FILE",
-                            "system_architecture.png",
-                            LocalDateTime.of(2025, 8, 25, 11, 30).format(formatter),
-                            new ListingDto.UserInfo(35L, "아키텍트정", "https://example.com/profile35.jpg")
-                    ),
-                    new ListingDto.Item(
-                            109L,
-                            "FOLDER",
-                            "Training",
-                            LocalDateTime.of(2025, 8, 24, 13, 45).format(formatter),
-                            new ListingDto.UserInfo(36L, "교육담당자", "https://example.com/profile36.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5020L,
-                            "FILE",
-                            "privacy_policy.txt",
-                            LocalDateTime.of(2025, 8, 23, 15, 0).format(formatter),
-                            new ListingDto.UserInfo(37L, "개인정보보호담당", "https://example.com/profile37.jpg")
-                    ),
-                    new ListingDto.Item(
-                            5021L,
-                            "FILE",
-                            "release_notes_v2.1.md",
-                            LocalDateTime.of(2025, 8, 22, 10, 10).format(formatter),
-                            new ListingDto.UserInfo(38L, "릴리즈매니저", "https://example.com/profile38.jpg")
-                    ),
-                    new ListingDto.Item(
-                            110L,
-                            "FOLDER",
-                            "Vendors",
-                            LocalDateTime.of(2025, 8, 21, 16, 20).format(formatter),
-                            new ListingDto.UserInfo(39L, "구매담당자", "https://example.com/profile39.jpg")
-                    )
-            );
-        }
-
-        String nextCursor = "alphabet".equals(sort) ? "Docs" : "2025-09-16T23:59:59";
-
-        // 현재 사용자의 워크스페이스 권한 정보 생성 (멤버라면 모든 권한 true)
-        boolean isMember = workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId);
-        PermissionDto permissions = new PermissionDto(
-                isMember, // canRead
-                isMember, // canWrite
-                isMember, // canDelete
-                isMember  // canAdmin
-        );
-
-        FolderResponseDto.ItemList responseDto = new FolderResponseDto.ItemList(items, nextCursor, permissions);
+        FolderResponseDto.ItemList responseDto = folderQueryService.getFolderItems(workspaceId, folderId, sort, cursor, limit, search, uploaderId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
