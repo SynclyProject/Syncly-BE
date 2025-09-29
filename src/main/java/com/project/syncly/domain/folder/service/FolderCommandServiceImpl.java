@@ -299,6 +299,55 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         return new FolderResponseDto.Message("폴더가 복원되었습니다.");
     }
 
+    @Override
+    public FolderResponseDto.Message hardDeleteFolder(Long workspaceId, Long folderId, Long memberId) {
+
+        // [1] 워크스페이스 회원 여부 검증 및 실제 WorkspaceMember ID 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository
+            .findByWorkspaceIdAndMemberId(workspaceId, memberId)
+            .orElseThrow(() -> new FolderException(FolderErrorCode.FORBIDDEN_ACCESS));
+
+        // [2] 폴더 존재 여부 및 워크스페이스 소속 확인 (삭제된 폴더도 포함)
+        Folder folder = folderRepository.findByIdAndWorkspaceId(folderId, workspaceId)
+            .or(() -> folderRepository.findDeletedByIdAndWorkspaceId(folderId, workspaceId))
+            .orElseThrow(() -> new FolderException(FolderErrorCode.FOLDER_NOT_FOUND));
+
+        // [3] 루트 폴더 삭제 금지
+        if (folder.getParentId() == null) {
+            throw new FolderException(FolderErrorCode.ROOT_FOLDER_DELETE_FORBIDDEN);
+        }
+
+        // [4] 모든 하위 폴더 ID 조회 (자기 자신 포함) - 삭제된 것도 포함
+        List<Long> descendantFolderIds;
+        if (folder.getDeletedAt() == null) {
+            // 삭제되지 않은 폴더인 경우 FolderClosure를 이용
+            descendantFolderIds = folderClosureRepository.findAllDescendantIds(folderId);
+        } else {
+            // 이미 삭제된 폴더인 경우 재귀적으로 찾기
+            descendantFolderIds = findDeletedDescendants(folderId);
+        }
+
+        // [5] 완전 삭제 수행
+        // 하위 폴더들의 파일을 모두 완전 삭제
+        if (!descendantFolderIds.isEmpty()) {
+            fileRepository.deleteByFolderIdIn(descendantFolderIds);
+        }
+
+        // 폴더들을 모두 완전 삭제
+        if (!descendantFolderIds.isEmpty()) {
+            folderRepository.deleteByIdIn(descendantFolderIds);
+        }
+
+        // FolderClosure에서 관련 경로들 삭제
+        for (Long descendantId : descendantFolderIds) {
+            folderClosureRepository.deleteByAncestorIdOrDescendantId(descendantId);
+        }
+
+        log.info("Folder {} and {} descendants hard deleted successfully", folderId, descendantFolderIds.size() - 1);
+
+        return new FolderResponseDto.Message("폴더가 완전히 삭제되었습니다.");
+    }
+
     // 삭제된 폴더의 하위 폴더들을 재귀적으로 찾는 헬퍼 메서드
     private List<Long> findDeletedDescendants(Long folderId) {
         List<Long> allIds = new java.util.ArrayList<>();
