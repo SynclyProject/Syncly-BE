@@ -13,4 +13,6 @@ public interface FolderCommandService {
     FolderResponseDto.Message deleteFolder(Long workspaceId, Long folderId, Long memberId);
 
     FolderResponseDto.Message restoreFolder(Long workspaceId, Long folderId, Long memberId);
+
+    FolderResponseDto.Message hardDeleteFolder(Long workspaceId, Long folderId, Long memberId);
 }
