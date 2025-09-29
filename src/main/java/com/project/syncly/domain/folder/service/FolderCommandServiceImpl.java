@@ -12,6 +12,7 @@ import com.project.syncly.domain.folder.exception.FolderException;
 import com.project.syncly.domain.folder.repository.FolderClosureRepository;
 import com.project.syncly.domain.folder.repository.FolderRepository;
 import com.project.syncly.domain.workspace.repository.WorkspaceRepository;
+import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,10 +43,10 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         Long parentId = requestDto.parentId();
         log.info("memberId: {}", memberId);
 
-        // [0] 워크스페이스 회원 여부 검증
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, memberId)) {
-            throw new FolderException(FolderErrorCode.FORBIDDEN_ACCESS);
-        }
+        // [0] 워크스페이스 회원 여부 검증 및 실제 WorkspaceMember ID 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository
+            .findByWorkspaceIdAndMemberId(workspaceId, memberId)
+            .orElseThrow(() -> new FolderException(FolderErrorCode.FORBIDDEN_ACCESS));
 
         // [1] 이름 검증
         String name = requestDto.name();
@@ -96,9 +97,9 @@ public class FolderCommandServiceImpl implements FolderCommandService{
             throw new FolderException(FolderErrorCode.DUPLICATE_FOLDER_NAME);
         }
 
-        // [5] 폴더 생성 - parentId를 업데이트된 값으로 사용
+        // [5] 폴더 생성 - parentId를 업데이트된 값으로 사용, 올바른 workspaceMemberId 사용
         FolderRequestDto.Create updatedRequestDto = new FolderRequestDto.Create(parentId, requestDto.name());
-        Folder folder = folderRepository.save(FolderConverter.toFolder(workspaceId, updatedRequestDto, memberId));
+        Folder folder = folderRepository.save(FolderConverter.toFolder(workspaceId, updatedRequestDto, workspaceMember.getId()));
         folderClosureCommandService.updateOnCreate(parentId, folder.getId());
         return FolderConverter.toFolderResponse(folder);
     }
@@ -133,10 +134,10 @@ public class FolderCommandServiceImpl implements FolderCommandService{
     @Override
     public FolderResponseDto.Update updateFolderName(Long workspaceId, Long folderId, FolderRequestDto.Update requestDto, Long memberId) {
 
-        // [1] 워크스페이스 회원 여부 검증
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, memberId)) {
-            throw new FolderException(FolderErrorCode.FORBIDDEN_ACCESS);
-        }
+        // [1] 워크스페이스 회원 여부 검증 및 실제 WorkspaceMember ID 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository
+            .findByWorkspaceIdAndMemberId(workspaceId, memberId)
+            .orElseThrow(() -> new FolderException(FolderErrorCode.FORBIDDEN_ACCESS));
 
         // [2] 이름 검증
         String newName = requestDto.name();
@@ -174,10 +175,10 @@ public class FolderCommandServiceImpl implements FolderCommandService{
     @Override
     public FolderResponseDto.Message deleteFolder(Long workspaceId, Long folderId, Long memberId) {
 
-        // [1] 워크스페이스 회원 여부 검증
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, memberId)) {
-            throw new FolderException(FolderErrorCode.FORBIDDEN_ACCESS);
-        }
+        // [1] 워크스페이스 회원 여부 검증 및 실제 WorkspaceMember ID 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository
+            .findByWorkspaceIdAndMemberId(workspaceId, memberId)
+            .orElseThrow(() -> new FolderException(FolderErrorCode.FORBIDDEN_ACCESS));
 
         // [2] 폴더 존재 여부 및 워크스페이스 소속 확인
         Folder folder = folderRepository.findByIdAndWorkspaceId(folderId, workspaceId)
@@ -217,10 +218,10 @@ public class FolderCommandServiceImpl implements FolderCommandService{
     @Override
     public FolderResponseDto.Message restoreFolder(Long workspaceId, Long folderId, Long memberId) {
 
-        // [1] 워크스페이스 회원 여부 검증
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, memberId)) {
-            throw new FolderException(FolderErrorCode.FORBIDDEN_ACCESS);
-        }
+        // [1] 워크스페이스 회원 여부 검증 및 실제 WorkspaceMember ID 조회
+        WorkspaceMember workspaceMember = workspaceMemberRepository
+            .findByWorkspaceIdAndMemberId(workspaceId, memberId)
+            .orElseThrow(() -> new FolderException(FolderErrorCode.FORBIDDEN_ACCESS));
 
         // [2] 삭제된 폴더 존재 여부 확인
         Folder folder = folderRepository.findDeletedByIdAndWorkspaceId(folderId, workspaceId)
