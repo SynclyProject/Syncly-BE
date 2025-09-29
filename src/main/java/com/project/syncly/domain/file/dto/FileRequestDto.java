@@ -11,8 +11,8 @@ public class FileRequestDto {
     public record Update(
             @NotNull(message = "파일 이름은 필수입니다.")
             @Pattern(
-                    regexp = "^[a-zA-Z0-9가-힣_. -]{1,100}$",
-                    message = "파일 이름은 1~100자 사이의 한글, 영문, 숫자, 공백, '-', '_', '.'만 사용할 수 있습니다."
+                    regexp = "^[a-zA-Z0-9가-힣_. ()\\-]{1,100}$",
+                    message = "파일 이름은 1~100자 사이의 한글, 영문, 숫자, 공백, '-', '_', '.', '(', ')'만 사용할 수 있습니다."
             )
             @Schema(
                     description = "새로운 파일명 (확장자 포함 필수)",
@@ -33,8 +33,8 @@ public class FileRequestDto {
 
             @NotNull(message = "파일 이름은 필수입니다.")
             @Pattern(
-                    regexp = "^[a-zA-Z0-9가-힣_. -]{1,200}$",
-                    message = "파일 이름은 1~200자 사이의 한글, 영문, 숫자, 공백, '-', '_', '.'만 사용할 수 있습니다."
+                    regexp = "^[a-zA-Z0-9가-힣_. ()\\-]{1,200}$",
+                    message = "파일 이름은 1~200자 사이의 한글, 영문, 숫자, 공백, '-', '_', '.', '(', ')'만 사용할 수 있습니다."
             )
             @Schema(
                     description = "파일 이름 (확장자 포함 필수, MIME 타입 자동 추출)",
