@@ -116,11 +116,17 @@ public class FolderCommandServiceImpl implements FolderCommandService{
             throw new FolderException(FolderErrorCode.WORKSPACE_NOT_FOUND);
         }
 
+        // 워크스페이스의 매니저 조회
+        WorkspaceMember manager = workspaceMemberRepository
+                .findFirstByWorkspaceId(workspaceId)
+                .orElseThrow(() -> new FolderException(FolderErrorCode.FORBIDDEN_ACCESS));
+
         // 루트 폴더 생성 (parentId는 null, name은 "root")
         Folder rootFolder = Folder.builder()
                 .workspaceId(workspaceId)
                 .parentId(null)
                 .name("root")
+                .workspaceMemberId(manager.getId())
                 .build();
 
         Folder savedFolder = folderRepository.save(rootFolder);
