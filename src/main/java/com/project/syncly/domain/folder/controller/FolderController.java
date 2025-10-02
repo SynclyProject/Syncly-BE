@@ -282,4 +282,27 @@ public class FolderController {
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
+
+    @DeleteMapping("/{workspaceId}/folders/{folderId}/hard")
+    @Operation(summary = "폴더 완전 삭제", description = "워크스페이스의 폴더를 완전히 삭제합니다. (복구 불가)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "폴더 완전 삭제 성공"),
+        @ApiResponse(responseCode = "403", description = "워크스페이스 멤버가 아님"),
+        @ApiResponse(responseCode = "404", description = "폴더를 찾을 수 없음")
+    })
+    public ResponseEntity<CustomResponse<FolderResponseDto.Message>> hardDeleteFolder(
+            @Parameter(description = "워크스페이스 ID") @PathVariable Long workspaceId,
+            @Parameter(description = "폴더 ID") @PathVariable Long folderId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
+    ) {
+        Long currentMemberId = Long.valueOf(userDetails.getName());
+
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
+            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
+        }
+
+        FolderResponseDto.Message responseDto = folderCommandService.hardDeleteFolder(workspaceId, folderId, currentMemberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
+    }
 }

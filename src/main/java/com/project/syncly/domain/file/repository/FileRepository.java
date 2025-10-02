@@ -57,4 +57,14 @@ public interface FileRepository extends JpaRepository<File, Long> {
     @Query("UPDATE File f SET f.deletedAt = NULL WHERE f.folderId IN :folderIds")
     @Modifying
     void restoreByFolderIdIn(@Param("folderIds") List<Long> folderIds);
+
+    // 여러 폴더 ID에 속한 파일들을 완전 삭제 (hard delete)
+    @Query("DELETE FROM File f WHERE f.folderId IN :folderIds")
+    @Modifying
+    void deleteByFolderIdIn(@Param("folderIds") List<Long> folderIds);
+
+    // 여러 파일 ID들을 완전 삭제 (hard delete)
+    @Query("DELETE FROM File f WHERE f.id IN :fileIds")
+    @Modifying
+    void deleteByIdIn(@Param("fileIds") List<Long> fileIds);
 }

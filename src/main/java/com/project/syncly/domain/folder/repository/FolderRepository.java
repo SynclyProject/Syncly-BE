@@ -58,6 +58,11 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     @Query("SELECT f FROM Folder f WHERE f.parentId = :parentId AND f.deletedAt IS NOT NULL")
     List<Folder> findByParentIdAndDeletedAtIsNotNull(@Param("parentId") Long parentId);
 
+    // 여러 폴더 ID들을 완전 삭제 (hard delete)
+    @Query("DELETE FROM Folder f WHERE f.id IN :folderIds")
+    @Modifying
+    void deleteByIdIn(@Param("folderIds") List<Long> folderIds);
+
     // 폴더 내 아이템 통합 조회 (폴더 + 파일)를 위한 커스텀 메서드들
 
     // 특정 폴더의 하위 폴더 목록 조회 (워크스페이스 멤버 정보 포함)
