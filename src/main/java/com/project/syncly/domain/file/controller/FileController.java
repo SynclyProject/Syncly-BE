@@ -171,18 +171,4 @@ public class FileController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
 
-    @DeleteMapping("/{workspaceId}/files/{fileId}/hard")
-    @Operation(summary = "파일 완전 삭제", description = "워크스페이스의 파일을 완전히 삭제합니다. (복구 불가)")
-    public ResponseEntity<CustomResponse<FileResponseDto.Message>> hardDeleteFile(
-            @Parameter(description = "워크스페이스 ID") @PathVariable Long workspaceId,
-            @Parameter(description = "파일 ID") @PathVariable Long fileId,
-            @AuthenticationPrincipal PrincipalDetails userDetails
-    ) {
-        Long memberId = Long.valueOf(userDetails.getName());
-        FileResponseDto.Message responseDto = fileCommandService.hardDeleteFile(
-                workspaceId, fileId, memberId);
-
-        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
-    }
-
 }

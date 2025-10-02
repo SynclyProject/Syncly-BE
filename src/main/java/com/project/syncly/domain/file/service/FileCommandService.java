@@ -180,26 +180,6 @@ public class FileCommandService {
         return FileConverter.toMessageResponse(message);
     }
 
-    // 파일 완전 삭제 (하드 삭제)
-    public FileResponseDto.Message hardDeleteFile(Long workspaceId, Long fileId, Long workspaceMemberId) {
-        validateWorkspaceMembership(workspaceId, workspaceMemberId);
-
-        // 삭제된 파일과 삭제되지 않은 파일 모두 조회
-        File file = fileRepository.findByIdAndDeletedAtIsNull(fileId)
-            .or(() -> fileRepository.findByIdAndDeletedAtIsNotNull(fileId))
-            .orElseThrow(() -> new FileException(FileErrorCode.FILE_NOT_FOUND));
-
-        validateFolder(file.getFolderId(), workspaceId);
-
-        // S3에서 파일 삭제 (선택사항 - 필요시 구현)
-        // s3Util.deleteFile(file.getObjectKey());
-
-        // DB에서 완전 삭제
-        fileRepository.delete(file);
-
-        return FileConverter.toMessageResponse("파일이 완전히 삭제되었습니다.");
-    }
-
     // 워크스페이스 멤버십 검증
     private void validateWorkspaceMembership(Long workspaceId, Long workspaceMemberId) {
         // TODO: workspaceMemberId로 직접 확인하는 방법으로 변경 필요

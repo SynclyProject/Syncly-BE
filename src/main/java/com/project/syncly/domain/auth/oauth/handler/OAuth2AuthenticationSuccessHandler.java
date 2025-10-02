@@ -43,9 +43,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("Pragma", "no-cache");
 
-        response.sendRedirect("https://www.syncly-io.com/oauth2/success");
+        //response.sendRedirect("https://www.syncly-io.com/oauth2/success");
         //프론트 코드 배포 시 위 주소로 변경
-//        response.sendRedirect("http://localhost:5173/oauth2/success");
+        response.sendRedirect("http://localhost:5173/oauth2/success");
     }
 
 }

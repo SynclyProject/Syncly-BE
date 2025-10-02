@@ -57,7 +57,4 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
     List<WorkspaceMember> findAllByMember(Member member);
 
-    //워크스페이스의 첫 번째 멤버 조회 (루트 폴더 생성 시 사용)
-    Optional<WorkspaceMember> findFirstByWorkspaceId(Long workspaceId);
-
 }

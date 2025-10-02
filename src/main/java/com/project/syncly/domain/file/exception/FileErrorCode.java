@@ -16,7 +16,7 @@ public enum FileErrorCode implements BaseErrorCode {
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "File500_0", "파일 업로드에 실패했습니다."),
     FILE_DOWNLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "File500_1", "파일 다운로드에 실패했습니다."),
     EMPTY_FILE_NAME(HttpStatus.BAD_REQUEST, "File400_2", "파일 이름은 비워둘 수 없습니다."),
-    INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "File400_3", "파일 이름은 1~100자의 한글, 영문, 숫자, '-', '_', '.', '(', ')'만 사용할 수 있습니다."),
+    INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "File400_3", "파일 이름은 1~100자의 한글, 영문, 숫자, '-', '_', '.'만 사용할 수 있습니다."),
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "File400_4", "파일 크기가 50MB를 초과했습니다."),
     UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "File400_5", "지원하지 않는 파일 형식입니다."),
     FOLDER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "File403_1", "해당 폴더에 접근할 수 없습니다."),
