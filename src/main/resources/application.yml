@@ -37,7 +37,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: "https://www.syncly-io.com/api/login/oauth2/code/google"
+            redirect-uri: "https://api.syncly-io.com/api/login/oauth2/code/google"
             authorization-grant-type: authorization_code
             scope:
               - profile     #이름, 프로필 이미지
