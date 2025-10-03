@@ -9,7 +9,6 @@ import com.project.syncly.domain.folder.exception.FolderException;
 import com.project.syncly.domain.folder.repository.FolderRepository;
 import com.project.syncly.domain.folder.repository.FolderClosureRepository;
 import com.project.syncly.domain.workspace.repository.WorkspaceRepository;
-import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

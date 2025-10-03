@@ -10,6 +10,7 @@ public record WorkspaceMemberInfoResponseDto(
         Long workspaceMemberId,
         String memberName,
         String memberEmail,
+        String memberObjectKey,
         Role role,
         LocalDateTime joinedAt
 ) {}

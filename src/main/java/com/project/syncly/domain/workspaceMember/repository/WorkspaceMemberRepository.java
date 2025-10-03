@@ -45,6 +45,7 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
             wm.id,
             m.name,
             m.email,
+            m.profileImage,
             wm.role,
             wm.createdAt
         )
