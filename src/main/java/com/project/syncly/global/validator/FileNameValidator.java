@@ -6,9 +6,9 @@ import jakarta.validation.ConstraintValidatorContext;
 
 public class FileNameValidator implements ConstraintValidator<ValidFileName, String> {
 
-    //한글/영문/기호/확장자 포함
+    //한글/영문/기호/확장자 포함 (개발 단계: 모든 확장자 허용)
     private static final String FILE_NAME_REGEX =
-            "^[\\p{L}\\p{N} _\\-().\\[\\]]{1,100}\\.(jpg|jpeg|png|gif|bmp|svg|webp|mp4|avi|mkv|mov|wmv|flv|webm|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|hwp)$";
+            "^[\\p{L}\\p{N} _\\-().\\[\\]]{1,100}\\.[a-zA-Z0-9]{1,10}$";
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {

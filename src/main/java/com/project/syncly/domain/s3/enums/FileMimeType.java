@@ -54,7 +54,7 @@ public enum FileMimeType implements BaseEnum {
         return expected;
     }
 
-    // 확장자 -> mime
+    // 확장자 -> mime (개발 단계: 모든 확장자 허용, 매칭되지 않으면 octet-stream으로 처리)
     public static FileMimeType fromExtension(String ext) {
         return switch (ext.toLowerCase()) {
             // 이미지 파일
@@ -85,7 +85,7 @@ public enum FileMimeType implements BaseEnum {
             case "pptx" -> PPTX;
             case "txt" -> TXT;
 
-            default -> throw new S3Exception(S3ErrorCode.UNSUPPORTED_FILE_EXTENSION);
+            default -> TXT; // 알 수 없는 확장자는 text/plain으로 처리 (개발 단계)
         };
     }
 
