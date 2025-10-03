@@ -8,7 +8,7 @@ public class FileNameValidator implements ConstraintValidator<ValidFileName, Str
 
     //한글/영문/기호/확장자 포함
     private static final String FILE_NAME_REGEX =
-            "^[\\p{L}0-9 _\\-().\\[\\]]{1,50}\\.(jpg|jpeg|png)$";// image.jpg, 문서_파일(1).png 등 허용
+            "^[\\p{L}\\p{N} _\\-().\\[\\]]{1,100}\\.(jpg|jpeg|png|gif|bmp|svg|webp|mp4|avi|mkv|mov|wmv|flv|webm|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|hwp)$";
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
