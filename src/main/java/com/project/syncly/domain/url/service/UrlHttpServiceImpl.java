@@ -226,4 +226,34 @@ public class UrlHttpServiceImpl implements UrlHttpService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public UrlHttpResponseDto.GetSavedTabResponseDto getSavedTab(Long memberId, Long tabId) {
+        // 개인 워크스페이스 ID 조회
+        Long workspaceId = workspaceRepository.findPersonalWorkspaceIdByMemberId(memberId)
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        // URL 탭 조회
+        UrlTab urlTab = urlTabRepository.findById(tabId)
+                .orElseThrow(() -> new UrlException(UrlErrorCode.URL_TAB_NOT_FOUND));
+
+        // 워크스페이스 소유 확인
+        if (!urlTab.getWorkspace().getId().equals(workspaceId)) {
+            throw new UrlException(UrlErrorCode.URL_TAB_NOT_BELONG_TO_WORKSPACE);
+        }
+
+        // URL 아이템들 추출
+        List<String> urls = urlTab.getUrlItems().stream()
+                .map(UrlItem::getUrl)
+                .toList();
+
+        // 응답
+        return UrlHttpResponseDto.GetSavedTabResponseDto.builder()
+                .id(urlTab.getId())
+                .urls(urls)
+                .createdAt(urlTab.getCreatedAt())
+                .count(urls.size())
+                .build();
+    }
+
 }
