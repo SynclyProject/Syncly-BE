@@ -117,4 +117,20 @@ public class UrlHttpResponseDto {
             Integer count
     ) {}
 
+    @Builder
+    @Schema(description = "크롬 익스텐션 저장된 탭 조회 응답 DTO")
+    public record GetSavedTabResponseDto(
+            @Schema(description = "URL 탭 ID", example = "1")
+            Long id,
+
+            @Schema(description = "저장된 URL 배열")
+            List<String> urls,
+
+            @Schema(description = "생성 시간", example = "2025-09-30T23:45:00")
+            LocalDateTime createdAt,
+
+            @Schema(description = "저장된 URL 개수", example = "3")
+            Integer count
+    ) {}
+
 }
