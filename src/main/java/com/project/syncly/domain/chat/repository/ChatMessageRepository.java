@@ -43,6 +43,16 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     @Query("SELECT COALESCE(MAX(m.seq),0) FROM ChatMessage m WHERE m.workspace.id=:ws")
     Long findLatestSeq(@Param("ws") Long wsId);
+
+    @Query("""
+    SELECT cm 
+    FROM ChatMessage cm
+    JOIN FETCH cm.sender ws
+    JOIN FETCH ws.member m
+    WHERE cm.id = :id
+    """)
+    Optional<ChatMessage> findByIdWithSenderAndMember(@Param("id") Long id);
+
 }
 
 

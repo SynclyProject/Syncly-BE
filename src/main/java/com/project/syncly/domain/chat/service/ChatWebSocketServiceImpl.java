@@ -78,6 +78,9 @@ public class ChatWebSocketServiceImpl implements ChatWebSocketService {
         ChatMessage chatMessage = ChatConverter.toChatMessage(workspace, sender, request.msgId(), seq, request.content());
         chatRepository.save(chatMessage);
 
-        return ChatConverter.toChatMessageResponse(chatMessage);
+        ChatMessage loadedMessage = chatRepository.findByIdWithSenderAndMember(chatMessage.getId())
+                .orElseThrow(() -> new CustomException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+
+        return ChatConverter.toChatMessageResponse(loadedMessage);
     }
 }
