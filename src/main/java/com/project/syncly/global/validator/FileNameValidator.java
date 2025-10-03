@@ -6,12 +6,16 @@ import jakarta.validation.ConstraintValidatorContext;
 
 public class FileNameValidator implements ConstraintValidator<ValidFileName, String> {
 
-    //한글/영문/기호/확장자 포함 (개발 단계: 모든 확장자 허용)
+    // 개발 단계: 파일명 제한 완화 (확장자만 필수, 최대 255자)
     private static final String FILE_NAME_REGEX =
-            "^[\\p{L}\\p{N} _\\-().\\[\\]]{1,100}\\.[a-zA-Z0-9]{1,10}$";
+            "^.{1,255}\\..+$";
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && value.matches(FILE_NAME_REGEX);
+        if (value == null || value.trim().isEmpty()) {
+            return false;
+        }
+        // 확장자가 있는지만 확인 (개발 단계)
+        return value.contains(".") && value.lastIndexOf('.') > 0 && value.lastIndexOf('.') < value.length() - 1;
     }
 }
