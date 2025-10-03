@@ -44,7 +44,15 @@ public class FileCommandServiceImpl implements FileCommandService {
         validateFileNameHasExtension(requestDto.fileName());
 
         String uniqueFileName = generateUniqueFileName(folderId, requestDto.fileName());
-        String objectKey = "uploads/" + java.util.UUID.randomUUID() + "_" + uniqueFileName;
+
+        // 확장자 추출
+        String extension = "";
+        if (uniqueFileName.contains(".")) {
+            extension = uniqueFileName.substring(uniqueFileName.lastIndexOf('.'));
+        }
+
+        // S3 objectKey는 UUID + 확장자만 사용 (한글/특수문자 URL 인코딩 문제 방지)
+        String objectKey = "uploads/" + java.util.UUID.randomUUID() + extension;
 
         // 파일명에서 mimeType 자동 추출
         FileMimeType mimeType = FileMimeType.extractMimeType(uniqueFileName);

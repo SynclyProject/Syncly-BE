@@ -29,6 +29,14 @@ public enum FileMimeType implements BaseEnum {
     FLV("video/x-flv", "flv"),
     WEBM("video/webm", "webm"),
 
+    // 오디오 파일
+    MP3("audio/mpeg", "mp3"),
+    WAV("audio/wav", "wav"),
+    OGG("audio/ogg", "ogg"),
+    M4A("audio/mp4", "m4a"),
+    FLAC("audio/flac", "flac"),
+    AAC("audio/aac", "aac"),
+
     // 문서 파일
     PDF("application/pdf", "pdf"),
     DOC("application/msword", "doc"),
@@ -38,6 +46,43 @@ public enum FileMimeType implements BaseEnum {
     PPT("application/vnd.ms-powerpoint", "ppt"),
     PPTX("application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx"),
     TXT("text/plain", "txt"),
+    RTF("application/rtf", "rtf"),
+    CSV("text/csv", "csv"),
+    HWP("application/x-hwp", "hwp"),
+    HWPX("application/hwp+zip", "hwpx"),
+
+    // 압축 파일
+    ZIP("application/zip", "zip"),
+    RAR("application/vnd.rar", "rar"),
+    TAR("application/x-tar", "tar"),
+    GZ("application/gzip", "gz"),
+    SEVENZ("application/x-7z-compressed", "7z"),
+
+    // 코드/개발 파일
+    JSON("application/json", "json"),
+    XML("application/xml", "xml"),
+    HTML("text/html", "html"),
+    CSS("text/css", "css"),
+    JS("text/javascript", "js"),
+    TS("text/typescript", "ts"),
+    JSX("text/jsx", "jsx"),
+    TSX("text/tsx", "tsx"),
+    JAVA("text/x-java-source", "java"),
+    PY("text/x-python", "py"),
+    CPP("text/x-c++src", "cpp"),
+    C("text/x-csrc", "c"),
+    SH("application/x-sh", "sh"),
+    MD("text/markdown", "md"),
+    YML("application/x-yaml", "yml"),
+    YAML("application/x-yaml", "yaml"),
+
+    // 기타
+    SQL("application/sql", "sql"),
+    EXE("application/vnd.microsoft.portable-executable", "exe"),
+    APK("application/vnd.android.package-archive", "apk"),
+    IPA("application/octet-stream", "ipa"),
+    DMG("application/x-apple-diskimage", "dmg"),
+    ISO("application/x-iso9660-image", "iso"),
     ;
 
     private final String key;
@@ -75,6 +120,14 @@ public enum FileMimeType implements BaseEnum {
             case "flv" -> FLV;
             case "webm" -> WEBM;
 
+            // 오디오 파일
+            case "mp3" -> MP3;
+            case "wav" -> WAV;
+            case "ogg" -> OGG;
+            case "m4a" -> M4A;
+            case "flac" -> FLAC;
+            case "aac" -> AAC;
+
             // 문서 파일
             case "pdf" -> PDF;
             case "doc" -> DOC;
@@ -84,6 +137,43 @@ public enum FileMimeType implements BaseEnum {
             case "ppt" -> PPT;
             case "pptx" -> PPTX;
             case "txt" -> TXT;
+            case "rtf" -> RTF;
+            case "csv" -> CSV;
+            case "hwp" -> HWP;
+            case "hwpx" -> HWPX;
+
+            // 압축 파일
+            case "zip" -> ZIP;
+            case "rar" -> RAR;
+            case "tar" -> TAR;
+            case "gz" -> GZ;
+            case "7z" -> SEVENZ;
+
+            // 코드/개발 파일
+            case "json" -> JSON;
+            case "xml" -> XML;
+            case "html" -> HTML;
+            case "css" -> CSS;
+            case "js" -> JS;
+            case "ts" -> TS;
+            case "jsx" -> JSX;
+            case "tsx" -> TSX;
+            case "java" -> JAVA;
+            case "py" -> PY;
+            case "cpp" -> CPP;
+            case "c" -> C;
+            case "sh" -> SH;
+            case "md" -> MD;
+            case "yml" -> YML;
+            case "yaml" -> YAML;
+
+            // 기타
+            case "sql" -> SQL;
+            case "exe" -> EXE;
+            case "apk" -> APK;
+            case "ipa" -> IPA;
+            case "dmg" -> DMG;
+            case "iso" -> ISO;
 
             default -> TXT; // 알 수 없는 확장자는 text/plain으로 처리 (개발 단계)
         };

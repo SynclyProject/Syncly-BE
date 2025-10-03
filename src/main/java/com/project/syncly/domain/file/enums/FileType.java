@@ -35,8 +35,12 @@ public enum FileType implements BaseEnum {
 
         String ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         return switch (ext) {
+            // 이미지
             case "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp" -> IMAGE;
+
+            // 동영상
             case "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm" -> VIDEO;
+
             default -> FILE;
         };
     }
