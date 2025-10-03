@@ -82,6 +82,9 @@ public class FileResponseDto {
             String presignedUrl,
 
             @Schema(description = "S3 오브젝트 키")
-            String objectKey
+            String objectKey,
+
+            @Schema(description = "업로드 시 사용해야 하는 Content-Type")
+            String contentType
     ){}
 }

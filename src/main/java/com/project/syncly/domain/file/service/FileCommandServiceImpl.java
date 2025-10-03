@@ -66,7 +66,7 @@ public class FileCommandServiceImpl implements FileCommandService {
         );
         redisStorage.set(redisKey, uploadInfo, Duration.ofMinutes(10));
 
-        return new FileResponseDto.PresignedUrl(uniqueFileName, presignedUrl, objectKey);
+        return new FileResponseDto.PresignedUrl(uniqueFileName, presignedUrl, objectKey, mimeType.getKey());
     }
 
     @Override
