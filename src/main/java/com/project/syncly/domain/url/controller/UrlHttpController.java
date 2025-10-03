@@ -110,5 +110,17 @@ public class UrlHttpController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
 
+    // 크롬 익스텐션 탭 저장 API
+    @PostMapping("/tabs/save")
+    @Operation(summary = "크롬 익스텐션에서 현재 탭들을 저장하는 API")
+    public ResponseEntity<CustomResponse<UrlHttpResponseDto.SaveTabsResponseDto>> saveTabs(
+            @RequestBody @Valid UrlHttpRequestDto.SaveTabsRequestDto request,
+            @AuthenticationPrincipal PrincipalDetails userDetails) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        UrlHttpResponseDto.SaveTabsResponseDto response = urlHttpService.saveTabs(memberId, request);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
 
 }
