@@ -193,9 +193,7 @@ public class FileCommandServiceImpl implements FileCommandService {
 
     // 워크스페이스 멤버십 검증
     private void validateWorkspaceMembership(Long workspaceId, Long workspaceMemberId) {
-        // TODO: workspaceMemberId로 직접 확인하는 방법으로 변경 필요
-        // 현재는 임시로 memberId로 확인
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, workspaceMemberId)) {
+        if (!workspaceMemberRepository.findByWorkspaceIdAndId(workspaceId, workspaceMemberId).isPresent()) {
             throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
         }
     }

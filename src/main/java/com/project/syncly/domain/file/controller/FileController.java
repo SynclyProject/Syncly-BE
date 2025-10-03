@@ -29,6 +29,7 @@ public class FileController {
 
     private final FileCommandService fileCommandService;
     private final FileQueryService fileQueryService;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @PostMapping("/{workspaceId}/files/presigned-url")
     @Operation(
@@ -63,8 +64,12 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
         FileResponseDto.PresignedUrl responseDto = fileCommandService.generatePresignedUrl(
-                workspaceId, requestDto.folderId(), memberId, requestDto);
+                workspaceId, requestDto.folderId(), workspaceMemberId, requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.success(HttpStatus.CREATED, responseDto));
@@ -94,8 +99,12 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
         FileResponseDto.Upload responseDto = fileCommandService.confirmFileUpload(
-                workspaceId, memberId, requestDto);
+                workspaceId, workspaceMemberId, requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.success(HttpStatus.CREATED, responseDto));
@@ -109,7 +118,11 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
-        FileResponseDto.DownloadUrl responseDto = fileQueryService.getFileDownloadUrl(workspaceId, fileId, memberId);
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
+        FileResponseDto.DownloadUrl responseDto = fileQueryService.getFileDownloadUrl(workspaceId, fileId, workspaceMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -137,8 +150,12 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
         FileResponseDto.Update responseDto = fileCommandService.updateFileName(
-                workspaceId, fileId, memberId, requestDto);
+                workspaceId, fileId, workspaceMemberId, requestDto);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -151,8 +168,12 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
         FileResponseDto.Message responseDto = fileCommandService.deleteFile(
-                workspaceId, fileId, memberId);
+                workspaceId, fileId, workspaceMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -165,8 +186,12 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
         FileResponseDto.Message responseDto = fileCommandService.restoreFile(
-                workspaceId, fileId, memberId);
+                workspaceId, fileId, workspaceMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
@@ -179,8 +204,12 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails userDetails
     ) {
         Long memberId = Long.valueOf(userDetails.getName());
+        Long workspaceMemberId = workspaceMemberRepository.findByWorkspaceIdAndMemberId(workspaceId, memberId)
+                .orElseThrow(() -> new RuntimeException("워크스페이스 멤버를 찾을 수 없습니다."))
+                .getId();
+
         FileResponseDto.Message responseDto = fileCommandService.hardDeleteFile(
-                workspaceId, fileId, memberId);
+                workspaceId, fileId, workspaceMemberId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }

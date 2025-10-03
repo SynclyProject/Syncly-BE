@@ -68,7 +68,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 특정 폴더의 하위 폴더 목록 조회 (워크스페이스 멤버 정보 포함)
     @Query("""
         SELECT f.id, f.name, f.createdAt, f.updatedAt,
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM Folder f
         JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -88,7 +88,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 특정 폴더의 파일 목록 조회 (워크스페이스 멤버 정보 포함)
     @Query("""
         SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM File fi
         JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -108,7 +108,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 폴더 조회 (latest 정렬)
     @Query("""
         SELECT f.id, f.name, f.createdAt, f.updatedAt,
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM Folder f
         JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -128,7 +128,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 폴더 조회 (alphabet 정렬)
     @Query("""
         SELECT f.id, f.name, f.createdAt, f.updatedAt,
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM Folder f
         JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -148,7 +148,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 파일 조회 (latest 정렬)
     @Query("""
         SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM File fi
         JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -168,7 +168,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 파일 조회 (alphabet 정렬)
     @Query("""
         SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM File fi
         JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -188,7 +188,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 워크스페이스 휴지통 - 삭제된 폴더 목록 조회 (워크스페이스 멤버 정보 포함)
     @Query("""
         SELECT f.id, f.name, f.createdAt, f.updatedAt,
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM Folder f
         JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -208,7 +208,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 워크스페이스 휴지통 - 삭제된 파일 목록 조회 (워크스페이스 멤버 정보 포함)
     @Query("""
         SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM File fi
         JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -229,7 +229,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 휴지통 폴더 조회 (latest 정렬)
     @Query("""
         SELECT f.id, f.name, f.createdAt, f.updatedAt,
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM Folder f
         JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -249,7 +249,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 휴지통 폴더 조회 (alphabet 정렬)
     @Query("""
         SELECT f.id, f.name, f.createdAt, f.updatedAt,
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM Folder f
         JOIN WorkspaceMember wm ON f.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -269,7 +269,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 휴지통 파일 조회 (latest 정렬)
     @Query("""
         SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM File fi
         JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
         JOIN wm.member m
@@ -290,7 +290,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 커서 기반 페이징을 위한 휴지통 파일 조회 (alphabet 정렬)
     @Query("""
         SELECT fi.id, fi.name, fi.createdAt, fi.updatedAt, fi.size, fi.objectKey, CAST(fi.type AS string),
-               wm.id as wmId, wm.name as wmName, m.profileImage as wmProfileImage
+               wm.id as wmId, m.name as wmName, m.profileImage as wmProfileImage
         FROM File fi
         JOIN WorkspaceMember wm ON fi.workspaceMemberId = wm.id
         JOIN wm.member m
