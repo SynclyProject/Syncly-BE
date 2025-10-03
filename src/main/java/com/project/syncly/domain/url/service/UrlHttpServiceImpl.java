@@ -183,8 +183,47 @@ public class UrlHttpServiceImpl implements UrlHttpService {
         return UrlItemConverter.toDeleteUrlItemHttpResponse(urlItem);
     }
 
+    @Override
+    public UrlHttpResponseDto.SaveTabsResponseDto saveTabs(Long memberId, UrlHttpRequestDto.SaveTabsRequestDto request) {
+        // 개인 워크스페이스 조회
+        Workspace workspace = workspaceRepository.findPersonalWorkspaceByMemberId(memberId)
+                .orElseThrow(() -> new WorkspaceException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 
+        // chrome://, chrome-extension:// 제외
+        List<String> validUrls = request.urls().stream()
+                .filter(url -> !url.startsWith("chrome://") && !url.startsWith("chrome-extension://"))
+                .toList();
 
+        if (validUrls.isEmpty()) {
+            throw new UrlException(UrlErrorCode.NO_VALID_URLS);
+        }
 
+        // 현재 시간 기준으로 탭 이름 생성 (예: "Saved Tabs 2025-09-30 23:45")
+        String tabName = "Saved Tabs " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+        // URL 탭 생성
+        UrlTab urlTab = UrlTab.builder()
+                .workspace(workspace)
+                .tabName(tabName)
+                .build();
+        urlTabRepository.save(urlTab);
+
+        // URL 아이템들 생성
+        List<UrlItem> urlItems = validUrls.stream()
+                .map(url -> UrlItem.builder()
+                        .urlTab(urlTab)
+                        .url(url)
+                        .build())
+                .toList();
+        urlItemRepository.saveAll(urlItems);
+
+        // 응답
+        return UrlHttpResponseDto.SaveTabsResponseDto.builder()
+                .id(urlTab.getId())
+                .urls(validUrls)
+                .createdAt(urlTab.getCreatedAt())
+                .count(validUrls.size())
+                .build();
+    }
 
 }

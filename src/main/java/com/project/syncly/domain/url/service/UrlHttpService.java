@@ -11,5 +11,6 @@ public interface UrlHttpService {
     public UrlHttpResponseDto.UpdateUrlTabNameResponseDto updateUrlTabName(Long memberId, Long tabId, UrlHttpRequestDto.UpdateUrlTabNameRequestDto request);
     public UrlHttpResponseDto.AddUrlItemResponseDto addUrlItem(Long memberId, Long tabId, UrlHttpRequestDto.AddUrlItemRequestDto request);
     public UrlHttpResponseDto.DeleteUrlItemResponseDto deleteUrlItem(Long memberId, Long tabId, Long itemId);
+    public UrlHttpResponseDto.SaveTabsResponseDto saveTabs(Long memberId, UrlHttpRequestDto.SaveTabsRequestDto request);
 }
 

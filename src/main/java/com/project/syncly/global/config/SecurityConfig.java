@@ -49,7 +49,9 @@ public class SecurityConfig {
             "/api/workspaces/notifications",
             "/api/workspaces/notifications/**",
             //비밀번호
-            "/api/member/password/**"
+            "/api/member/password/**",
+            //크롬 익스텐션 탭 저장
+            "/api/workspaces/tabs"
     };
 
     @Bean

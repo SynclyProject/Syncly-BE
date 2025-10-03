@@ -16,7 +16,8 @@ public class CorsConfig {//cross-origin 응답을 JS에서 읽을 수 있는지 
             "http://localhost:*",
             "http://localhost:3000",
             "http://localhost:5173",// react dev
-            "http://127.0.0.1:5500"
+            "http://127.0.0.1:5500",
+            "chrome-extension://*" // 크롬 익스텐션 허용
     );
 
     @Bean
