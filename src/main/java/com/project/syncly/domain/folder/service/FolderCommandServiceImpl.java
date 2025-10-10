@@ -92,13 +92,11 @@ public class FolderCommandServiceImpl implements FolderCommandService{
             }
         }
 
-        // [4] 같은 부모 안에 동일한 이름의 폴더 존재하는지 확인
-        if (folderRepository.existsByWorkspaceIdAndParentIdAndName(workspaceId, parentId, requestDto.name())) {
-            throw new FolderException(FolderErrorCode.DUPLICATE_FOLDER_NAME);
-        }
+        // [4] 같은 부모 안에 중복되지 않는 고유한 폴더명 생성
+        String uniqueFolderName = generateUniqueFolderName(workspaceId, parentId, requestDto.name());
 
         // [5] 폴더 생성 - parentId를 업데이트된 값으로 사용, 올바른 workspaceMemberId 사용
-        FolderRequestDto.Create updatedRequestDto = new FolderRequestDto.Create(parentId, requestDto.name());
+        FolderRequestDto.Create updatedRequestDto = new FolderRequestDto.Create(parentId, uniqueFolderName);
         Folder folder = folderRepository.save(FolderConverter.toFolder(workspaceId, updatedRequestDto, workspaceMember.getId()));
         folderClosureCommandService.updateOnCreate(parentId, folder.getId());
         return FolderConverter.toFolderResponse(folder);
@@ -352,6 +350,19 @@ public class FolderCommandServiceImpl implements FolderCommandService{
         log.info("Folder {} and {} descendants hard deleted successfully", folderId, descendantFolderIds.size() - 1);
 
         return new FolderResponseDto.Message("폴더가 완전히 삭제되었습니다.");
+    }
+
+    // 같은 부모 폴더 내에서 중복되지 않는 고유한 폴더명 생성 (1), (2) .. 순차 증가
+    private String generateUniqueFolderName(Long workspaceId, Long parentId, String originalName) {
+        String uniqueName = originalName;
+        int counter = 1;
+
+        while (folderRepository.existsByWorkspaceIdAndParentIdAndNameAndDeletedAtIsNull(workspaceId, parentId, uniqueName)) {
+            uniqueName = originalName + "(" + counter + ")";
+            counter++;
+        }
+
+        return uniqueName;
     }
 
     // 삭제된 폴더의 하위 폴더들을 재귀적으로 찾는 헬퍼 메서드
