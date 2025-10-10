@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -137,16 +138,13 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             throw new CustomException(WorkspaceErrorCode.ALREADY_WORKSPACE_MEMBER);
         }
 
-        // 아직 만료되지 않은 초대가 있는지 확인
-        boolean hasActiveInvite = workspaceInvitationRepository.existsByWorkspaceIdAndInviteeIdAndExpiredAtAfter(
-                workspaceId, invitee.getId(), LocalDateTime.now());
-        if (hasActiveInvite) {
-            //초대 만료 전 초대가 존재하나, 멤버가 그룹에 포함되어 있지 않으면서 ACCEPT or REJECT 상태라면 재전송 가능
-            WorkspaceInvitation invited = workspaceInvitationRepository.findByWorkspaceIdAndInviteeIdAndExpiredAtAfter(workspaceId, invitee.getId(), LocalDateTime.now())
-                    .orElseThrow(() -> new CustomException(WorkspaceErrorCode.INVITATION_NOT_FOUND));
-            if (invited.getType() == InvitationType.PENDING) {
-                throw new CustomException(WorkspaceErrorCode.ALREADY_INVITED);
-            }
+        // PENDING 상태이면서 아직 만료되지 않은 초대가 있는지 확인
+        Optional<WorkspaceInvitation> pendingInvitation = workspaceInvitationRepository
+                .findByWorkspaceIdAndInviteeIdAndTypeAndExpiredAtAfter(
+                        workspaceId, invitee.getId(), InvitationType.PENDING, LocalDateTime.now());
+
+        if (pendingInvitation.isPresent()) {
+            throw new CustomException(WorkspaceErrorCode.ALREADY_INVITED);
         }
 
         // 초대 토큰 생성 (invitationMailService 에서 중복 여부 확인)

@@ -17,6 +17,9 @@ public interface WorkspaceInvitationRepository extends JpaRepository<WorkspaceIn
     //이미 보댄 초대가 있다면, 조회
     Optional<WorkspaceInvitation> findByWorkspaceIdAndInviteeIdAndExpiredAtAfter(Long workspaceId, Long inviteeId, LocalDateTime now);
 
+    //PENDING 상태의 초대만 조회 (탈퇴 후 재초대 시 중복 방지)
+    Optional<WorkspaceInvitation> findByWorkspaceIdAndInviteeIdAndTypeAndExpiredAtAfter(Long workspaceId, Long inviteeId, InvitationType type, LocalDateTime now);
+
     //토큰으로 초대 조회
     Optional<WorkspaceInvitation> findByToken(String token);
 
