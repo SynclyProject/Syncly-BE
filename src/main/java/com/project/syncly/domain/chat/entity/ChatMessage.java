@@ -31,7 +31,7 @@ public class ChatMessage extends BaseCreatedEntity {
     private Workspace workspace;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = true)
     private WorkspaceMember sender;
 
     @Column(name = "msg_id", nullable = false, length = 36)

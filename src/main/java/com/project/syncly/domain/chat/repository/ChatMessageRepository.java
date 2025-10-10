@@ -3,6 +3,7 @@ package com.project.syncly.domain.chat.repository;
 import com.project.syncly.domain.chat.entity.ChatMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -45,13 +46,18 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     Long findLatestSeq(@Param("ws") Long wsId);
 
     @Query("""
-    SELECT cm 
+    SELECT cm
     FROM ChatMessage cm
     JOIN FETCH cm.sender ws
     JOIN FETCH ws.member m
     WHERE cm.id = :id
     """)
     Optional<ChatMessage> findByIdWithSenderAndMember(@Param("id") Long id);
+
+    // WorkspaceMember 삭제 전에 해당 멤버가 보낸 모든 메시지의 sender를 null로 설정
+    @Modifying
+    @Query("UPDATE ChatMessage cm SET cm.sender = null WHERE cm.sender.id = :workspaceMemberId")
+    void nullifySenderByWorkspaceMemberId(@Param("workspaceMemberId") Long workspaceMemberId);
 
 }
 
