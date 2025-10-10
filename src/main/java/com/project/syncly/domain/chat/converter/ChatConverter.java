@@ -22,12 +22,14 @@ public class ChatConverter {
     }
 
     public static ChatWebSocketResponseDto.ChatResponseDto toChatMessageResponse(ChatMessage chatMessage) {
+        WorkspaceMember sender = chatMessage.getSender();
+
         return ChatWebSocketResponseDto.ChatResponseDto.builder()
                 .id(chatMessage.getId())
                 .workspaceId(chatMessage.getWorkspace().getId())
-                .senderId(chatMessage.getSender().getId())
-                .senderName(chatMessage.getSender().getName())
-                .senderProfileImage(chatMessage.getSender().getProfileImage())
+                .senderId(sender != null ? sender.getId() : null)
+                .senderName(sender != null ? sender.getName() : "탈퇴한 사용자")
+                .senderProfileImage(sender != null ? sender.getProfileImage() : null)
                 .msgId(chatMessage.getMsgId())
                 .seq(chatMessage.getSeq())
                 .content(chatMessage.getContent())

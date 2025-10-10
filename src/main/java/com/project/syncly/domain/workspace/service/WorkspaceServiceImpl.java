@@ -1,5 +1,6 @@
 package com.project.syncly.domain.workspace.service;
 
+import com.project.syncly.domain.chat.repository.ChatMessageRepository;
 import com.project.syncly.domain.folder.service.FolderCommandService;
 import com.project.syncly.domain.member.entity.Member;
 import com.project.syncly.domain.member.repository.MemberRepository;
@@ -40,6 +41,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final InvitationMailServiceImpl invitationMailService;
     private final SseServiceImpl sseService;
     private final FolderCommandService folderCommandService;
+    private final ChatMessageRepository chatMessageRepository;
 
 
     @Value("${spring.mail.invitation.link}")
@@ -322,20 +324,23 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             nextManager.setRole(Role.MANAGER);
             workspaceMemberRepository.save(nextManager);
 
-            // 멤버 삭제
+            // 채팅 메시지의 sender를 null로 설정 후 멤버 삭제
+            chatMessageRepository.nullifySenderByWorkspaceMemberId(member.getId());
             workspaceMemberRepository.delete(member);
         }
 
         //나가고자 하는 사람이 매니저 일 경우 ( && 팀원이 매니저 포함 1명일 경우)
         else if (member.getRole() == Role.MANAGER) {
-            //멤버 삭제 후 워크 스페이스 삭제
+            // 채팅 메시지의 sender를 null로 설정 후 멤버 삭제 및 워크 스페이스 삭제
+            chatMessageRepository.nullifySenderByWorkspaceMemberId(member.getId());
             workspaceMemberRepository.delete(member);
             workspaceRepository.delete(workspace);
         }
 
         //CREW 일 경우
         else {
-            // 멤버 삭제
+            // 채팅 메시지의 sender를 null로 설정 후 멤버 삭제
+            chatMessageRepository.nullifySenderByWorkspaceMemberId(member.getId());
             workspaceMemberRepository.delete(member);
         }
 
@@ -378,7 +383,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             throw new CustomException(WorkspaceErrorCode.NOT_WORKSPACE_CREW);
         }
 
-        // 멤버 삭제 (추방)
+        // 채팅 메시지의 sender를 null로 설정 후 멤버 삭제 (추방)
+        chatMessageRepository.nullifySenderByWorkspaceMemberId(targetMember.getId());
         workspaceMemberRepository.delete(targetMember);
 
         //반환
