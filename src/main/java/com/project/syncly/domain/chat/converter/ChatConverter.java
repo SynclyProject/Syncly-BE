@@ -8,7 +8,7 @@ import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 
 import java.util.List;
 
-
+//chat
 public class ChatConverter {
 
     public static ChatMessage toChatMessage(Workspace workspace, WorkspaceMember sender, String msgId, Long seq, String content) {
