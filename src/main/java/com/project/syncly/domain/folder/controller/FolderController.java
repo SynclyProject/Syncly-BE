@@ -108,7 +108,7 @@ public class FolderController {
     }
 
     @GetMapping("/{workspaceId}/folders/{folderId}/path")
-    @Operation(summary = "폴더 경로 조회", description = "워크스페이스 폴더의 breadcrumb 경로를 조회합니다.")
+    @Operation(summary = "폴더 경로 조회", description = "워크스페이스 폴더의 breadcrumb 경로를 조회합니다. (FolderClosure 패턴 사용)")
     public ResponseEntity<CustomResponse<FolderResponseDto.Path>> getFolderPath(
             @PathVariable Long workspaceId,
             @PathVariable Long folderId,
@@ -121,6 +121,24 @@ public class FolderController {
         }
 
         FolderResponseDto.Path responseDto = folderQueryService.getFolderPath(workspaceId, folderId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
+    }
+
+    @GetMapping("/{workspaceId}/folders/{folderId}/path-recursive")
+    @Operation(summary = "성능테스트용 폴더 경로 조회 (재귀 방식)", description = "워크스페이스 폴더의 breadcrumb 경로를 재귀 방식으로 조회합니다. (성능 비교 테스트용)")
+    public ResponseEntity<CustomResponse<FolderResponseDto.Path>> getFolderPathRecursive(
+            @PathVariable Long workspaceId,
+            @PathVariable Long folderId,
+            @AuthenticationPrincipal PrincipalDetails userDetails
+    ) {
+        Long currentMemberId = Long.valueOf(userDetails.getName());
+
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndMemberId(workspaceId, currentMemberId)) {
+            throw new WorkspaceException(WorkspaceErrorCode.NOT_WORKSPACE_MEMBER);
+        }
+
+        FolderResponseDto.Path responseDto = folderQueryService.getFolderPathRecursive(workspaceId, folderId);
 
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, responseDto));
     }
