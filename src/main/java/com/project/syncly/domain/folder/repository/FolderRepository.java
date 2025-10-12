@@ -27,6 +27,9 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     // 특정 워크스페이스의 폴더 조회
     Optional<Folder> findByIdAndWorkspaceId(Long folderId, Long workspaceId);
 
+    // parentId와 workspaceId로 폴더 조회 (재귀 방식 경로 조회용)
+    Optional<Folder> findByIdAndWorkspaceIdAndDeletedAtIsNull(Long folderId, Long workspaceId);
+
     // 여러 폴더 ID들을 일괄 soft delete 처리
     @Query("UPDATE Folder f SET f.deletedAt = :deletedAt WHERE f.id IN :folderIds AND f.deletedAt IS NULL")
     @Modifying

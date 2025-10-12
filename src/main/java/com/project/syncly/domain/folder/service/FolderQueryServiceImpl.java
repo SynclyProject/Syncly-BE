@@ -76,6 +76,34 @@ public class FolderQueryServiceImpl implements FolderQueryService {
     }
 
     @Override
+    public FolderResponseDto.Path getFolderPathRecursive(Long workspaceId, Long folderId) {
+        // 폴더가 해당 워크스페이스에 속하는지 확인
+        Folder folder = folderRepository.findByIdAndWorkspaceIdAndDeletedAtIsNull(folderId, workspaceId)
+                .orElseThrow(() -> new FolderException(FolderErrorCode.FOLDER_NOT_FOUND));
+
+        // 재귀적으로 경로 조회
+        List<FolderResponseDto.PathItem> pathItems = new ArrayList<>();
+        buildPathRecursive(folder, workspaceId, pathItems);
+
+        // 경로를 역순으로 변경 (루트부터 현재 폴더까지)
+        java.util.Collections.reverse(pathItems);
+
+        return new FolderResponseDto.Path(pathItems);
+    }
+
+    private void buildPathRecursive(Folder folder, Long workspaceId, List<FolderResponseDto.PathItem> pathItems) {
+        // 현재 폴더를 경로에 추가
+        pathItems.add(new FolderResponseDto.PathItem(folder.getId(), folder.getName()));
+
+        // 부모 폴더가 있으면 재귀 호출
+        if (folder.getParentId() != null) {
+            Folder parentFolder = folderRepository.findByIdAndWorkspaceIdAndDeletedAtIsNull(folder.getParentId(), workspaceId)
+                    .orElseThrow(() -> new FolderException(FolderErrorCode.FOLDER_NOT_FOUND));
+            buildPathRecursive(parentFolder, workspaceId, pathItems);
+        }
+    }
+
+    @Override
     public FolderResponseDto.ItemList getFolderItems(Long workspaceId, Long folderId, String sort, String cursor, Integer limit, String search, Long uploaderId) {
         // 폴더가 해당 워크스페이스에 속하는지 확인
         if (!folderRepository.existsByWorkspaceIdAndId(workspaceId, folderId)) {
