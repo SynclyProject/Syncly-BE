@@ -25,6 +25,9 @@ public enum RedisKeyPrefix {
     REFRESH_CURRENT("refresh:current:%s:%s"),
     CASHED_UA_HASH("CASHED:UA_HASH:%s:%s"),
     REFRESH_USED("rt:used:%s"),
+
+    //profile
+    MEMBER_PROFILE("PROFILE_CACHE:"),
     ;
 
     private final String prefix;
