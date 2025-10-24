@@ -38,6 +38,14 @@ public class S3Controller {
                 HttpStatus.OK, s3Service.generatePresignedPutUrl(memberId, request)));
     }
 
+    @PostMapping("/presigned-url/note-image")
+    public ResponseEntity<CustomResponse<S3ResponseDTO.PreSignedUrl>> getNoteImagePresignedUrl(
+            @RequestBody @Valid S3RequestDTO.NoteImageUploadPreSignedUrl request,
+            @MemberIdInfo Long memberId) {
+        return ResponseEntity.ok(CustomResponse.success(
+                HttpStatus.OK, s3Service.generatePresignedPutUrl(memberId, request)));
+    }
+
     // 이미지 조회용 CloudFront Signed Cookie 방식
     @PostMapping("/view-cookie")
     public ResponseEntity<Void> issueSignedCookieForView(
