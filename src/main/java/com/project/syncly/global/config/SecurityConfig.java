@@ -44,8 +44,11 @@ public class SecurityConfig {
             "/api/member/register",
             //livekit
             "/api/livekit/webhook",
+            //WebSocket endpoints
             "/ws-stomp",
             "/ws-stomp/**",
+            "/ws/note",
+            "/ws/note/**",
             "/api/workspaces/notifications",
             "/api/workspaces/notifications/**",
             //비밀번호
@@ -138,7 +141,7 @@ public class SecurityConfig {
     //Websocket handshake시 filter chain을 지나지 않고 무시하도록 설정(해당 설정이 없으면 403에러 발생)
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/ws-stomp");
+        return web -> web.ignoring().requestMatchers("/ws-stomp", "/ws/note");
     }
 
 }

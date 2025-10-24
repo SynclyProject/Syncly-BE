@@ -31,9 +31,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override //클라이언트가 웹소켓에 연결할 때 사용할 엔드포인트를 등록
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-stomp") //클라이언트가 웹소켓 서버에 최초로 접속할 때 연결할 주소
+        // 기존 일반 WebSocket 엔드포인트 (LiveKit, 일반 알림 등)
+        registry.addEndpoint("/ws-stomp")
                 .setAllowedOriginPatterns("*");  // CORS 허용 설정, 실 서비스 시에는 도메인을 제한
                 //.withSockJS();  // SockJS를 사용하여 연결을 시도
+
+        // 노트 실시간 협업용 WebSocket 엔드포인트
+        registry.addEndpoint("/ws/note")
+                .setAllowedOriginPatterns("*");  // CORS 허용 설정
+                //.withSockJS();  // SockJS 지원 (WebSocket을 지원하지 않는 브라우저 대응)
     }
 
     @Override //토큰을 가진 유저와 웹소켓을 연결할 것이므로, 토큰을 검증하는 로직이 필요
