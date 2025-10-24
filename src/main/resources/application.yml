@@ -61,10 +61,51 @@ redis:
   cache:
     member-ttl-seconds: 259200   # 3일
 
+# ==================== Actuator & 모니터링 ====================
+# 자동 저장 스케줄러 모니터링을 위한 메트릭 수집 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus  # Prometheus 메트릭 노출
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    enable:
+      jvm: true
+      process: true
+      system: true
+      logback: true
+    export:
+      simple:
+        enabled: true
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        note.autosave.duration: true
+        note.autosave.save.time: true
+        note.manual.save.time: true
+    tags:
+      application: ${spring.application.name}
+
 logging:
   discord:
     webhook-url: ${DISCORD_ERROR_WEBHOOK_URL:}
     config: classpath:logback-spring.xml
+
+# ==================== 자동 저장 스케줄러 설정 ====================
+# 30초마다 실행되는 자동 저장 스케줄러의 타이밍을 조정하려면 여기서 수정
+# 단위: milliseconds
+scheduler:
+  note:
+    auto-save:
+      fixed-delay: 30000      # 30초마다 실행
+      initial-delay: 30000    # 애플리케이션 시작 후 30초 후 첫 실행
 
 
 
