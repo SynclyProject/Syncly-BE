@@ -24,6 +24,12 @@ public class S3RequestDTO {
             FileMimeType mimeType
     ) implements UploadPreSignedUrl {}
 
+    @ValidMimeMatch
+    public record NoteImageUploadPreSignedUrl (
+            Long noteId,
+            @ValidFileName String fileName,
+            FileMimeType mimeType
+    ) implements UploadPreSignedUrl {}
 
     public record UpdateFile(
             @NotBlank String fileName,

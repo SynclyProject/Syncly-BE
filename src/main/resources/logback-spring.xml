@@ -24,6 +24,11 @@
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>
 
+    <!-- WebSocket 편집 디버깅 -->
+    <logger name="com.project.syncly.domain.note.controller.NoteWebSocketController" level="DEBUG"/>
+    <logger name="com.project.syncly.domain.note.service.OTService" level="DEBUG"/>
+    <logger name="com.project.syncly.domain.note.engine.OTEngine" level="DEBUG"/>
+
     <!-- prod 전용: 여기서만 디스코드 붙임 -->
     <springProfile name="prod">
         <include resource="discord-error-appender.xml"/>

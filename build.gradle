@@ -86,6 +86,10 @@ dependencies {
     // error discord webhook
     implementation "com.github.napstr:logback-discord-appender:1.0.0"
 
+    // Actuator & Micrometer (모니터링 메트릭용)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-core'
+
 }
 
 tasks.named('test') {

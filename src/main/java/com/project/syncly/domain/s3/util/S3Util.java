@@ -92,5 +92,22 @@ public class S3Util {
         }
     }
 
+    /**
+     * S3 객체 존재 여부 확인 (headObject)
+     *
+     * @param objectKey S3 object key
+     * @return 객체가 존재하면 true, 아니면 false
+     */
+    public boolean objectExists(String objectKey) {
+        try {
+            s3Client.headObject(builder -> builder
+                    .bucket(bucket)
+                    .key(objectKey)
+                    .build());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
 }

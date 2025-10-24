@@ -20,6 +20,7 @@ public enum RedisKeyPrefix {
     //WebSocket 관련 키
     WS_SESSIONS("WS:SESSIONS:"),
     WS_ONLINE_USERS("WS:ONLINE_USERS"),
+    WS_NOTE_SESSIONS("WS:NOTE_SESSIONS:"),  // sessionId -> noteId:workspaceMemberId
 
     // Refresh Whitelist
     REFRESH_CURRENT("refresh:current:%s:%s"),
@@ -28,6 +29,14 @@ public enum RedisKeyPrefix {
 
     //profile
     MEMBER_PROFILE("PROFILE_CACHE:"),
+
+    // Note 실시간 협업 관련 키
+    NOTE_CONTENT("NOTE:CONTENT:"),              // note:{noteId}:content
+    NOTE_USERS("NOTE:USERS:"),                  // note:{noteId}:users
+    NOTE_CURSORS("NOTE:CURSORS:"),              // note:{noteId}:cursors
+    NOTE_DIRTY("NOTE:DIRTY:"),                  // note:{noteId}:dirty
+    NOTE_REVISION("NOTE:REVISION:"),            // note:{noteId}:revision
+    NOTE_OPERATIONS("NOTE:OPERATIONS:"),        // note:{noteId}:operations
     ;
 
     private final String prefix;

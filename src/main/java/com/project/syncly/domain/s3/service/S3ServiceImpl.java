@@ -27,7 +27,18 @@ public class S3ServiceImpl implements S3Service {
     @Override
     public S3ResponseDTO.PreSignedUrl generatePresignedPutUrl(Long memberId, S3RequestDTO.UploadPreSignedUrl request) {
         String extension = request.mimeType().getExtension();
-        String objectKey = "uploads/" + UUID.randomUUID() + "." + extension;
+
+        // NoteImage인 경우 notes/{noteId} 경로 사용
+        String objectKey;
+        if (request instanceof S3RequestDTO.NoteImageUploadPreSignedUrl noteRequest) {
+            objectKey = String.format("notes/%d/%s.%s",
+                    noteRequest.noteId(),
+                    UUID.randomUUID(),
+                    extension);
+        } else {
+            objectKey = "uploads/" + UUID.randomUUID() + "." + extension;
+        }
+
         String redisKey = RedisKeyPrefix.S3_AUTH_OBJECT_KEY.get(memberId.toString() + ':' + request.fileName() + ':' + objectKey);
         String url = s3Util.createPresignedUrl(objectKey, request.mimeType());
 
