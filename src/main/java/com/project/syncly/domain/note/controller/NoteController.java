@@ -144,6 +144,30 @@ public class NoteController {
         return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
     }
 
+    @PatchMapping("/{noteId}/title")
+    @Operation(
+            summary = "노트 제목 수정",
+            description = "노트의 제목을 수정합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "제목 수정 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (제목 누락 등)"),
+            @ApiResponse(responseCode = "403", description = "워크스페이스 멤버가 아님"),
+            @ApiResponse(responseCode = "404", description = "노트를 찾을 수 없음")
+    })
+    public ResponseEntity<CustomResponse<NoteResponseDto.UpdateTitleResponse>> updateNoteTitle(
+            @Parameter(description = "워크스페이스 ID") @PathVariable Long workspaceId,
+            @Parameter(description = "노트 ID") @PathVariable Long noteId,
+            @Valid @RequestBody NoteRequestDto.UpdateTitle requestDto,
+            @AuthenticationPrincipal PrincipalDetails userDetails
+    ) {
+        Long memberId = Long.valueOf(userDetails.getName());
+
+        NoteResponseDto.UpdateTitleResponse response = noteService.updateNoteTitle(workspaceId, noteId, requestDto, memberId);
+
+        return ResponseEntity.ok(CustomResponse.success(HttpStatus.OK, response));
+    }
+
     @PostMapping("/{noteId}/save")
     @Operation(
             summary = "노트 수동 저장",
