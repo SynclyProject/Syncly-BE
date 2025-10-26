@@ -27,6 +27,11 @@ public interface NoteService {
     NoteResponseDto.Delete deleteNote(Long workspaceId, Long noteId, Long memberId);
 
     /**
+     * 노트 제목 수정
+     */
+    NoteResponseDto.UpdateTitleResponse updateNoteTitle(Long workspaceId, Long noteId, NoteRequestDto.UpdateTitle requestDto, Long memberId);
+
+    /**
      * 워크스페이스 멤버 권한 확인
      */
     void validateWorkspaceMember(Long workspaceId, Long memberId);

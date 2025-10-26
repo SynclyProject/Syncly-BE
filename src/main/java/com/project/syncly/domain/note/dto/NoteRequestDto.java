@@ -12,4 +12,11 @@ public class NoteRequestDto {
             @Size(max = 200, message = "노트 제목은 최대 200자까지 입력 가능합니다.")
             String title
     ) {}
+
+    @Schema(description = "노트 제목 수정 요청 DTO")
+    public record UpdateTitle(
+            @NotBlank(message = "노트 제목은 필수입니다.")
+            @Size(max = 200, message = "노트 제목은 최대 200자까지 입력 가능합니다.")
+            String title
+    ) {}
 }

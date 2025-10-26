@@ -139,6 +139,30 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
+    @Transactional
+    public NoteResponseDto.UpdateTitleResponse updateNoteTitle(Long workspaceId, Long noteId, NoteRequestDto.UpdateTitle requestDto, Long memberId) {
+        log.info("Updating note title: workspaceId={}, noteId={}, memberId={}", workspaceId, noteId, memberId);
+
+        // 워크스페이스 멤버십 검증
+        validateWorkspaceMembership(workspaceId, memberId);
+
+        // 노트 조회 및 워크스페이스 일치 확인
+        Note note = noteRepository.findByIdAndWorkspaceId(noteId, workspaceId)
+                .orElseThrow(() -> new NoteException(NoteErrorCode.NOTE_NOT_FOUND));
+
+        // 제목 업데이트
+        note.updateTitle(requestDto.title());
+        noteRepository.save(note);
+
+        log.info("Note title updated successfully: noteId={}, newTitle={}", noteId, requestDto.title());
+
+        // WebSocket을 통해 모든 워크스페이스 멤버에게 노트 제목 변경 알림
+        broadcastNoteTitleUpdate(note, workspaceId);
+
+        return NoteConverter.toUpdateTitleResponse(note);
+    }
+
+    @Override
     public void validateWorkspaceMember(Long workspaceId, Long memberId) {
         validateWorkspaceMembership(workspaceId, memberId);
     }
@@ -198,6 +222,32 @@ public class NoteServiceImpl implements NoteService {
         } catch (Exception e) {
             log.error("Failed to broadcast note creation: noteId={}", savedNote.getId(), e);
             // 브로드캐스트 실패는 note 생성에 영향을 주지 않음
+        }
+    }
+
+    /**
+     * WebSocket을 통해 노트 제목 변경을 모든 워크스페이스 멤버에게 브로드캐스트합니다.
+     */
+    private void broadcastNoteTitleUpdate(Note note, Long workspaceId) {
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "NOTE_TITLE_UPDATED");
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("noteId", note.getId());
+            payload.put("title", note.getTitle());
+            payload.put("workspaceId", workspaceId);
+            payload.put("lastModifiedAt", note.getLastModifiedAt());
+
+            message.put("payload", payload);
+
+            String destination = "/topic/workspace/" + workspaceId + "/notes/list";
+            messagingTemplate.convertAndSend(destination, message);
+
+            log.info("Note title update broadcasted: noteId={}, newTitle={}, destination={}", note.getId(), note.getTitle(), destination);
+        } catch (Exception e) {
+            log.error("Failed to broadcast note title update: noteId={}", note.getId(), e);
+            // 브로드캐스트 실패는 제목 수정에 영향을 주지 않음
         }
     }
 

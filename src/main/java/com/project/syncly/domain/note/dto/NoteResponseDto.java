@@ -88,4 +88,11 @@ public class NoteResponseDto {
         }
     }
 
+    @Schema(description = "노트 제목 수정 응답 DTO")
+    public record UpdateTitleResponse(
+            Long id,
+            String title,
+            LocalDateTime lastModifiedAt
+    ) {}
+
 }
