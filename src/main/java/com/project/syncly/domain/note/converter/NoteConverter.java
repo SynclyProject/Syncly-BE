@@ -105,4 +105,15 @@ public class NoteConverter {
                 "노트가 삭제되었습니다."
         );
     }
+
+    /**
+     * 노트 제목 수정 응답 DTO 생성
+     */
+    public static NoteResponseDto.UpdateTitleResponse toUpdateTitleResponse(Note note) {
+        return new NoteResponseDto.UpdateTitleResponse(
+                note.getId(),
+                note.getTitle(),
+                note.getLastModifiedAt()
+        );
+    }
 }

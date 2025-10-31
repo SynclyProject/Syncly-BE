@@ -17,17 +17,17 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
     /**
      * 워크스페이스의 삭제되지 않은 노트 목록 조회 (페이징)
-     * EntityGraph를 사용하여 Creator를 eager loading
+     * EntityGraph를 사용하여 Creator와 Workspace를 eager loading
      */
-    @EntityGraph(attributePaths = {"creator"})
+    @EntityGraph(attributePaths = {"creator", "workspace"})
     @Query("SELECT n FROM Note n WHERE n.workspace.id = :workspaceId AND n.isDeleted = false")
     Page<Note> findByWorkspaceId(@Param("workspaceId") Long workspaceId, Pageable pageable);
 
     /**
      * 워크스페이스의 삭제되지 않은 노트 목록 조회 (전체)
-     * EntityGraph를 사용하여 Creator를 eager loading
+     * EntityGraph를 사용하여 Creator와 Workspace를 eager loading
      */
-    @EntityGraph(attributePaths = {"creator"})
+    @EntityGraph(attributePaths = {"creator", "workspace"})
     @Query("SELECT n FROM Note n WHERE n.workspace.id = :workspaceId AND n.isDeleted = false")
     List<Note> findAllByWorkspaceId(@Param("workspaceId") Long workspaceId);
 
@@ -41,9 +41,9 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
     /**
      * 워크스페이스와 노트 ID로 조회 (권한 검증용)
-     * EntityGraph를 사용하여 Creator를 eager loading
+     * EntityGraph를 사용하여 Creator와 Workspace를 eager loading
      */
-    @EntityGraph(attributePaths = {"creator"})
+    @EntityGraph(attributePaths = {"creator", "workspace"})
     @Query("SELECT n FROM Note n WHERE n.id = :noteId AND n.workspace.id = :workspaceId AND n.isDeleted = false")
     Optional<Note> findByIdAndWorkspaceId(@Param("noteId") Long noteId, @Param("workspaceId") Long workspaceId);
 
@@ -61,9 +61,9 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
     /**
      * 제목으로 노트 검색 (워크스페이스 내)
-     * EntityGraph를 사용하여 Creator를 eager loading
+     * EntityGraph를 사용하여 Creator와 Workspace를 eager loading
      */
-    @EntityGraph(attributePaths = {"creator"})
+    @EntityGraph(attributePaths = {"creator", "workspace"})
     @Query("SELECT n FROM Note n WHERE n.workspace.id = :workspaceId AND n.title LIKE %:keyword% AND n.isDeleted = false")
     Page<Note> searchByTitle(@Param("workspaceId") Long workspaceId, @Param("keyword") String keyword, Pageable pageable);
 }
