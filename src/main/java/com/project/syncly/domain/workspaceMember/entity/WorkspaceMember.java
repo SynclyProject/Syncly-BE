@@ -40,5 +40,7 @@ public class WorkspaceMember extends BaseTimeEntity {
         this.role = role;
     }
     public void updateName(String name) {}
-    public void updateProfileImage(String profileImage) {}
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
 }
