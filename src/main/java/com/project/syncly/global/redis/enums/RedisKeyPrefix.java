@@ -30,13 +30,15 @@ public enum RedisKeyPrefix {
     //profile
     MEMBER_PROFILE("PROFILE_CACHE:"),
 
-    // Note 실시간 협업 관련 키
-    NOTE_CONTENT("NOTE:CONTENT:"),              // note:{noteId}:content
+    // Note 실시간 협업 관련 키 (Yjs CRDT 기반)
+    NOTE_YDOC("NOTE:YDOC:"),                    // note:{noteId}:ydoc (Base64 encoded Yjs Update)
+    NOTE_STATE_VECTOR("NOTE:STATE_VECTOR:"),   // note:{noteId}:state_vector (상태 추적용)
     NOTE_USERS("NOTE:USERS:"),                  // note:{noteId}:users
     NOTE_CURSORS("NOTE:CURSORS:"),              // note:{noteId}:cursors
-    NOTE_DIRTY("NOTE:DIRTY:"),                  // note:{noteId}:dirty
-    NOTE_REVISION("NOTE:REVISION:"),            // note:{noteId}:revision
-    NOTE_OPERATIONS("NOTE:OPERATIONS:"),        // note:{noteId}:operations
+    NOTE_DIRTY("NOTE:DIRTY:"),                  // note:{noteId}:dirty (자동 저장 플래그)
+
+    // Deprecated (OT 관련, 마이그레이션 후 제거)
+    // NOTE_CONTENT, NOTE_REVISION, NOTE_OPERATIONS
     ;
 
     private final String prefix;
