@@ -16,36 +16,20 @@ import java.time.LocalDateTime;
  * <ul>
  *   <li>ENTER: 노트에 입장 (payload: null)</li>
  *   <li>LEAVE: 노트에서 퇴장 (payload: null)</li>
- *   <li>EDIT: 편집 연산 (payload: EditOperation)</li>
- *   <li>CURSOR: 커서 위치 변경 (payload: CursorPosition)</li>
+ *   <li>EDIT: Yjs 업데이트 (payload: YjsUpdateMessage - Base64 Update)</li>
+ *   <li>CURSOR: 커서 위치 변경 (payload: CursorPosition - Awareness로 처리)</li>
  *   <li>SAVE: 자동 저장 완료 알림 (payload: SaveResult)</li>
  *   <li>ERROR: 에러 발생 (payload: ErrorDetails)</li>
  * </ul>
  *
- * <p><b>사용 예시:</b>
- * <pre>{@code
- * // 편집 연산 메시지 생성
- * EditOperation operation = EditOperation.insert(10, "Hello", 5, 123L);
- * WebSocketMessage<EditOperation> message = WebSocketMessage.of(
- *     WebSocketMessageType.EDIT,
- *     operation,
- *     123L
- * );
+ * <p><b>참고:</b>
+ * <ul>
+ *   <li>Yjs CRDT 기반 실시간 협업 편집 사용</li>
+ *   <li>커서는 Yjs Awareness API로 자동 동기화 (Redis 저장 불필요)</li>
+ *   <li>OT(Operational Transformation)에서 마이그레이션 완료</li>
+ * </ul>
  *
- * // 커서 위치 메시지 생성
- * CursorPosition cursor = CursorPosition.builder()
- *     .position(10)
- *     .range(0)
- *     .workspaceMemberId(123L)
- *     .build();
- * WebSocketMessage<CursorPosition> cursorMsg = WebSocketMessage.of(
- *     WebSocketMessageType.CURSOR,
- *     cursor,
- *     123L
- * );
- * }</pre>
- *
- * @param <T> 메시지 payload의 타입 (EditOperation, CursorPosition 등)
+ * @param <T> 메시지 payload의 타입 (String/Base64 Update, CursorPosition 등)
  */
 @Getter
 @Builder

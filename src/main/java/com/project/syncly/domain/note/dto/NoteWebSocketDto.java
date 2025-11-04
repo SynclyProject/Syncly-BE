@@ -14,7 +14,7 @@ public class NoteWebSocketDto {
     /**
      * 노트 입장 시 입장한 사용자에게만 전송되는 응답 DTO
      *
-     * <p>노트의 현재 상태를 모두 포함합니다.
+     * <p>노트의 현재 상태를 모두 포함합니다 (Yjs 기반).
      */
     @Schema(description = "노트 입장 응답 DTO")
     public record EnterResponse(
@@ -24,14 +24,14 @@ public class NoteWebSocketDto {
             @Schema(description = "노트 제목")
             String title,
 
-            @Schema(description = "노트 현재 내용")
-            String content,
+            @Schema(description = "현재 Y.Doc 상태 (Base64 인코딩된 Yjs Update)")
+            String ydocBinary,
 
-            @Schema(description = "현재 문서 버전 (OT용)")
-            Integer revision,
+            @Schema(description = "현재 활성 사용자 목록")
+            List<ActiveUserInfo> activeUsers,
 
-            @Schema(description = "현재 활성 사용자 목록 (workspaceMemberId 리스트)")
-            List<Long> activeUsers,
+            @Schema(description = "입장한 현재 사용자의 WorkspaceMember ID (Yjs Awareness 초기화용)")
+            Long currentUserWorkspaceMemberId,
 
             @Schema(description = "입장 시각")
             LocalDateTime timestamp
@@ -109,48 +109,55 @@ public class NoteWebSocketDto {
             String color
     ) {}
 
-    // ========== 실시간 편집 관련 DTO ==========
+    // ========== 실시간 편집 관련 DTO (Yjs CRDT 기반) ==========
 
     /**
-     * 편집 요청 DTO (클라이언트 → 서버)
+     * Yjs Update 요청 DTO (클라이언트 → 서버)
+     *
+     * <p>Yjs 표준 프로토콜 기반:
+     * <ul>
+     *   <li>base64Update: Y.encodeStateAsUpdate() 결과를 Base64로 인코딩</li>
+     *   <li>base64StateVector: 클라이언트의 State Vector (선택적)</li>
+     * </ul>
+     *
+     * <p>State Vector가 포함되면 서버는 클라이언트가 아직 가지지 않은 Update만 전송할 수 있습니다.
+     * CRDT의 특성에 따라 서버는 자동으로 충돌을 해결하므로 추가 변환 로직이 불필요합니다.
      */
-    @Schema(description = "편집 요청 DTO")
-    public record EditRequest(
-            @Schema(description = "편집 연산")
-            EditOperation operation
+    @Schema(description = "Yjs Update 요청 DTO")
+    public record YjsUpdateRequest(
+            @Schema(description = "Base64 인코딩된 Yjs Update (Y.encodeStateAsUpdate() 결과)")
+            String base64Update,
+
+            @Schema(description = "클라이언트의 State Vector (Base64, 선택적) - 필요한 Update만 요청할 때 사용")
+            String base64StateVector
     ) {}
 
     /**
-     * 편집 브로드캐스트 메시지 (서버 → 모든 참여자)
+     * Yjs Update 브로드캐스트 메시지 (서버 → 모든 참여자)
      *
-     * <p>한 사용자의 편집이 다른 참여자들에게 전파될 때 사용됩니다.
+     * <p>한 사용자의 편집으로부터 생성된 Yjs Update가 다른 참여자들에게 전파될 때 사용됩니다.
+     * CRDT는 Update 수신 순서에 관계없이 모든 클라이언트가 동일한 최종 상태에 도달합니다.
      */
-    @Schema(description = "편집 브로드캐스트 메시지")
-    public record EditBroadcastMessage(
-            @Schema(description = "변환된 편집 연산")
-            EditOperation operation,
+    @Schema(description = "Yjs Update 브로드캐스트 메시지")
+    public record YjsUpdateBroadcastMessage(
+            @Schema(description = "Base64 인코딩된 Yjs Update (바이너리 형식)")
+            String base64Update,
 
-            @Schema(description = "최신 문서 전체 내용 (10개 연산마다 전송)")
-            String content,
-
-            @Schema(description = "새 문서 버전 번호")
-            int revision,
-
-            @Schema(description = "편집한 사용자의 WorkspaceMember ID")
+            @Schema(description = "업데이트를 생성한 사용자의 WorkspaceMember ID")
             Long workspaceMemberId,
 
-            @Schema(description = "편집한 사용자 이름")
+            @Schema(description = "업데이트한 사용자 이름")
             String userName,
 
-            @Schema(description = "편집 시각")
-            LocalDateTime timestamp,
-
-            @Schema(description = "전체 content 포함 여부 (동기화용)")
-            boolean includesFullContent
+            @Schema(description = "업데이트 시각")
+            LocalDateTime timestamp
     ) {}
 
     /**
      * 에러 메시지 DTO (서버 → 특정 사용자)
+     *
+     * <p>CRDT 기반 동기화: 에러 발생 시 클라이언트가 최신 Y.Doc 상태를 요청하여 동기화합니다.
+     * 따라서 에러 메시지에는 Y.Doc 바이너리를 포함하여 클라이언트가 즉시 동기화할 수 있습니다.
      */
     @Schema(description = "에러 메시지 DTO")
     public record ErrorMessage(
@@ -160,11 +167,8 @@ public class NoteWebSocketDto {
             @Schema(description = "에러 메시지")
             String message,
 
-            @Schema(description = "현재 문서 내용 (동기화용)")
-            String content,
-
-            @Schema(description = "현재 문서 버전 (동기화용)")
-            Integer revision,
+            @Schema(description = "현재 Y.Doc 상태 (Base64, 동기화용)")
+            String ydocBinary,
 
             @Schema(description = "에러 발생 시각")
             LocalDateTime timestamp
@@ -173,27 +177,30 @@ public class NoteWebSocketDto {
          * 동기화 정보 없는 단순 에러 메시지 생성
          */
         public static ErrorMessage of(String code, String message) {
-            return new ErrorMessage(code, message, null, null, LocalDateTime.now());
+            return new ErrorMessage(code, message, null, LocalDateTime.now());
         }
 
         /**
-         * 동기화 정보 포함 에러 메시지 생성
+         * 동기화 정보 포함 에러 메시지 생성 (Y.Doc 바이너리 포함)
          */
-        public static ErrorMessage withSync(String code, String message, String content, int revision) {
-            return new ErrorMessage(code, message, content, revision, LocalDateTime.now());
+        public static ErrorMessage withSync(String code, String message, String ydocBinary) {
+            return new ErrorMessage(code, message, ydocBinary, LocalDateTime.now());
         }
     }
 
     /**
-     * 편집 성공 응답 DTO (서버 → 편집 요청한 사용자)
+     * Yjs Update 성공 응답 DTO (서버 → 업데이트 요청한 사용자)
+     *
+     * <p>CRDT 기반으로는 Update가 자동으로 병합되므로 "적용된 업데이트"라는 개념이 없습니다.
+     * 따라서 성공 여부와 Update 크기만 반환합니다.
      */
-    @Schema(description = "편집 성공 응답 DTO")
-    public record EditResponse(
-            @Schema(description = "적용된 연산 (변환 후)")
-            EditOperation appliedOperation,
+    @Schema(description = "Yjs Update 성공 응답 DTO")
+    public record YjsUpdateResponse(
+            @Schema(description = "성공 여부")
+            boolean success,
 
-            @Schema(description = "새 문서 버전")
-            int newRevision,
+            @Schema(description = "저장된 Update 바이너리 크기 (bytes)")
+            int updateSize,
 
             @Schema(description = "성공 메시지")
             String message,
@@ -283,20 +290,20 @@ public class NoteWebSocketDto {
 
     /**
      * 자동 저장 완료 메시지 (서버 → 모든 참여자)
+     *
+     * <p>Yjs 기반: Y.Doc 바이너리 전체가 저장되며, 버전 번호가 없습니다.
+     * Yjs의 Logical Clock이 자동으로 순서를 관리합니다.
      */
     @Schema(description = "자동 저장 완료 메시지")
     public record SaveCompletedMessage(
-            @Schema(description = "저장된 문서 버전")
-            int revision,
-
             @Schema(description = "저장 시각")
             LocalDateTime savedAt,
 
             @Schema(description = "메시지", example = "자동 저장됨")
             String message
     ) {
-        public static SaveCompletedMessage of(int revision) {
-            return new SaveCompletedMessage(revision, LocalDateTime.now(), "자동 저장됨");
+        public static SaveCompletedMessage of() {
+            return new SaveCompletedMessage(LocalDateTime.now(), "자동 저장됨");
         }
     }
 
@@ -415,6 +422,8 @@ public class NoteWebSocketDto {
 
     /**
      * 노트 상세 조회 응답 DTO (서버 → 클라이언트)
+     *
+     * <p>Yjs 기반: Y.Doc 바이너리와 현재 활성 사용자 정보를 포함합니다.
      */
     @Schema(description = "노트 상세 조회 응답 DTO")
     public record GetDetailResponse(
@@ -424,8 +433,8 @@ public class NoteWebSocketDto {
             @Schema(description = "노트 제목")
             String title,
 
-            @Schema(description = "노트 내용")
-            String content,
+            @Schema(description = "현재 Y.Doc 상태 (Base64 인코딩된 Yjs Update)")
+            String ydocBinary,
 
             @Schema(description = "워크스페이스 ID")
             Long workspaceId,
@@ -446,10 +455,7 @@ public class NoteWebSocketDto {
             LocalDateTime lastModifiedAt,
 
             @Schema(description = "생성 시각")
-            LocalDateTime createdAt,
-
-            @Schema(description = "현재 문서 버전 (OT용)")
-            Integer revision
+            LocalDateTime createdAt
     ) {}
 
     /**
@@ -478,14 +484,13 @@ public class NoteWebSocketDto {
 
     /**
      * 노트 수동 저장 응답 DTO (서버 → 모든 참여자)
+     *
+     * <p>Yjs 기반: Y.Doc 전체가 저장되며, 버전 번호가 제거되었습니다.
      */
     @Schema(description = "노트 수동 저장 응답 DTO")
     public record SaveResponse(
             @Schema(description = "저장된 노트 ID")
             Long noteId,
-
-            @Schema(description = "저장된 문서 버전")
-            Integer revision,
 
             @Schema(description = "저장 시각")
             LocalDateTime savedAt,
