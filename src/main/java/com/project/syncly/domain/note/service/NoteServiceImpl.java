@@ -167,11 +167,6 @@ public class NoteServiceImpl implements NoteService {
         validateWorkspaceMembership(workspaceId, memberId);
     }
 
-    @Override
-    public int getRevisionFromRedis(Long noteId) {
-        return noteRedisService.getRevision(noteId);
-    }
-
     /**
      * WebSocket을 통해 노트 삭제를 모든 워크스페이스 멤버에게 브로드캐스트합니다.
      */
