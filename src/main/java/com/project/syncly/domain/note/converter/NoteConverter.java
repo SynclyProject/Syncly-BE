@@ -38,12 +38,21 @@ public class NoteConverter {
 
     /**
      * Note 엔티티를 상세 응답 DTO로 변환
+     *
+     * <p>Yjs CRDT 기반이므로 ydocBinary를 반환합니다.
+     * OT 기반 content는 더 이상 사용되지 않습니다.
      */
     public static NoteResponseDto.Detail toDetailResponse(Note note, List<NoteParticipant> activeParticipants) {
+        // Yjs CRDT의 ydocBinary 반환 (프론트엔드에서 contentPreview로 표시)
+        // ydocBinary가 없으면 content 필드 반환 (하위 호환성)
+        String contentToReturn = (note.getYdocBinary() != null && !note.getYdocBinary().isEmpty())
+                ? note.getYdocBinary()
+                : note.getContent();
+
         return new NoteResponseDto.Detail(
                 note.getId(),
                 note.getTitle(),
-                note.getContent(),
+                contentToReturn,  // ✅ ydocBinary를 반환
                 note.getWorkspace().getId(),
                 note.getCreator().getId(),
                 note.getCreator().getName(),

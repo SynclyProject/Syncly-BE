@@ -90,6 +90,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-core'
 
+    // MessagePack - Yjs Update 바이너리 처리용
+    // Yjs의 encodeStateAsUpdate()는 Uint8Array(바이너리)를 생성
+    // 이를 Redis에 저장/로드하기 위해 Base64 인코딩 또는 MessagePack 사용
+    implementation 'org.msgpack:msgpack-core:0.9.1'
+
 }
 
 tasks.named('test') {
