@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -194,60 +194,95 @@ public class NoteAutoSaveScheduler {
             log.debug("노트 저장 시작: noteId={}, retryCount={}", noteId, retryCount);
             Timer.Sample sampleSave = Timer.start(meterRegistry);
 
-            // 1. Redis에서 현재 상태 조회
-            String content;
+            // 🔍 [AutoSave Step 1] Redis에서 현재 Y.Doc 상태 조회
+            String ydocBinary;
             try {
-                content = noteRedisService.getContent(noteId);
+                log.info("🔍 [AutoSave Step 1] Redis 조회 시작: noteId={}", noteId);
+                ydocBinary = noteRedisService.getYdocBinary(noteId);
+                log.info("🔍 [AutoSave Step 1] Redis 조회 완료 - size={}, first30={}, last20={}",
+                        ydocBinary != null ? ydocBinary.length() : 0,
+                        ydocBinary != null ? (ydocBinary.length() > 30 ? ydocBinary.substring(0, 30) : ydocBinary) : "null",
+                        ydocBinary != null ? ydocBinary.substring(Math.max(0, ydocBinary.length() - 20)) : "null");
             } catch (RedisConnectionFailureException e) {
-                log.error("Redis 연결 오류: noteId={}, 저장 중단", noteId, e);
+                log.error("❌ Redis 연결 오류: noteId={}, 저장 중단", noteId, e);
                 redisErrorCount.incrementAndGet();
                 meterRegistry.counter("note.autosave.redis.errors").increment();
                 alertRedisError(e);
                 return false;
             }
 
-            if (content == null) {
-                log.warn("Redis에 content가 없습니다: noteId={}", noteId);
+            if (ydocBinary == null || ydocBinary.isEmpty()) {
+                log.warn("⚠️ [AutoSave Step 1] Redis에 Y.Doc이 없습니다: noteId={}", noteId);
                 noteRedisService.clearDirty(noteId);
                 sampleSave.stop(Timer.builder("note.autosave.save.time")
-                        .tag("result", "no_content")
+                        .tag("result", "no_ydoc")
                         .register(meterRegistry));
                 return false;
             }
 
-            int revision = noteRedisService.getRevision(noteId);
-
-            // 2. DB에서 Note 엔티티 조회
+            // 🔍 [AutoSave Step 2] DB에서 Note 엔티티 조회
+            log.info("🔍 [AutoSave Step 2] DB에서 노트 조회 시작: noteId={}", noteId);
             Note note = noteRepository.findById(noteId).orElse(null);
             if (note == null) {
-                log.warn("DB에 노트가 존재하지 않습니다: noteId={}", noteId);
+                log.warn("⚠️ [AutoSave Step 2] DB에 노트가 존재하지 않습니다: noteId={}", noteId);
                 noteRedisService.clearDirty(noteId);
                 sampleSave.stop(Timer.builder("note.autosave.save.time")
                         .tag("result", "not_found")
                         .register(meterRegistry));
                 return false;
             }
+            log.info("🔍 [AutoSave Step 2] DB에서 노트 조회 완료 - 현재 ydocSize={}",
+                    note.getYdocBinary() != null ? note.getYdocBinary().length() : 0);
 
-            // 3. Content 업데이트
-            note.updateContent(content);
+            // 🔍 [AutoSave Step 3] Y.Doc 바이너리 업데이트
+            log.info("🔍 [AutoSave Step 3] Y.Doc 바이너리 업데이트 - noteId={}, newSize={}", noteId, ydocBinary.length());
+            note.updateYdocBinary(ydocBinary);
 
-            // 4. DB 저장
+            // 🔍 [AutoSave Step 4] DB 저장
+            log.info("🔍 [AutoSave Step 4] DB 저장 시작: noteId={}, ydocSize={}", noteId, ydocBinary.length());
             noteRepository.save(note);
+            log.info("✅ [AutoSave Step 4] DB 저장 완료: noteId={}, size={}", noteId, ydocBinary.length());
 
-            // 5. Redis dirty 플래그 false로 변경
+            // 🔍 [AutoSave Step 5] DB 저장 검증
+            log.info("🔍 [AutoSave Step 5] DB 저장 검증 시작: noteId={}", noteId);
+            Note savedNote = noteRepository.findById(noteId).orElse(null);
+            if (savedNote != null) {
+                String dbYdoc = savedNote.getYdocBinary();
+                if (dbYdoc != null && dbYdoc.equals(ydocBinary)) {
+                    log.info("✔️ [AutoSave Step 5] DB 저장 검증 성공 - 저장한Size={}, 조회한Size={}, 일치=true",
+                            ydocBinary.length(), dbYdoc.length());
+                } else {
+                    log.warn("⚠️ [AutoSave Step 5] DB 저장 검증 실패 - 저장한Size={}, 조회한Size={}, 일치=false",
+                            ydocBinary.length(), dbYdoc != null ? dbYdoc.length() : 0);
+                }
+            }
+
+            // 5. Redis dirty 플래그 false로 변경 (저장 완료 표시)
             try {
                 noteRedisService.clearDirty(noteId);
+                log.debug("Redis dirty 플래그 해제: noteId={}", noteId);
             } catch (RedisConnectionFailureException e) {
                 log.error("Redis dirty 플래그 삭제 실패: noteId={}", noteId, e);
                 redisErrorCount.incrementAndGet();
                 // 하지만 DB 저장은 성공했으므로 true 반환
             }
 
-            log.info("노트 저장 완료: noteId={}, revision={}, contentLength={}, retryCount={}",
-                    noteId, revision, content.length(), retryCount);
+            // ✅ 5-1. Redis의 ydocBinary도 현재 저장된 상태로 유지
+            // (사용자가 저장 후 퇴장했을 때 Redis가 정리되어도, DB에서 복원 가능하도록)
+            try {
+                // ⚠️ setYdocBinaryWithoutDirty: dirty 플래그 설정 안 함 (이미 저장 완료)
+                noteRedisService.setYdocBinaryWithoutDirty(noteId, ydocBinary);
+                log.debug("Redis의 ydocBinary 동기화: noteId={}, size={}", noteId, ydocBinary.length());
+            } catch (Exception e) {
+                log.warn("Redis의 ydocBinary 동기화 실패 (무시): noteId={}", noteId, e);
+                // Redis 동기화 실패는 치명적이지 않음 (DB에는 저장됨)
+            }
 
-            // 6. WebSocket 브로드캐스트 (저장 완료 알림)
-            broadcastSaveCompleted(noteId, revision);
+            log.info("노트 저장 완료: noteId={}, ydocSize={}, retryCount={}",
+                    noteId, ydocBinary.length(), retryCount);
+
+            // 5-1. WebSocket 브로드캐스트 (저장 완료 알림)
+            broadcastSaveCompleted(noteId);
 
             sampleSave.stop(Timer.builder("note.autosave.save.time")
                     .tag("result", "success")
@@ -301,19 +336,19 @@ public class NoteAutoSaveScheduler {
     }
 
     /**
-     * WebSocket으로 저장 완료 메시지 브로드캐스트
+     * WebSocket으로 저장 완료 메시지 브로드캐스트 (Yjs 기반)
      */
-    private void broadcastSaveCompleted(Long noteId, int revision) {
+    private void broadcastSaveCompleted(Long noteId) {
         try {
             NoteWebSocketDto.SaveCompletedMessage message =
-                    NoteWebSocketDto.SaveCompletedMessage.of(revision);
+                    NoteWebSocketDto.SaveCompletedMessage.of();
 
             messagingTemplate.convertAndSend(
                     "/topic/notes/" + noteId + "/save",
                     message
             );
 
-            log.debug("저장 완료 메시지 브로드캐스트: noteId={}, revision={}", noteId, revision);
+            log.debug("저장 완료 메시지 브로드캐스트: noteId={}", noteId);
         } catch (Exception e) {
             // WebSocket 브로드캐스트 실패는 치명적이지 않음
             log.warn("저장 완료 메시지 브로드캐스트 실패: noteId={}", noteId, e);
@@ -350,10 +385,11 @@ public class NoteAutoSaveScheduler {
     }
 
     /**
-     * 애플리케이션 시작 시 모든 dirty 노트 즉시 저장
+     * 애플리케이션 시작 시 모든 dirty 노트 즉시 저장 및 OT 데이터 마이그레이션
      *
-     * <p>애플리케이션이 재시작되었을 때, Redis에 남아있는
-     * dirty 노트들을 즉시 DB에 저장하여 데이터 손실을 방지합니다.
+     * <p>애플리케이션이 재시작되었을 때:
+     * 1. Redis에 남아있는 dirty 노트들을 즉시 DB에 저장하여 데이터 손실을 방지
+     * 2. 기존 OT 기반 데이터를 Yjs CRDT 형식으로 마이그레이션
      */
     @EventListener(ApplicationReadyEvent.class)
     public void saveAllDirtyNotesOnStartup() {
@@ -407,6 +443,108 @@ public class NoteAutoSaveScheduler {
         } catch (Exception e) {
             log.error("애플리케이션 시작 시 저장 중 오류 발생", e);
             meterRegistry.counter("note.startup.critical.errors").increment();
+        }
+
+        // OT 데이터 마이그레이션 (Yjs로 전환)
+        try {
+            migrateOtDataToYjs();
+        } catch (Exception e) {
+            log.error("OT 데이터 마이그레이션 중 오류 발생", e);
+            meterRegistry.counter("note.migration.critical.errors").increment();
+        }
+    }
+
+    /**
+     * OT 기반 데이터를 Yjs CRDT 형식으로 마이그레이션
+     *
+     * <p><b>마이그레이션 과정:</b>
+     * <ol>
+     *   <li>content는 있지만 ydocBinary가 없는 노트 찾기</li>
+     *   <li>content를 Base64 인코딩하여 ydocBinary에 저장</li>
+     *   <li>마이그레이션된 노트 개수 로깅 및 메트릭 기록</li>
+     * </ol>
+     *
+     * <p><b>주의사항:</b>
+     * <ul>
+     *   <li>OT 기반 content가 손실되지 않음 (양쪽 모두 저장)</li>
+     *   <li>대량 마이그레이션 시 시간이 걸릴 수 있음</li>
+     *   <li>각 노트는 독립적인 트랜잭션으로 처리</li>
+     * </ul>
+     */
+    @Transactional
+    public void migrateOtDataToYjs() {
+        log.info("OT 데이터 마이그레이션 시작");
+
+        try {
+            // 1. content는 있지만 ydocBinary가 없는 노트 조회
+            List<Note> legacyNotes = noteRepository.findLegacyOtNotes();
+
+            if (legacyNotes.isEmpty()) {
+                log.info("마이그레이션할 OT 데이터가 없습니다");
+                return;
+            }
+
+            log.info("마이그레이션 대상 노트 발견: {}개", legacyNotes.size());
+
+            int migratedCount = 0;
+            int failedCount = 0;
+
+            // 2. 각 노트를 마이그레이션
+            for (Note note : legacyNotes) {
+                try {
+                    migrateNoteOtToYjs(note);
+                    migratedCount++;
+                } catch (Exception e) {
+                    log.error("노트 마이그레이션 실패: noteId={}", note.getId(), e);
+                    failedCount++;
+                    meterRegistry.counter("note.migration.failures").increment();
+                }
+            }
+
+            // 3. 메트릭 기록
+            meterRegistry.counter("note.migration.success").increment(migratedCount);
+            meterRegistry.counter("note.migration.failures").increment(failedCount);
+
+            log.info("OT 데이터 마이그레이션 완료: 성공={}, 실패={}",
+                    migratedCount, failedCount);
+
+        } catch (Exception e) {
+            log.error("OT 데이터 마이그레이션 중 오류 발생", e);
+            meterRegistry.counter("note.migration.critical.errors").increment();
+        }
+    }
+
+    /**
+     * 단일 노트의 OT 데이터를 Yjs로 마이그레이션
+     *
+     * @param note 마이그레이션할 노트
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void migrateNoteOtToYjs(Note note) {
+        try {
+            // 1. content를 Base64로 인코딩
+            String content = note.getContent();
+            if (content == null || content.isEmpty()) {
+                log.warn("마이그레이션 대상 content가 비어있습니다: noteId={}", note.getId());
+                return;
+            }
+
+            // 2. Base64 인코딩 (UTF-8 바이트 배열 기반)
+            String ydocBinary = Base64.getEncoder()
+                    .encodeToString(content.getBytes("UTF-8"));
+
+            // 3. ydocBinary 업데이트
+            note.updateYdocBinary(ydocBinary);
+
+            // 4. DB 저장
+            noteRepository.save(note);
+
+            log.info("노트 마이그레이션 완료: noteId={}, contentSize={}, ydocSize={}",
+                    note.getId(), content.length(), ydocBinary.length());
+
+        } catch (Exception e) {
+            log.error("노트 마이그레이션 중 오류: noteId={}", note.getId(), e);
+            throw new RuntimeException("마이그레이션 실패: " + e.getMessage(), e);
         }
     }
 

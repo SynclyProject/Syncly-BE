@@ -66,4 +66,20 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     @EntityGraph(attributePaths = {"creator", "workspace"})
     @Query("SELECT n FROM Note n WHERE n.workspace.id = :workspaceId AND n.title LIKE %:keyword% AND n.isDeleted = false")
     Page<Note> searchByTitle(@Param("workspaceId") Long workspaceId, @Param("keyword") String keyword, Pageable pageable);
+
+    /**
+     * OT 마이그레이션: content가 있지만 ydocBinary가 없는 노트 조회
+     *
+     * <p>기존 OT 기반 데이터를 Yjs CRDT로 마이그레이션하기 위해 사용됩니다.
+     * 이 메서드는 다음을 만족하는 노트를 반환합니다:
+     * <ul>
+     *   <li>content 필드에 데이터가 있음</li>
+     *   <li>ydocBinary 필드가 null이거나 비어있음</li>
+     *   <li>삭제되지 않은 노트만</li>
+     * </ul>
+     *
+     * @return OT 기반 데이터를 가진 노트 목록
+     */
+    @Query("SELECT n FROM Note n WHERE n.content IS NOT NULL AND n.content != '' AND (n.ydocBinary IS NULL OR n.ydocBinary = '') AND n.isDeleted = false")
+    List<Note> findLegacyOtNotes();
 }
