@@ -15,6 +15,7 @@ public class WorkspaceMemberConverter {
                 .member(member)
                 .role(Role.MANAGER)
                 .name(memberName)
+                .profileImage(member.getProfileImage())
                 .build();
     }
 
@@ -25,6 +26,7 @@ public class WorkspaceMemberConverter {
                 .member(member)
                 .role(Role.CREW)
                 .name(memberName)
+                .profileImage(member.getProfileImage())
                 .build();
     }
 
