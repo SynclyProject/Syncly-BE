@@ -1,7 +1,6 @@
 package com.project.syncly.domain.note.controller;
 
 import com.project.syncly.domain.note.dto.CursorPosition;
-import com.project.syncly.domain.note.dto.EditOperation;
 import com.project.syncly.domain.note.dto.NoteWebSocketDto;
 import com.project.syncly.domain.note.dto.WebSocketMessage;
 import com.project.syncly.domain.note.dto.WebSocketMessageType;
@@ -12,7 +11,7 @@ import com.project.syncly.domain.note.exception.NoteException;
 import com.project.syncly.domain.note.repository.NoteParticipantRepository;
 import com.project.syncly.domain.note.repository.NoteRepository;
 import com.project.syncly.domain.note.service.NoteRedisService;
-import com.project.syncly.domain.note.service.OTService;
+import com.project.syncly.domain.note.service.YjsService;
 import com.project.syncly.domain.workspaceMember.entity.WorkspaceMember;
 import com.project.syncly.domain.workspaceMember.repository.WorkspaceMemberRepository;
 import com.project.syncly.global.jwt.PrincipalDetails;
@@ -59,7 +58,7 @@ public class NoteWebSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final NoteRedisService noteRedisService;
-    private final OTService otService;
+    private final YjsService yjsService;
     private final NoteRepository noteRepository;
     private final NoteParticipantRepository noteParticipantRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
@@ -153,25 +152,82 @@ public class NoteWebSocketController {
         );
 
         // 7. Redis에서 노트 데이터 조회 (없으면 DB에서 초기화)
-        String content = noteRedisService.getContent(noteId);
-        if (content == null) {
-            // Redis에 없으면 DB에서 로드하여 초기화
-            noteRedisService.initializeNote(noteId, note.getContent());
-            content = note.getContent();
+        // ⚠️ 중요: Redis가 없으면 진행 전에 Redis에 저장된 dirty 노트가 있는지 확인
+        // (사용자가 저장 후 곧바로 퇴장했을 경우를 대비)
+
+        // 먼저 Redis에서 확인
+        String ydocUpdate = yjsService.getYdocAsUpdate(noteId);
+
+        // Redis에 데이터가 없으면 DB에서 로드하기 전에 스케줄러 호출
+        if (ydocUpdate == null || ydocUpdate.isEmpty()) {
+            log.info("Redis에 Y.Doc 없음 - DB에서 복원: noteId={}", noteId);
+
+            // ✅ 1단계: Redis의 dirty 노트 중에 이 noteId가 있는지 확인
+            // (사용자가 저장 버튼을 눌었지만 30초 스케줄 대기 중일 수 있음)
+            // 이 경우는 Redis에 데이터가 있어야 하므로 여기서는 발생 안 함
+
+            // ✅ 2단계: DB에서 ydocBinary 확인
+            String dbYdoc = note.getYdocBinary();
+            log.info("DB ydocBinary 확인: noteId={}, dbYdocSize={}",
+                    noteId, dbYdoc != null ? dbYdoc.length() : 0);
+
+            if (dbYdoc != null && !dbYdoc.isEmpty()) {
+                // ✅ DB에 데이터가 있으면 Redis에 복원
+                log.info("DB의 ydocBinary를 Redis에 복원: noteId={}, size={}", noteId, dbYdoc.length());
+                yjsService.loadFromDatabase(noteId, dbYdoc);
+            } else {
+                // ❌ DB에도 데이터가 없으면 → 저장되지 않은 상태
+                // (사용자가 저장 버튼 클릭 후 퇴장, 스케줄러 대기 중)
+                log.warn("Redis & DB 모두 비어있음 - 새 노트 또는 저장 미완료: noteId={}", noteId);
+                // 빈 상태로 초기화
+                noteRedisService.setYdocBinaryWithoutDirty(noteId, "");
+            }
+
+            ydocUpdate = yjsService.getYdocAsUpdate(noteId);
         }
 
-        Integer revision = noteRedisService.getRevision(noteId);
-        List<Long> activeUserIds = noteRedisService.getActiveUsers(noteId).stream()
-                .map(Long::valueOf)
+        // ✅ 로드 후 ENTER 응답 전 최종 확인
+        log.info("ENTER 응답 준비 완료: noteId={}, ydocUpdateSize={}",
+                noteId, ydocUpdate != null ? ydocUpdate.length() : 0);
+
+        // TODO: Yjs State Vector 기반 동기화
+        // 클라이언트의 state vector를 받아서 필요한 Update만 전송
+        // 현재는 모든 Update를 전송함
+
+        // 활성 사용자 정보 조회
+        List<NoteWebSocketDto.ActiveUserInfo> activeParticipants = noteRedisService.getActiveUsers(noteId)
+                .stream()
+                .map(userId -> {
+                    Long wm_id = Long.valueOf(userId);
+                    try {
+                        WorkspaceMember wm = workspaceMemberRepository.findById(wm_id).orElse(null);
+                        if (wm != null) {
+                            return new NoteWebSocketDto.ActiveUserInfo(
+                                    wm_id,
+                                    wm.getName(),
+                                    wm.getProfileImage(),
+                                    com.project.syncly.domain.note.util.UserColorGenerator.generateColor(wm_id)
+                            );
+                        }
+                    } catch (Exception e) {
+                        log.warn("워크스페이스 멤버 조회 실패: workspaceMemberId={}", wm_id, e);
+                    }
+                    return new NoteWebSocketDto.ActiveUserInfo(
+                            wm_id,
+                            "Unknown User",
+                            null,
+                            com.project.syncly.domain.note.util.UserColorGenerator.generateColor(wm_id)
+                    );
+                })
                 .collect(Collectors.toList());
 
         // 8. 입장한 사용자에게 EnterResponse 전송 (유니캐스트)
         NoteWebSocketDto.EnterResponse enterResponse = new NoteWebSocketDto.EnterResponse(
                 noteId,
                 note.getTitle(),
-                content,
-                revision,
-                activeUserIds,
+                ydocUpdate,  // Y.Doc Update (Base64)
+                activeParticipants,
+                workspaceMemberId,  // 현재 입장한 사용자의 WorkspaceMember ID
                 LocalDateTime.now()
         );
 
@@ -192,7 +248,7 @@ public class NoteWebSocketController {
                 workspaceMemberId,
                 userName,
                 profileImage,
-                activeUserIds.size(),
+                activeParticipants.size(),
                 LocalDateTime.now()
         );
 
@@ -208,7 +264,7 @@ public class NoteWebSocketController {
         );
 
         log.info("노트 입장 완료: noteId={}, workspaceMemberId={}, activeUsers={}",
-                noteId, workspaceMemberId, activeUserIds.size());
+                noteId, workspaceMemberId, activeParticipants.size());
     }
 
     /**
@@ -311,34 +367,42 @@ public class NoteWebSocketController {
     }
 
     /**
-     * 노트 편집 핸들러
+     * 노트 편집 핸들러 (Yjs CRDT 기반)
      *
-     * <p>사용자의 편집 연산을 처리하고 OT 알고리즘을 적용하여 다른 참여자들에게 브로드캐스트합니다.
+     * <p>사용자의 Yjs Update를 처리하고 모든 참여자에게 브로드캐스트합니다.
      *
      * <p><b>처리 흐름:</b>
      * <ol>
      *   <li>사용자 권한 검증 (해당 노트의 active user인지)</li>
-     *   <li>OTService.processEdit() 호출 (transform + 적용 + Redis 저장)</li>
-     *   <li>성공 시 모든 참여자에게 EditBroadcastMessage 전송</li>
-     *   <li>10개 연산마다 전체 content 포함 (동기화)</li>
-     *   <li>실패 시 재시도 (최대 3회)</li>
+     *   <li>YjsService.applyYjsUpdate() 호출 (Update 저장, dirty 플래그 설정)</li>
+     *   <li>성공 시 모든 참여자에게 Update 브로드캐스트</li>
+     *   <li>자동 충돌 해결 (CRDT 특성)</li>
      * </ol>
      *
+     * <p><b>특징:</b>
+     * <ul>
+     *   <li>OT 변환 불필요 (CRDT가 처리)</li>
+     *   <li>Revision 불필요 (Logical Clock 사용)</li>
+     *   <li>재시도 불필요 (CRDT 특성)</li>
+     * </ul>
+     *
      * @param noteId 노트 ID
-     * @param request 편집 요청 (EditOperation 포함)
+     * @param request 편집 요청 (Yjs Update 포함)
      * @param principal 인증된 사용자 정보 (memberId)
      */
     @MessageMapping("/notes/{noteId}/edit")
     public void handleEdit(
             @DestinationVariable Long noteId,
-            @Payload NoteWebSocketDto.EditRequest request,
+            @Payload NoteWebSocketDto.YjsUpdateRequest request,
             Principal principal
     ) {
         Long memberId = extractMemberId(principal);
-        EditOperation operation = request.operation();
+        String base64Update = request.base64Update();
+        String base64StateVector = request.base64StateVector();
 
-        log.debug("편집 요청 수신: noteId={}, memberId={}, operation={}",
-                noteId, memberId, operation);
+        log.debug("Yjs Update 수신: noteId={}, memberId={}, updateSize={}, hasStateVector={}",
+                noteId, memberId, base64Update != null ? base64Update.length() : 0,
+                base64StateVector != null && !base64StateVector.isEmpty());
 
         try {
             // 1. 노트 존재 확인
@@ -364,31 +428,22 @@ public class NoteWebSocketController {
                 return;
             }
 
-            // 4. 편집 처리 (재시도 로직 포함)
-            OTService.ProcessEditResult result = processEditWithRetry(noteId, operation, MAX_RETRY_COUNT);
+            // 4. Yjs Update 처리 (State Vector 포함, CRDT가 자동으로 처리)
+            YjsService.ApplyYjsUpdateResult result = yjsService.applyYjsUpdate(noteId, base64Update, base64StateVector);
 
-            log.info("편집 성공: noteId={}, workspaceMemberId={}, type={}, position={}, " +
-                            "originalRevision={}, newRevision={}, contentLength={}",
-                    noteId, workspaceMemberId, operation.getType(), operation.getPosition(),
-                    operation.getRevision(), result.revision(), result.content().length());
+            log.info("Yjs Update 처리 성공: noteId={}, workspaceMemberId={}, updateSize={}",
+                    noteId, workspaceMemberId, result.updateSize());
 
-            // 5. 전체 content 포함 여부 결정 (10개 연산마다)
-            boolean includeFullContent = (result.revision() % FULL_CONTENT_BROADCAST_INTERVAL == 0);
-            String contentToSend = includeFullContent ? result.content() : null;
-
-            // 6. 모든 참여자에게 EditBroadcastMessage 브로드캐스트
-            NoteWebSocketDto.EditBroadcastMessage broadcastMessage =
-                    new NoteWebSocketDto.EditBroadcastMessage(
-                            result.appliedOperation(),
-                            contentToSend,
-                            result.revision(),
+            // 5. 모든 참여자에게 Update 브로드캐스트
+            NoteWebSocketDto.YjsUpdateBroadcastMessage broadcastMessage =
+                    new NoteWebSocketDto.YjsUpdateBroadcastMessage(
+                            base64Update,
                             workspaceMemberId,
                             userName,
-                            LocalDateTime.now(),
-                            includeFullContent
+                            LocalDateTime.now()
                     );
 
-            WebSocketMessage<NoteWebSocketDto.EditBroadcastMessage> message = WebSocketMessage.of(
+            WebSocketMessage<NoteWebSocketDto.YjsUpdateBroadcastMessage> message = WebSocketMessage.of(
                     WebSocketMessageType.EDIT,
                     broadcastMessage,
                     workspaceMemberId
@@ -399,133 +454,27 @@ public class NoteWebSocketController {
                     message
             );
 
-            log.debug("편집 브로드캐스트 완료: noteId={}, revision={}, includeFullContent={}",
-                    noteId, result.revision(), includeFullContent);
+            log.debug("Update 브로드캐스트 완료: noteId={}", noteId);
 
         } catch (NoteException e) {
-            log.error("편집 처리 중 NoteException 발생: noteId={}, memberId={}, error={}",
+            log.error("Update 처리 중 NoteException 발생: noteId={}, memberId={}, error={}",
                     noteId, memberId, e.getMessage());
-            handleEditError(principal.getName(), noteId, e);
+            sendErrorToUser(principal.getName(), noteId, e.getCode().getCode(), e.getMessage());
 
         } catch (Exception e) {
-            log.error("편집 처리 중 예상치 못한 에러 발생: noteId={}, memberId={}, error={}",
+            log.error("Update 처리 중 예상치 못한 에러 발생: noteId={}, memberId={}, error={}",
                     noteId, memberId, e.getMessage(), e);
             sendErrorToUser(principal.getName(), noteId,
-                    NoteErrorCode.OT_TRANSFORM_FAILED.getCode(),
+                    "UPDATE_FAILED",
                     "편집 처리 중 오류가 발생했습니다. 페이지를 새로고침해주세요.");
         }
     }
 
-    /**
-     * 편집 처리 with 재시도 로직
-     *
-     * <p>동시 편집으로 인한 충돌 발생 시 최대 MAX_RETRY_COUNT번까지 재시도합니다.
-     *
-     * @param noteId 노트 ID
-     * @param operation 편집 연산
-     * @param maxRetries 최대 재시도 횟수
-     * @return 편집 처리 결과
-     * @throws NoteException 재시도 후에도 실패한 경우
-     */
-    private OTService.ProcessEditResult processEditWithRetry(
-            Long noteId,
-            EditOperation operation,
-            int maxRetries
-    ) {
-        int attempt = 0;
-        Exception lastException = null;
-
-        while (attempt < maxRetries) {
-            try {
-                return otService.processEdit(noteId, operation);
-
-            } catch (NoteException e) {
-                // INVALID_OPERATION은 재시도해도 소용없음 → 즉시 throw
-                if (e.getCode() == NoteErrorCode.INVALID_OPERATION) {
-                    throw e;
-                }
-
-                lastException = e;
-                attempt++;
-
-                if (attempt < maxRetries) {
-                    log.warn("편집 처리 실패, 재시도 {}/{}: noteId={}, error={}",
-                            attempt, maxRetries, noteId, e.getMessage());
-
-                    // 짧은 대기 후 재시도 (exponential backoff)
-                    try {
-                        Thread.sleep(50L * attempt);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new NoteException(NoteErrorCode.OT_TRANSFORM_FAILED);
-                    }
-                } else {
-                    log.error("편집 처리 최종 실패: noteId={}, attempts={}, error={}",
-                            noteId, attempt, e.getMessage());
-                }
-            }
-        }
-
-        // 모든 재시도 실패
-        throw new NoteException(NoteErrorCode.CONCURRENT_EDIT_CONFLICT,
-                "동시 편집 충돌이 계속 발생합니다. 잠시 후 다시 시도해주세요.");
-    }
-
-    /**
-     * 편집 에러 처리
-     *
-     * <p>에러 유형에 따라 적절한 에러 메시지와 동기화 정보를 클라이언트에 전송합니다.
-     *
-     * @param userId 사용자 ID (memberId)
-     * @param noteId 노트 ID
-     * @param exception 발생한 예외
-     */
-    private void handleEditError(String userId, Long noteId, NoteException exception) {
-        com.project.syncly.global.apiPayload.code.BaseErrorCode baseErrorCode = exception.getCode();
-        String errorCodeStr = baseErrorCode.getCode();
-
-        // 동기화가 필요한 에러인 경우 현재 content와 revision 전송
-        if (errorCodeStr.equals(NoteErrorCode.INVALID_OPERATION.getCode()) ||
-            errorCodeStr.equals(NoteErrorCode.REVISION_MISMATCH.getCode()) ||
-            errorCodeStr.equals(NoteErrorCode.CONCURRENT_EDIT_CONFLICT.getCode())) {
-
-            try {
-                String currentContent = noteRedisService.getContent(noteId);
-                int currentRevision = noteRedisService.getRevision(noteId);
-
-                NoteWebSocketDto.ErrorMessage errorMessage = NoteWebSocketDto.ErrorMessage.withSync(
-                        errorCodeStr,
-                        exception.getMessage(),
-                        currentContent,
-                        currentRevision
-                );
-
-                WebSocketMessage<NoteWebSocketDto.ErrorMessage> message = WebSocketMessage.of(
-                        WebSocketMessageType.ERROR,
-                        errorMessage,
-                        null
-                );
-
-                messagingTemplate.convertAndSendToUser(
-                        userId,
-                        "/queue/errors",
-                        message
-                );
-
-                log.info("동기화 에러 메시지 전송: userId={}, noteId={}, errorCode={}",
-                        userId, noteId, errorCodeStr);
-
-            } catch (Exception e) {
-                log.error("에러 처리 중 또 다른 에러 발생: userId={}, noteId={}, error={}",
-                        userId, noteId, e.getMessage());
-                // 최소한의 에러 메시지라도 전송
-                sendErrorToUser(userId, noteId, errorCodeStr, exception.getMessage());
-            }
-        } else {
-            // 단순 에러 메시지만 전송
-            sendErrorToUser(userId, noteId, errorCodeStr, exception.getMessage());
-        }
-    }
+    // ==================== OT 관련 메서드 제거 (Yjs 기반으로 변경) ====================
+    // processEditWithRetry, handleEditError 메서드는 Yjs CRDT에서 필요 없음
+    // - CRDT는 자동으로 충돌 해결
+    // - 재시도 불필요
+    // - revision 기반 동기화 불필요
 
     /**
      * 사용자에게 에러 메시지 전송
@@ -593,8 +542,9 @@ public class NoteWebSocketController {
 
             Note createdNote = noteRepository.save(newNote);
 
-            // 4. Redis 초기화
-            noteRedisService.initializeNote(createdNote.getId(), "");
+            // 4. Redis 초기화 (빈 Y.Doc - dirty 플래그 미설정)
+            // ⚠️ 주의: setYdocBinaryWithoutDirty()로 호출하여 자동 저장 방지
+            noteRedisService.setYdocBinaryWithoutDirty(createdNote.getId(), "");
 
             // 5. 현재 사용자를 자동으로 참여자에 추가
             NoteParticipant participant = NoteParticipant.builder()
@@ -780,14 +730,19 @@ public class NoteWebSocketController {
                     .findByWorkspaceIdAndMemberId(workspaceId, memberId)
                     .orElseThrow(() -> new NoteException(NoteErrorCode.NOT_WORKSPACE_MEMBER));
 
-            // 3. Redis에서 내용 및 버전 조회
-            String content = noteRedisService.getContent(noteId);
-            if (content == null) {
-                content = note.getContent();
-                noteRedisService.initializeNote(noteId, content);
+            // 3. Redis에서 Y.Doc 조회 (없으면 DB에서 초기화)
+            String ydocUpdate = yjsService.getYdocAsUpdate(noteId);
+            if (ydocUpdate == null || ydocUpdate.isEmpty()) {
+                // Redis에 없으면 DB에서 로드하여 초기화
+                String dbYdoc = note.getYdocBinary();
+                if (dbYdoc != null && !dbYdoc.isEmpty()) {
+                    yjsService.applyYjsUpdate(noteId, dbYdoc);
+                } else {
+                    // 새 노트인 경우 빈 상태로 초기화
+                    yjsService.initializeEmptyDoc(noteId);
+                }
+                ydocUpdate = yjsService.getYdocAsUpdate(noteId);
             }
-
-            Integer revision = noteRedisService.getRevision(noteId);
 
             // 4. 활성 참여자 정보 조회
             List<NoteWebSocketDto.ActiveUserInfo> activeParticipants = noteRedisService.getActiveUsers(noteId)
@@ -822,15 +777,14 @@ public class NoteWebSocketController {
             NoteWebSocketDto.GetDetailResponse response = new NoteWebSocketDto.GetDetailResponse(
                     note.getId(),
                     note.getTitle(),
-                    content,
+                    ydocUpdate,  // Y.Doc Update (Base64)
                     workspaceId,
                     note.getCreator().getId(),
                     note.getCreator().getName(),
                     note.getCreator().getProfileImage(),
                     activeParticipants,
                     note.getLastModifiedAt(),
-                    note.getCreatedAt(),
-                    revision
+                    note.getCreatedAt()
             );
 
             WebSocketMessage<NoteWebSocketDto.GetDetailResponse> message = WebSocketMessage.of(
@@ -845,7 +799,7 @@ public class NoteWebSocketController {
                     message
             );
 
-            log.info("노트 상세 조회 완료: noteId={}, contentLength={}", noteId, content.length());
+            log.info("노트 상세 조회 완료: noteId={}, ydocSize={}", noteId, ydocUpdate != null ? ydocUpdate.length() : 0);
 
         } catch (NoteException e) {
             log.error("노트 상세 조회 중 에러 발생: memberId={}, noteId={}, error={}", memberId, noteId, e.getMessage());
@@ -981,18 +935,28 @@ public class NoteWebSocketController {
                     .findByWorkspaceIdAndMemberId(workspaceId, memberId)
                     .orElseThrow(() -> new NoteException(NoteErrorCode.NOT_WORKSPACE_MEMBER));
 
-            // 3. Redis에서 현재 content와 revision 조회
-            String currentContent = noteRedisService.getContent(noteId);
-            int currentRevision = noteRedisService.getRevision(noteId);
+            // 3. Redis에서 Y.Doc 조회하여 DB에 저장
+            String ydocUpdate = yjsService.getYdocAsUpdate(noteId);
+            if (ydocUpdate != null && !ydocUpdate.isEmpty()) {
+                note.updateYdocBinary(ydocUpdate);
+                noteRepository.save(note);
+                log.info("노트 Y.Doc 저장 완료: noteId={}, ydocSize={}", noteId, ydocUpdate.length());
+            } else {
+                log.warn("저장할 Y.Doc이 없음: noteId={}", noteId);
+            }
 
-            // 4. DB에 저장 (updateContent 메서드 사용)
-            note.updateContent(currentContent);
-            noteRepository.save(note);
+            // 4. Redis dirty 플래그 해제 (이미 DB에 저장했으므로 dirty 상태 제거)
+            try {
+                noteRedisService.clearDirty(noteId);
+                log.debug("Redis dirty 플래그 해제: noteId={}", noteId);
+            } catch (Exception e) {
+                log.warn("Redis dirty 플래그 해제 실패 (무시): noteId={}, error={}", noteId, e.getMessage());
+                // dirty 플래그 해제 실패는 무시하고 계속 진행 (이미 DB에 저장됨)
+            }
 
             // 5. 모든 참여자에게 저장 완료 메시지 브로드캐스트
             NoteWebSocketDto.SaveResponse response = new NoteWebSocketDto.SaveResponse(
                     noteId,
-                    currentRevision,
                     LocalDateTime.now(),
                     "수동 저장되었습니다.",
                     workspaceMember.getId(),
@@ -1010,7 +974,7 @@ public class NoteWebSocketController {
                     message
             );
 
-            log.info("노트 수동 저장 완료: noteId={}, revision={}", noteId, currentRevision);
+            log.info("노트 수동 저장 완료: noteId={}", noteId);
 
         } catch (NoteException e) {
             log.error("노트 저장 중 에러 발생: memberId={}, noteId={}, error={}", memberId, noteId, e.getMessage());

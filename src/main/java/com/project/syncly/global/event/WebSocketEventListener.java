@@ -98,7 +98,7 @@ public class WebSocketEventListener {
 
                     // Redis에서 노트 참여 정보 제거
                     noteRedisService.removeUser(noteId, workspaceMemberId);
-                    noteRedisService.removeCursor(noteId, workspaceMemberId);
+                    // 커서는 Yjs Awareness가 자동으로 처리하므로 제거 불필요
 
                     // 노트 세션 매핑 삭제
                     redisTemplate.opsForHash().delete(RedisKeyPrefix.WS_NOTE_SESSIONS.get(), sessionId);

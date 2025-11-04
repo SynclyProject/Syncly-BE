@@ -23,18 +23,20 @@ public enum WebSocketMessageType {
     LEAVE,
 
     /**
-     * 편집 연산
-     * - 사용자가 텍스트를 삽입하거나 삭제했을 때
-     * - payload: EditOperation (insert/delete 정보)
+     * Yjs 업데이트
+     * - 사용자가 텍스트를 편집했을 때
+     * - payload: Base64 인코딩된 Yjs Update (Yjs CRDT 기반)
      * - 클라이언트 → 서버 → 다른 참여자들에게 브로드캐스트
+     * - 참고: OT(Operational Transformation)에서 Yjs CRDT로 마이그레이션
      */
     EDIT,
 
     /**
-     * 커서 위치 변경
-     * - 사용자의 커서 위치가 변경되었을 때
+     * 커서/선택 범위 동기화
+     * - Yjs Awareness API로 자동 동기화됨
      * - payload: CursorPosition (position, range 정보)
-     * - 클라이언트 → 서버 → 다른 참여자들에게 브로드캐스트
+     * - Redis 저장 불필요 (Awareness가 전담)
+     * - 참고: 사용되지 않음 (Awareness 사용)
      */
     CURSOR,
 

@@ -104,8 +104,8 @@ logging:
 scheduler:
   note:
     auto-save:
-      fixed-delay: 30000      # 30초마다 실행
-      initial-delay: 30000    # 애플리케이션 시작 후 30초 후 첫 실행
+      fixed-delay: 1000     # 1초마다 실행
+      initial-delay: 1000    # 애플리케이션 시작 후 1초 후 첫 실행
 
 
 
