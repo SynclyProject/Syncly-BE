@@ -65,13 +65,10 @@ public class NoteResponseDto {
             LocalDateTime joinedAt
     ) {}
 
-    @Schema(description = "노트 저장 응답 DTO")
+    @Schema(description = "노트 저장 응답 DTO (Yjs CRDT 기반)")
     public record SaveResponse(
             @Schema(description = "저장 성공 여부")
             boolean success,
-
-            @Schema(description = "저장된 문서 버전")
-            int revision,
 
             @Schema(description = "저장 시각")
             LocalDateTime savedAt,
@@ -79,12 +76,12 @@ public class NoteResponseDto {
             @Schema(description = "메시지")
             String message
     ) {
-        public static SaveResponse success(int revision, LocalDateTime savedAt) {
-            return new SaveResponse(true, revision, savedAt, "노트가 저장되었습니다");
+        public static SaveResponse success(LocalDateTime savedAt) {
+            return new SaveResponse(true, savedAt, "노트가 저장되었습니다");
         }
 
         public static SaveResponse failure(String message) {
-            return new SaveResponse(false, 0, LocalDateTime.now(), message);
+            return new SaveResponse(false, LocalDateTime.now(), message);
         }
     }
 

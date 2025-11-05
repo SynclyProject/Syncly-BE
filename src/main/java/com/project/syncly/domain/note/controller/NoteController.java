@@ -172,15 +172,16 @@ public class NoteController {
     @Operation(
             summary = "노트 수동 저장",
             description = """
-                    사용자가 명시적으로 저장 버튼을 클릭했을 때 호출합니다.
+                    사용자가 명시적으로 저장 버튼을 클릭했을 때 호출합니다. (Yjs CRDT 기반)
 
                     **처리 흐름:**
-                    1. Redis에서 현재 content와 revision 조회
-                    2. DB의 Note 엔티티 업데이트
+                    1. Redis에서 현재 ydocBinary 조회
+                    2. DB의 Note 엔티티에 ydocBinary 저장
                     3. Redis dirty 플래그 false로 변경
                     4. WebSocket으로 저장 완료 메시지 브로드캐스트
 
                     **주의사항:**
+                    - Yjs CRDT 기반이므로 revision 개념 없음 (자동 충돌 해결)
                     - 자동 저장과 동일한 로직 사용
                     - 독립적인 트랜잭션으로 처리
                     """
@@ -206,9 +207,8 @@ public class NoteController {
 
         NoteResponseDto.SaveResponse response;
         if (saved) {
-            // 저장 성공 시 revision 조회
-            int revision = noteService.getRevisionFromRedis(noteId);
-            response = NoteResponseDto.SaveResponse.success(revision, java.time.LocalDateTime.now());
+            // ✅ Yjs CRDT 기반이므로 revision 필드 없음 (자동 충돌 해결)
+            response = NoteResponseDto.SaveResponse.success(java.time.LocalDateTime.now());
         } else {
             response = NoteResponseDto.SaveResponse.failure("저장에 실패했습니다");
         }

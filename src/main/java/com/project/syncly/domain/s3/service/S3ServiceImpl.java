@@ -49,7 +49,7 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public ResponseEntity<Void> generateSignedCookieForView(S3RequestDTO.GetViewUrl request, HttpServletResponse response) {
-        String resourcePath = request.objectKey();
+        String resourcePath = "uploads/*";
 
         Map<String, String> cookies = cloudFrontUtil.generateSignedCookies(resourcePath, Duration.ofMinutes(10));
 

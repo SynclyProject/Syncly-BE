@@ -35,9 +35,4 @@ public interface NoteService {
      * 워크스페이스 멤버 권한 확인
      */
     void validateWorkspaceMember(Long workspaceId, Long memberId);
-
-    /**
-     * Redis에서 revision 조회
-     */
-    int getRevisionFromRedis(Long noteId);
 }

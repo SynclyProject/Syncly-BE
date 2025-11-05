@@ -38,6 +38,15 @@ public class Note extends BaseTimeDeletedEntity {
     @Column(columnDefinition = "LONGTEXT")
     private String content;
 
+    /**
+     * Yjs CRDT 기반 Y.Doc 바이너리 상태 (Base64 인코딩)
+     *
+     * <p>프론트엔드의 Y.Doc에서 생성된 바이너리 업데이트를 서버에 저장합니다.
+     * encodeStateAsUpdate() 결과를 Base64로 인코딩한 형태입니다.
+     */
+    @Column(columnDefinition = "LONGTEXT")
+    private String ydocBinary;
+
     @Column(name = "last_modified_at", nullable = false)
     private LocalDateTime lastModifiedAt;
 
@@ -54,6 +63,14 @@ public class Note extends BaseTimeDeletedEntity {
      */
     public void updateContent(String content) {
         this.content = content;
+        this.lastModifiedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Y.Doc 바이너리 업데이트 (Yjs CRDT 기반)
+     */
+    public void updateYdocBinary(String ydocBinary) {
+        this.ydocBinary = ydocBinary;
         this.lastModifiedAt = LocalDateTime.now();
     }
 
