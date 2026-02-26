@@ -1,0 +1,16 @@
+[
+  {"id":"N1","group":"normal","gt_attack":false,"title":"단일 정상 재발급"},
+  {"id":"N2","group":"normal","gt_attack":false,"title":"응답 유실 후 동일 UA 재시도(10초 이내)"},
+  {"id":"N3","group":"normal","gt_attack":false,"title":"응답 유실 후 동일 UA 재시도(10초 초과)"},
+  {"id":"N4","group":"normal","gt_attack":false,"title":"동일 UA 동시 2요청(정순 반영)"},
+  {"id":"N5","group":"normal","gt_attack":false,"title":"동일 UA 동시 2요청(역순 반영)"},
+
+  {"id":"A1","group":"attack","gt_attack":true,"title":"탈취 RT 재사용(상이 UA)"},
+  {"id":"A2","group":"attack","gt_attack":true,"title":"탈취 RT 재사용(동일 UA spoof, 10초 이내)"},
+  {"id":"A3","group":"attack","gt_attack":true,"title":"탈취 RT 재사용(동일 UA spoof, 10초 초과)"},
+  {"id":"A4","group":"attack","gt_attack":true,"title":"탈취 RT 재사용(UA 없음)"},
+  {"id":"A5","group":"attack","gt_attack":true,"title":"선점 공격(attacker first)"},
+  {"id":"A6","group":"attack","gt_attack":true,"title":"로그아웃 후 탈취 RT 재사용"},
+  {"id":"A7","group":"attack","gt_attack":true,"title":"탈취 RT 50병렬 재사용"},
+  {"id":"A8","group":"attack","gt_attack":true,"title":"victim/attacker 동시 재발급(상이 UA)"}
+]
