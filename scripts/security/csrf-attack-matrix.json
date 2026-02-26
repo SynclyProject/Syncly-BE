@@ -1,0 +1,104 @@
+[
+  {
+    "id": "C1",
+    "group": "normal",
+    "title": "신뢰 Origin + 쿠키로 재발급",
+    "gt_attack": false,
+    "endpoint": "reissue",
+    "origin": "trusted",
+    "referer": "none",
+    "send_cookie": true
+  },
+  {
+    "id": "C2",
+    "group": "normal",
+    "title": "신뢰 Referer + 쿠키로 재발급",
+    "gt_attack": false,
+    "endpoint": "reissue",
+    "origin": "none",
+    "referer": "trusted",
+    "send_cookie": true
+  },
+  {
+    "id": "C3",
+    "group": "normal",
+    "title": "신뢰 Origin + 쿠키로 로그아웃",
+    "gt_attack": false,
+    "endpoint": "logout",
+    "origin": "trusted",
+    "referer": "trusted",
+    "send_cookie": true
+  },
+  {
+    "id": "C4",
+    "group": "normal",
+    "title": "쿠키 없는 재발급 요청(필터 스킵 경로)",
+    "gt_attack": false,
+    "endpoint": "reissue",
+    "origin": "trusted",
+    "referer": "trusted",
+    "send_cookie": false,
+    "measurable": false
+  },
+
+  {
+    "id": "A1",
+    "group": "attack",
+    "title": "악성 Origin 단독 + 쿠키",
+    "gt_attack": true,
+    "endpoint": "reissue",
+    "origin": "malicious",
+    "referer": "none",
+    "send_cookie": true
+  },
+  {
+    "id": "A2",
+    "group": "attack",
+    "title": "악성 Origin + 악성 Referer + 쿠키",
+    "gt_attack": true,
+    "endpoint": "reissue",
+    "origin": "malicious",
+    "referer": "malicious",
+    "send_cookie": true
+  },
+  {
+    "id": "A3",
+    "group": "attack",
+    "title": "Origin/Referer 모두 없음 + 쿠키",
+    "gt_attack": true,
+    "endpoint": "reissue",
+    "origin": "none",
+    "referer": "none",
+    "send_cookie": true
+  },
+  {
+    "id": "A4",
+    "group": "attack",
+    "title": "악성 Referer 단독 + 쿠키",
+    "gt_attack": true,
+    "endpoint": "reissue",
+    "origin": "none",
+    "referer": "malicious",
+    "send_cookie": true
+  },
+  {
+    "id": "A5",
+    "group": "attack",
+    "title": "악성 Origin + 신뢰 Referer 혼합 + 쿠키",
+    "gt_attack": true,
+    "endpoint": "reissue",
+    "origin": "malicious",
+    "referer": "trusted",
+    "send_cookie": true
+  },
+  {
+    "id": "A6",
+    "group": "attack",
+    "title": "유사 도메인 Origin(syncly-io.com.evil.com) + 쿠키",
+    "gt_attack": true,
+    "endpoint": "reissue",
+    "origin": "lookalike",
+    "referer": "none",
+    "send_cookie": true
+  }
+]

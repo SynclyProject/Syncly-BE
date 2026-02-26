@@ -1,0 +1,79 @@
+services:
+  mysql:
+    image: mysql:8.0
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "${MYSQL_PORT:-3308}:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_HOST_PORT:-6381}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 30
+
+  app:
+    image: gradle:8.10-jdk17
+    working_dir: /workspace
+    command: ["bash", "-lc", "./gradlew bootRun --no-daemon"]
+    volumes:
+      - ../..:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    environment:
+      SPRING_PROFILE: ${SPRING_PROFILE}
+      DB_HOST: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DDL_TYPE: update
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      MAIL_USER_NAME: ${MAIL_USER_NAME}
+      MAIL_APP_PASSWORD: ${MAIL_APP_PASSWORD}
+      SYNCLY_LINK: ${SYNCLY_LINK}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_CLOUDFRONT_DOMAIN: ${AWS_CLOUDFRONT_DOMAIN}
+      AWS_CLOUDFRONT_KEY_PAIR_ID: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
+      AWS_CLOUDFRONT_PRIVATE_KEY: ${AWS_CLOUDFRONT_PRIVATE_KEY}
+      LIVEKIT_INGRESS_API_KEY: ${LIVEKIT_INGRESS_API_KEY}
+      LIVEKIT_INGRESS_API_SECRET: ${LIVEKIT_INGRESS_API_SECRET}
+      LIVEKIT_ADMIN_API_KEY: ${LIVEKIT_ADMIN_API_KEY}
+      LIVEKIT_ADMIN_API_SECRET: ${LIVEKIT_ADMIN_API_SECRET}
+      LIVEKIT_WEBHOOK_KEY: ${LIVEKIT_WEBHOOK_KEY}
+      LIVEKIT_WEBHOOK_SECRET: ${LIVEKIT_WEBHOOK_SECRET}
+      LIVEKIT_URL: ${LIVEKIT_URL}
+      LIVEKIT_TURN_ENABLED: ${LIVEKIT_TURN_ENABLED}
+      LIVEKIT_TURN_UDP_PORT: ${LIVEKIT_TURN_UDP_PORT}
+      LIVEKIT_TURN_TLS_PORT: ${LIVEKIT_TURN_TLS_PORT}
+      LIVEKIT_TURN_DOMAIN: ${LIVEKIT_TURN_DOMAIN}
+      LIVEKIT_TURN_USERNAME: ${LIVEKIT_TURN_USERNAME}
+      LIVEKIT_TURN_PASSWORD: ${LIVEKIT_TURN_PASSWORD}
+      DISCORD_ERROR_WEBHOOK_URL: ""
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8081}:8080"
+
+volumes:
+  gradle-cache:
